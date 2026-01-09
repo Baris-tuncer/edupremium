@@ -66,18 +66,18 @@ export default function Footer() {
             title="Platform" 
             links={[
               { label: 'Öğretmenler', href: '/teachers' },
-              { label: 'Dersler', href: '/subjects' },
-              { label: 'Nasıl Çalışır?', href: '/how-it-works' },
-              { label: 'Fiyatlandırma', href: '/pricing' },
+              { label: 'Dersler', href: '/dersler' },
+              { label: 'Nasıl Çalışır?', href: '/nasil-calisir' },
+              { label: 'Fiyatlandırma', href: '/fiyatlandirma' },
             ]} 
           />
 
           <FooterSection 
             title="Kurumsal" 
             links={[
-              { label: 'Hakkımızda', href: '/about' },
-              { label: 'Kariyer', href: '/careers' },
-              { label: 'İletişim', href: '/contact' },
+              { label: 'Hakkımızda', href: '/hakkimizda' },
+              { label: 'Kariyer', href: '/kariyer' },
+              { label: 'İletişim', href: '/iletisim' },
               { label: 'Blog', href: '/blog' },
             ]} 
           />
@@ -85,10 +85,10 @@ export default function Footer() {
           <FooterSection 
             title="Destek" 
             links={[
-              { label: 'Yardım Merkezi', href: '/help' },
-              { label: 'SSS', href: '/faq' },
-              { label: 'Gizlilik Politikası', href: '/privacy' },
-              { label: 'Kullanım Şartları', href: '/terms' },
+              { label: 'Yardım Merkezi', href: '/yardim' },
+              { label: 'SSS', href: '/sss' },
+              { label: 'Gizlilik Politikası', href: '/gizlilik-politikasi' },
+              { label: 'Kullanım Şartları', href: '/kullanim-sartlari' },
             ]} 
           />
         </div>
