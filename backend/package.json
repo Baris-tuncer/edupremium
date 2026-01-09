@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "build": "prisma generate && npx prisma migrate deploy && tsc --skipLibCheck",
-    "start": "node dist/main.js",
+    "start": "prisma migrate deploy && node dist/main.js",
     "start:dev": "nest start --watch"
   },
   "dependencies": {
