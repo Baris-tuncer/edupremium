@@ -66,8 +66,8 @@ export class PaymentsService {
     
     const result = await this.iyzicoService.initializePayment({
       conversationId: appointment.orderCode,
-      price: appointment.paymentAmount.toNumber(),
-      paidPrice: appointment.paymentAmount.toNumber(),
+      price: String(appointment.paymentAmount.toNumber()),
+      paidPrice: String(appointment.paymentAmount.toNumber()),
       currency: 'TRY',
       basketId: appointment.id,
       paymentGroup: 'PRODUCT',
@@ -96,7 +96,7 @@ export class PaymentsService {
           name: `${appointment.subject.name} Dersi - ${appointment.teacher.firstName} ${appointment.teacher.lastName}`,
           category1: 'Online Ders',
           itemType: 'VIRTUAL',
-          price: appointment.paymentAmount.toNumber(),
+          price: String(appointment.paymentAmount.toNumber()),
         },
       ],
     });
@@ -182,7 +182,7 @@ export class PaymentsService {
 
     return {
       orderCode: appointment.orderCode,
-      amount: appointment.paymentAmount.toNumber(),
+      amount: String(appointment.paymentAmount.toNumber()),
       bankName: this.configService.get('PLATFORM_BANK_NAME'),
       iban: this.configService.get('PLATFORM_IBAN'),
       accountHolder: 'Premium EdTech Platform Ltd.',
@@ -351,7 +351,7 @@ export class PaymentsService {
     if (appointment.paymentMethod === PaymentMethod.CREDIT_CARD && appointment.iyzicoPaymentId) {
       await this.iyzicoService.refundPayment(
         appointment.iyzicoPaymentId,
-        appointment.paymentAmount.toNumber(),
+        String(appointment.paymentAmount.toNumber()),
         appointment.orderCode,
       );
     }

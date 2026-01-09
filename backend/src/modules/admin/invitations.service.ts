@@ -1,83 +1,58 @@
 // ============================================================================
-// INVITATIONS SERVICE
+// INVITATIONS SERVICE - Matches AdminController exactly
 // ============================================================================
 
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.module';
 import { InvitationStatus } from '@prisma/client';
-
-interface CreateInvitationDto {
-  assignedEmail?: string;
-  expiresInDays?: number;
-  count?: number;
-}
 
 @Injectable()
 export class InvitationsService {
   constructor(private prisma: PrismaService) {}
 
-  // ========================================
-  // CREATE INVITATION CODE(S)
-  // ========================================
+  // Controller calls: createInvitations (line 100)
   async createInvitations(
     adminUserId: string,
-    dto: CreateInvitationDto,
+    data: { assignedEmail?: string; expiresInDays?: number },
   ) {
-    const count = dto.count || 1;
-    const invitations = [];
+    const code = this.generateCode();
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + (data.expiresInDays || 30));
 
-    for (let i = 0; i < count; i++) {
-      const code = this.generateInvitationCode();
-      const expiresAt = dto.expiresInDays
-        ? new Date(Date.now() + dto.expiresInDays * 24 * 60 * 60 * 1000)
-        : null;
+    const invitation = await this.prisma.invitationCode.create({
+      data: {
+        code,
+        assignedEmail: data.assignedEmail,
+        createdById: adminUserId,
+        expiresAt,
+        status: InvitationStatus.ACTIVE,
+      },
+    });
 
-      const invitation = await this.prisma.invitationCode.create({
-        data: {
-          code,
-          createdById: adminUserId,
-          assignedEmail: count === 1 ? dto.assignedEmail : null,
-          expiresAt,
-          status: InvitationStatus.ACTIVE,
-        },
-      });
-
-      invitations.push(invitation);
-    }
-
-    return invitations;
+    return {
+      id: invitation.id,
+      code: invitation.code,
+      assignedEmail: invitation.assignedEmail,
+      expiresAt: invitation.expiresAt,
+      status: invitation.status,
+    };
   }
 
-  // ========================================
-  // LIST INVITATIONS
-  // ========================================
-  async listInvitations(
-    page: number = 1,
-    limit: number = 20,
-    status?: InvitationStatus,
-  ) {
+  // Controller calls: listInvitations (line 110)
+  async listInvitations(page = 1, limit = 20, status?: InvitationStatus) {
     const skip = (page - 1) * limit;
-
     const where = status ? { status } : {};
 
     const [invitations, total] = await Promise.all([
       this.prisma.invitationCode.findMany({
         where,
-        include: {
-          createdBy: {
-            select: { email: true },
-          },
-          usedBy: {
-            select: {
-              firstName: true,
-              lastName: true,
-              user: { select: { email: true } },
-            },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
+        orderBy: { createdAt: 'desc' },
       }),
       this.prisma.invitationCode.count({ where }),
     ]);
@@ -88,96 +63,82 @@ export class InvitationsService {
         code: inv.code,
         status: inv.status,
         assignedEmail: inv.assignedEmail,
-        createdBy: inv.createdBy.email,
-        createdAt: inv.createdAt,
-        expiresAt: inv.expiresAt,
+        createdById: inv.createdById,
+        usedById: inv.usedById,
         usedAt: inv.usedAt,
-        usedBy: inv.usedBy
-          ? {
-              name: `${inv.usedBy.firstName} ${inv.usedBy.lastName}`,
-              email: inv.usedBy.user.email,
-            }
-          : null,
+        expiresAt: inv.expiresAt,
+        createdAt: inv.createdAt,
       })),
-      meta: {
-        total,
+      pagination: {
         page,
         limit,
+        total,
         totalPages: Math.ceil(total / limit),
       },
     };
   }
 
-  // ========================================
-  // REVOKE INVITATION
-  // ========================================
-  async revokeInvitation(id: string) {
+  // Controller calls: revokeInvitation (line 117)
+  async revokeInvitation(codeId: string) {
     const invitation = await this.prisma.invitationCode.findUnique({
-      where: { id },
+      where: { id: codeId },
     });
 
     if (!invitation) {
-      throw new NotFoundException('Invitation not found');
+      throw new NotFoundException('Invitation code not found');
     }
 
     if (invitation.status !== InvitationStatus.ACTIVE) {
-      throw new BadRequestException('Only active invitations can be revoked');
+      throw new BadRequestException('Can only revoke active invitation codes');
     }
 
     return this.prisma.invitationCode.update({
-      where: { id },
+      where: { id: codeId },
       data: { status: InvitationStatus.REVOKED },
     });
   }
 
-  // ========================================
-  // VALIDATE INVITATION CODE
-  // ========================================
-  async validateInvitationCode(code: string, email?: string) {
+  // Additional methods
+  async validateInvitationCode(code: string): Promise<boolean> {
+    const invitation = await this.prisma.invitationCode.findFirst({
+      where: {
+        code,
+        status: InvitationStatus.ACTIVE,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
+    });
+    return !!invitation;
+  }
+
+  async getInvitationByCode(code: string) {
     const invitation = await this.prisma.invitationCode.findUnique({
       where: { code },
     });
-
     if (!invitation) {
-      return { valid: false, reason: 'Invalid code' };
+      throw new NotFoundException('Invitation code not found');
     }
-
-    if (invitation.status !== InvitationStatus.ACTIVE) {
-      return { valid: false, reason: 'Code is no longer active' };
-    }
-
-    if (invitation.expiresAt && invitation.expiresAt < new Date()) {
-      return { valid: false, reason: 'Code has expired' };
-    }
-
-    if (invitation.assignedEmail && email && invitation.assignedEmail !== email) {
-      return { valid: false, reason: 'Code is assigned to a different email' };
-    }
-
-    return { valid: true, invitation };
+    return invitation;
   }
 
-  // ========================================
-  // EXPIRE OLD INVITATIONS (Cron Job)
-  // ========================================
-  async expireOldInvitations() {
-    const result = await this.prisma.invitationCode.updateMany({
-      where: {
-        status: InvitationStatus.ACTIVE,
-        expiresAt: { lt: new Date() },
-      },
-      data: { status: InvitationStatus.EXPIRED },
-    });
-
-    return { expiredCount: result.count };
+  // Aliases for backwards compatibility
+  async createInvitationCode(adminUserId: string, assignedEmail?: string, expiresInDays = 30) {
+    return this.createInvitations(adminUserId, { assignedEmail, expiresInDays });
   }
 
-  // ========================================
-  // HELPER: Generate Code
-  // ========================================
-  private generateInvitationCode(): string {
-    const year = new Date().getFullYear();
-    const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
-    return `INV-${year}-${randomPart}`;
+  async listInvitationCodes(page = 1, limit = 20, status?: InvitationStatus) {
+    return this.listInvitations(page, limit, status);
+  }
+
+  async revokeInvitationCode(codeId: string) {
+    return this.revokeInvitation(codeId);
+  }
+
+  private generateCode(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = 'EDU-';
+    for (let i = 0; i < 8; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
   }
 }

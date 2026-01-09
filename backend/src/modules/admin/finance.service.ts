@@ -289,14 +289,6 @@ export class FinanceService {
     const [transactions, total] = await Promise.all([
       this.prisma.walletTransaction.findMany({
         where: { walletId: wallet.id },
-        include: {
-          appointment: {
-            select: {
-              orderCode: true,
-              subject: { select: { name: true } },
-            },
-          },
-        },
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,

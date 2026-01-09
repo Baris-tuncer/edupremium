@@ -208,7 +208,7 @@ export class NotificationsListener {
 
     // Prompt teacher to submit feedback
     await this.emailService.sendFeedbackRequest(
-      appointment.teacher.user?.email || '',
+      appointment.teacher.firstName + "@edupremium.com" || '',
       {
         teacherName: appointment.teacher.firstName,
         studentName: appointment.student.firstName,

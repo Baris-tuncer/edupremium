@@ -17,7 +17,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { TeachersService } from './teachers.service';
+import { TeachersService, TeacherPublicProfile, AvailabilitySlot } from './teachers.service';
 import { CurrentUser, Public, Roles, RolesGuard } from '../../common/guards/auth.guard';
 import { UserRole } from '@prisma/client';
 

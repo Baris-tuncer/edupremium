@@ -352,8 +352,8 @@ export class TeachersService {
       data: slots.map((slot) => ({
         teacherId: teacher.id,
         dayOfWeek: slot.dayOfWeek,
-        startTime: new Date(`1970-01-01T${slot.startTime}:00Z`),
-        endTime: new Date(`1970-01-01T${slot.endTime}:00Z`),
+        startTime: slot.startTime,
+        endTime: slot.endTime,
         isRecurring: slot.isRecurring,
         specificDate: slot.specificDate ? new Date(slot.specificDate) : null,
       })),
