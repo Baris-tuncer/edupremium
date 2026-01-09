@@ -21,10 +21,12 @@ export default function RegisterPage() {
     invitationCode: '',
     branchId: '',
     iban: '',
+    profilePhoto: null as File | null,
     acceptTerms: false,
     acceptKvkk: false,
   });
-  const [isLoading, setIsLoading] = useState(false);
+    const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -33,7 +35,17 @@ export default function RegisterPage() {
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
     }));
   };
-
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        setFormData(prev => ({ ...prev, profilePhoto: file }));
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPhotoPreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
+    };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -281,8 +293,38 @@ export default function RegisterPage() {
                   <p className="text-xs text-slate-500 mt-1">Ders ucretleriniz bu hesaba aktarilacaktir</p>
                 </div>
               )}
-
-              <div className="grid md:grid-cols-2 gap-4 mb-6">
+                          {/* Profil Fotoğrafı - Opsiyonel */}
+                                        {userType === 'teacher' && (
+                                          <div className="mb-4">
+                                            <label className="input-label">Profil Fotoğrafı (Opsiyonel)</label>
+                                            <div className="flex items-center gap-4">
+                                              <div className="w-24 h-24 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50">
+                                                {photoPreview ? (
+                                                  <img src={photoPreview} alt="Önizleme" className="w-full h-full object-cover" />
+                                                ) : (
+                                                  <span className="text-gray-400 text-xs text-center">Vesikalık<br/>Fotoğraf</span>
+                                                )}
+                                              </div>
+                                              <div>
+                                                <input
+                                                  type="file"
+                                                  id="profilePhoto"
+                                                  accept="image/*"
+                                                  onChange={handlePhotoChange}
+                                                  className="hidden"
+                                                />
+                                                <label
+                                                  htmlFor="profilePhoto"
+                                                  className="inline-block bg-navy-600 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-navy-700 text-sm"
+                                                >
+                                                  Fotoğraf Seç
+                                                </label>
+                                                <p className="text-xs text-slate-500 mt-1">JPG, PNG (Max 2MB)</p>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        )}
+                          <div className="grid md:grid-cols-2 gap-4 mb-6">
                 <div>
                   <label htmlFor="password" className="input-label">Şifre *</label>
                   <input
