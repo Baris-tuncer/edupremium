@@ -1,3 +1,4 @@
+import { JwtModule } from '@nestjs/jwt';
 // ============================================================================
 // APPOINTMENTS MODULE
 // ============================================================================
@@ -9,7 +10,7 @@ import { AppointmentsService } from './appointments.service';
 import { AppointmentsProcessor } from './appointments.processor';
 
 @Module({
-  imports: [
+  imports: [JwtModule, 
     BullModule.registerQueue({
       name: 'appointments',
     }),
