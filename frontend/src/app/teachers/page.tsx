@@ -9,7 +9,7 @@ import Footer from '@/components/layout/Footer';
 // FILTER SIDEBAR
 // ============================================
 const FilterSidebar = () => {
-  const [priceRange, setPriceRange] = useState([500, 1500]);
+  const [priceRange, setPriceRange] = useState([500, 5000]);
 
   const branches = [
     { id: 'matematik', name: 'Matematik', count: 85 },
