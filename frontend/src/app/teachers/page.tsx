@@ -9,7 +9,7 @@ import Footer from '@/components/layout/Footer';
 // FILTER SIDEBAR
 // ============================================
 const FilterSidebar = () => {
-  const [priceRange, setPriceRange] = useState([200, 800]);
+  const [priceRange, setPriceRange] = useState([500, 1500]);
 
   const branches = [
     { id: 'matematik', name: 'Matematik', count: 85 },
@@ -140,8 +140,8 @@ const TeacherCard = ({ teacher }: { teacher: any }) => (
     <div className="flex-1 min-w-0">
       <div className="flex items-start justify-between mb-2">
         <div>
-          <h3 className="font-display text-xl font-semibold text-navy-900 mb-1">
-            {teacher.name}
+          <h3 className="font-display text-xl font-semibold text-navy-900 mb-1 flex items-center gap-2">
+            {teacher.name}{teacher.isNative && <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-medium">Native</span>}
           </h3>
           <p className="text-slate-500">{teacher.branch}</p>
         </div>
