@@ -20,6 +20,7 @@ export default function RegisterPage() {
     parentPhone: '',
     invitationCode: '',
     branchId: '',
+    iban: '',
     acceptTerms: false,
     acceptKvkk: false,
   });
@@ -261,6 +262,23 @@ export default function RegisterPage() {
                     <option value="turkce">Türkçe-Edebiyat</option>
                     <option value="ingilizce">İngilizce</option>
                   </select>
+                </div>
+              )}
+
+              {userType === 'teacher' && (
+                <div className="mb-4">
+                  <label htmlFor="iban" className="input-label">IBAN *</label>
+                  <input
+                    type="text"
+                    id="iban"
+                    name="iban"
+                    value={formData.iban}
+                    onChange={handleChange}
+                    className="input"
+                    placeholder="TR00 0000 0000 0000 0000 0000 00"
+                    required
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Ders ucretleriniz bu hesaba aktarilacaktir</p>
                 </div>
               )}
 
