@@ -274,13 +274,13 @@ export class TeachersService {
 
       for (const slot of daySlots) {
         const slotDateTime = new Date(
-          `${dateStr}T${slot.startTime.toISOString().split('T')[1]}`,
+          `${dateStr}T${slot.startTime}`,
         );
 
         slots.push({
           date: dateStr,
-          startTime: slot.startTime.toISOString().split('T')[1].slice(0, 5),
-          endTime: slot.endTime.toISOString().split('T')[1].slice(0, 5),
+          startTime: slot.startTime,
+          endTime: slot.endTime,
           isBooked: bookedSlots.has(slotDateTime.toISOString()),
         });
       }
