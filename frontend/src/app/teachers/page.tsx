@@ -131,9 +131,13 @@ const TeacherCard = ({ teacher }: { teacher: any }) => (
   <Link href={`/teachers/${teacher.id}`} className="card-interactive p-6 flex gap-6">
     {/* Avatar */}
     <div className="shrink-0">
-      <div className="w-24 h-24 bg-gradient-navy rounded-2xl flex items-center justify-center text-white font-display text-3xl font-semibold shadow-elegant">
-        {teacher.initials}
-      </div>
+      {teacher.profilePhotoUrl ? (
+        <img src={teacher.profilePhotoUrl} alt={teacher.name} className="w-24 h-24 rounded-2xl object-cover shadow-elegant" />
+      ) : (
+        <div className="w-24 h-24 bg-gradient-navy rounded-2xl flex items-center justify-center text-white font-display text-3xl font-semibold shadow-elegant">
+          {teacher.initials}
+        </div>
+      )}
     </div>
 
     {/* Content */}
