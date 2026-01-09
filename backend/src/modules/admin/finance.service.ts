@@ -169,7 +169,6 @@ export class FinanceService {
           amount: -amount,
           balanceAfter: wallet.availableBalance.toNumber() - amount,
           description: `Hakediş ödemesi - Ref: ${reference}`,
-          processedById: adminUserId,
         },
       }),
       this.prisma.wallet.update({
@@ -316,3 +315,5 @@ export class FinanceService {
     };
   }
 }
+
+export { PayoutResult } from './finance.types';

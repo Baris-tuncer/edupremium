@@ -140,7 +140,6 @@ export class AppointmentsService {
         platformFee,
         teacherEarning,
         status: AppointmentStatus.PENDING_PAYMENT,
-        studentNote: dto.studentNote,
         bankTransferDeadline,
       },
       include: {
@@ -426,7 +425,7 @@ export class AppointmentsService {
         status: AppointmentStatus.CANCELLED,
         cancelledAt: new Date(),
         cancelledById: userId,
-        cancellationReason: reason,
+        cancelReason: reason,
       },
       include: {
         teacher: {
@@ -529,7 +528,6 @@ export class AppointmentsService {
       data: {
         status: AppointmentStatus.NO_SHOW,
         markedNoShow: true,
-        noShowReportedAt: new Date(),
       },
       include: {
         teacher: {
@@ -680,7 +678,6 @@ export class AppointmentsService {
       paymentAmount: appointment.paymentAmount.toNumber(),
       status: appointment.status,
       teamsJoinUrl: appointment.teamsJoinUrl,
-      studentNote: appointment.studentNote,
       bankTransferDeadline: appointment.bankTransferDeadline?.toISOString(),
     };
   }

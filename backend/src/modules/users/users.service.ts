@@ -21,9 +21,9 @@ export class UsersService {
         email: true,
         role: true,
         status: true,
-        emailVerified: true,
+        isEmailVerified: true,
         phone: true,
-        phoneVerified: true,
+        isPhoneVerified: true,
         createdAt: true,
         teacher: {
           select: {
@@ -108,7 +108,7 @@ export class UsersService {
       where: { id: userId },
       data: {
         email: newEmail,
-        emailVerified: false,
+        isEmailVerified: false,
       },
     });
 
@@ -125,7 +125,7 @@ export class UsersService {
       where: { id: userId },
       data: {
         phone: newPhone,
-        phoneVerified: false,
+        isPhoneVerified: false,
       },
     });
 

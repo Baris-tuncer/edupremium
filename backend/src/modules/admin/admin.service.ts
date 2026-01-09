@@ -75,7 +75,6 @@ export class AdminService {
         data: {
           isApproved: true,
           approvedAt: new Date(),
-          approvedById: adminUserId,
         },
       }),
       this.prisma.user.update({
@@ -224,8 +223,6 @@ export class AdminService {
       data: {
         paymentStatus: 'PAID',
         status: 'CONFIRMED',
-        bankTransferApprovedById: adminUserId,
-        bankTransferApprovedAt: new Date(),
       },
     });
 
@@ -257,7 +254,7 @@ export class AdminService {
       data: {
         paymentStatus: 'FAILED',
         status: 'CANCELLED',
-        cancellationReason: reason,
+        cancelReason: reason,
       },
     });
 

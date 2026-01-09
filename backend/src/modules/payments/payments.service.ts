@@ -280,8 +280,6 @@ export class PaymentsService {
       where: { id: appointmentId },
       data: {
         paymentStatus: PaymentStatus.PAID,
-        bankTransferApprovedById: adminUserId,
-        bankTransferApprovedAt: new Date(),
       },
     });
 
@@ -315,7 +313,7 @@ export class PaymentsService {
       data: {
         paymentStatus: PaymentStatus.FAILED,
         status: 'CANCELLED',
-        cancellationReason: reason,
+        cancelReason: reason,
         cancelledById: adminUserId,
         cancelledAt: new Date(),
       },
