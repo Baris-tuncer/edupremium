@@ -129,7 +129,6 @@ const EarningsCard = () => (
     </div>
 
     <button className="w-full py-3 bg-gold-500 text-navy-900 font-semibold rounded-xl hover:bg-gold-400 transition-colors">
-      Para Çekme Talebi
     </button>
   </div>
 );
@@ -270,8 +269,8 @@ export default function TeacherDashboard() {
         <div className="card bg-gradient-to-r from-navy-900 to-navy-700 text-white p-8 mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="font-display text-2xl font-semibold mb-2">Günaydın, Mehmet Hoca! 👋</h2>
-              <p className="text-navy-200">Bugün 3 dersiniz var. İlk ders saat 10:00'da.</p>
+              <h2 className="font-display text-2xl font-semibold mb-2">Hoş Geldiniz!</h2>
+              <p className="text-white/80">Bugün 3 dersiniz var. İlk ders saat 10:00'da.</p>
             </div>
             <div className="hidden md:flex items-center gap-4">
               <div className="text-center px-6 py-3 bg-white/10 rounded-xl">
