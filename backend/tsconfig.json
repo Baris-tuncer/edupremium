@@ -9,9 +9,12 @@
     "target": "ES2021",
     "sourceMap": true,
     "outDir": "./dist",
+    "rootDir": "./src",
     "baseUrl": "./",
-    "incremental": true,
-    "skipLibCheck": true, "noEmit": false, "strict": false,
+    "incremental": false,
+    "skipLibCheck": true,
+    "noEmit": false,
+    "strict": false,
     "strictNullChecks": false,
     "noImplicitAny": false,
     "strictBindCallApply": false,
@@ -19,5 +22,7 @@
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
     "resolveJsonModule": true
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }
