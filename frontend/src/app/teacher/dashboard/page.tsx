@@ -269,7 +269,7 @@ export default function TeacherDashboard() {
         <div className="card bg-gradient-to-r from-navy-900 to-navy-700 text-white p-8 mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="font-display text-2xl font-semibold mb-2">Hoş Geldiniz!</h2>
+              <h2 className="font-display text-2xl font-semibold mb-2 text-white">Hoş Geldiniz!</h2>
               <p className="text-white/80">Bugün 3 dersiniz var. İlk ders saat 10:00'da.</p>
             </div>
             <div className="hidden md:flex items-center gap-4">
