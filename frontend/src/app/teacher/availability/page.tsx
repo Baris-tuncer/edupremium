@@ -3,6 +3,16 @@
 import { useState } from 'react';
 import Link from 'next/link';
 
+const reservedSlots: Record<string, string[]> = {
+  'Pazartesi': ['10:00', '14:00'],
+  'Salı': ['10:00'],
+  'Çarşamba': ['15:00'],
+  'Perşembe': ['11:00'],
+  'Cuma': ['10:00', '15:00'],
+  'Cumartesi': ['10:00'],
+  'Pazar': [],
+};
+
 const daysOfWeek = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
 const timeSlots = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
 
@@ -219,7 +229,7 @@ export default function TeacherAvailabilityPage() {
                     {daysOfWeek.map((day) => {
                       const isAvailable = isSlotAvailable(day, time);
                       const isSelected = isSlotSelected(day, time);
-                      const isReserved = isAvailable && Math.random() > 0.7; // Mock reserved slots
+                      const isReserved = reservedSlots[day]?.includes(time) || false;
                       
                       return (
                         <td key={`${day}-${time}`} className="p-1">
