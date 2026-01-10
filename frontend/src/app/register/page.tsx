@@ -21,6 +21,9 @@ export default function RegisterPage() {
     invitationCode: '',
     branchId: '',
     iban: '',
+    iban: '',
+          introVideoUrl: '',
+          hourlyRate: '',
     profilePhoto: null as File | null,
     acceptTerms: false,
     acceptKvkk: false,
@@ -46,13 +49,73 @@ export default function RegisterPage() {
         reader.readAsDataURL(file);
       }
     };
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsLoading(false);
-  };
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
 
+        try {
+          const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
+          
+          let endpoint = '';
+          let body: any = {};
+
+          if (userType === 'student') {
+            endpoint = '/auth/register/student';
+            body = {
+              email: formData.email,
+              password: formData.password,
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              phone: formData.phone || undefined,
+              gradeLevel: formData.gradeLevel ? parseInt(formData.gradeLevel) : undefined,
+              schoolName: formData.schoolName || undefined,
+              parentName: formData.parentName || undefined,
+              parentEmail: formData.parentEmail || undefined,
+              parentPhone: formData.parentPhone || undefined,
+            };
+          } else {
+            endpoint = '/auth/register/teacher';
+            body = {
+              email: formData.email,
+              password: formData.password,
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              phone: formData.phone || undefined,
+              invitationCode: formData.invitationCode,
+              branchId: formData.branchId,
+              introVideoUrl: formData.introVideoUrl,
+              hourlyRate: parseFloat(formData.hourlyRate),
+              iban: formData.iban || undefined,
+            };
+          }
+
+          const response = await fetch(`${API_URL}${endpoint}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.message || 'Kayıt başarısız');
+          }
+
+          // Başarılı - token'ları kaydet ve yönlendir
+          localStorage.setItem('accessToken', data.accessToken);
+          localStorage.setItem('refreshToken', data.refreshToken);
+          
+          alert('Kayıt başarılı!');
+          window.location.href = userType === 'student' ? '/student/dashboard' : '/teacher/dashboard';
+          
+        } catch (error: any) {
+          alert(error.message || 'Bir hata oluştu');
+        } finally {
+          setIsLoading(false);
+        }
+      };
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4">
       <div className="max-w-2xl mx-auto">
@@ -267,7 +330,7 @@ export default function RegisterPage() {
                     required
                   >
                     <option value="">Seçin</option>
-                    <option value="matematik">Matematik</option>
+        <option value="2bb543f0-cca9-4c03-8af1-eb616db3ff4d">Matematik</option>
                     <option value="fizik">Fizik</option>
                     <option value="kimya">Kimya</option>
                     <option value="biyoloji">Biyoloji</option>
@@ -293,6 +356,42 @@ export default function RegisterPage() {
                   <p className="text-xs text-slate-500 mt-1">Ders ucretleriniz bu hesaba aktarilacaktir</p>
                 </div>
               )}
+                    {/* Tanıtım Videosu */}
+                                        {userType === 'teacher' && (
+                                          <div className="mb-4">
+                                            <label htmlFor="introVideoUrl" className="input-label">Tanıtım Video URL *</label>
+                                            <input
+                                              type="url"
+                                              id="introVideoUrl"
+                                              name="introVideoUrl"
+                                              value={formData.introVideoUrl}
+                                              onChange={handleChange}
+                                              className="input"
+                                              placeholder="https://youtube.com/watch?v=..."
+                                              required
+                                            />
+                                            <p className="text-xs text-slate-500 mt-1">YouTube veya Vimeo linki</p>
+                                          </div>
+                                        )}
+
+                                        {/* Saat Ücreti */}
+                                        {userType === 'teacher' && (
+                                          <div className="mb-4">
+                                            <label htmlFor="hourlyRate" className="input-label">Saat Ücreti (₺) *</label>
+                                            <input
+                                              type="number"
+                                              id="hourlyRate"
+                                              name="hourlyRate"
+                                              value={formData.hourlyRate}
+                                              onChange={handleChange}
+                                              className="input"
+                                              placeholder="450"
+                                              min="100"
+                                              required
+                                            />
+                                            <p className="text-xs text-slate-500 mt-1">Minimum 100₺</p>
+                                          </div>
+                                        )}
                           {/* Profil Fotoğrafı - Opsiyonel */}
                                         {userType === 'teacher' && (
                                           <div className="mb-4">

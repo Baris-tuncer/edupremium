@@ -9,14 +9,56 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsLoading(false);
-  };
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
 
+        try {
+          const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
+          
+          const response = await fetch(`${API_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+          });
+
+            const data = await response.json();
+
+                  if (!response.ok) {
+                    throw new Error(data.message || 'Giriş başarısız');
+                  }
+
+                  // Response yapısını kontrol et
+                  const tokens = data.data || data;
+                  
+                  if (!tokens.accessToken) {
+                    throw new Error('Giriş başarısız');
+                  }
+
+                  localStorage.setItem('accessToken', tokens.accessToken);
+                  localStorage.setItem('refreshToken', tokens.refreshToken);
+                  
+                  // Kullanıcı rolüne göre yönlendir
+                  const payload = JSON.parse(atob(tokens.accessToken.split('.')[1]));
+                  const role = payload.role;
+          if (role === 'TEACHER') {
+            window.location.href = '/teacher/dashboard';
+          } else if (role === 'STUDENT') {
+            window.location.href = '/student/dashboard';
+          } else if (role === 'ADMIN') {
+            window.location.href = '/admin';
+          } else {
+            window.location.href = '/';
+          }
+          
+        } catch (error: any) {
+          alert(error.message || 'Bir hata oluştu');
+        } finally {
+          setIsLoading(false);
+        }
+      };
   return (
     <div className="min-h-screen flex">
       {/* Left Panel - Form */}
