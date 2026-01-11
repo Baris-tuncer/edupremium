@@ -34,6 +34,11 @@ export default function TeacherAvailabilityPage() {
 
   // Fetch availability on mount
   useEffect(() => {
+    // Load token from localStorage
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      api.setAccessToken(token);
+    }
     fetchAvailability();
   }, []);
 
