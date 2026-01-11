@@ -1,38 +1,86 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-
-const reservedSlots: Record<string, string[]> = {
-  'Pazartesi': ['10:00', '14:00'],
-  'Salı': ['10:00'],
-  'Çarşamba': ['15:00'],
-  'Perşembe': ['11:00'],
-  'Cuma': ['10:00', '15:00'],
-  'Cumartesi': ['10:00'],
-  'Pazar': [],
-};
+import { api } from '@/lib/api';
 
 const daysOfWeek = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
 const timeSlots = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
 
-interface Availability {
-  [key: string]: string[];
+interface AvailabilitySlot {
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  isRecurring: boolean;
 }
 
 export default function TeacherAvailabilityPage() {
   const [currentWeek, setCurrentWeek] = useState(0);
-  const [availability, setAvailability] = useState<Availability>({
-    'Pazartesi': ['10:00', '11:00', '14:00', '15:00'],
-    'Salı': ['09:00', '10:00', '11:00'],
-    'Çarşamba': ['14:00', '15:00', '16:00', '17:00'],
-    'Perşembe': ['10:00', '11:00', '14:00'],
-    'Cuma': ['09:00', '10:00', '11:00', '14:00', '15:00'],
-    'Cumartesi': ['10:00', '11:00'],
+  const [availability, setAvailability] = useState<Record<string, string[]>>({
+    'Pazartesi': [],
+    'Salı': [],
+    'Çarşamba': [],
+    'Perşembe': [],
+    'Cuma': [],
+    'Cumartesi': [],
     'Pazar': [],
   });
+  const [reservedSlots, setReservedSlots] = useState<Record<string, string[]>>({});
   const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch availability on mount
+  useEffect(() => {
+    fetchAvailability();
+  }, []);
+
+  const fetchAvailability = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Get dashboard to check if user is logged in as teacher
+      const dashboard = await api.getTeacherDashboard();
+      
+      // For now, we'll use mock data until proper API endpoint returns availability
+      // In production, this would fetch from /teachers/me/availability
+      const mockAvailability: Record<string, string[]> = {
+        'Pazartesi': ['10:00', '11:00', '14:00', '15:00'],
+        'Salı': ['09:00', '10:00', '11:00'],
+        'Çarşamba': ['14:00', '15:00', '16:00', '17:00'],
+        'Perşembe': ['10:00', '11:00', '14:00'],
+        'Cuma': ['09:00', '10:00', '11:00', '14:00', '15:00'],
+        'Cumartesi': ['10:00', '11:00'],
+        'Pazar': [],
+      };
+      
+      // Mock reserved slots (appointments)
+      const mockReserved: Record<string, string[]> = {
+        'Pazartesi': ['10:00', '14:00'],
+        'Salı': ['10:00'],
+        'Çarşamba': ['15:00'],
+        'Perşembe': ['11:00'],
+        'Cuma': ['10:00', '15:00'],
+        'Cumartesi': ['10:00'],
+        'Pazar': [],
+      };
+      
+      setAvailability(mockAvailability);
+      setReservedSlots(mockReserved);
+    } catch (err: any) {
+      console.error('Error fetching availability:', err);
+      if (err.response?.status === 401) {
+        setError('Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.');
+      } else {
+        setError('Müsaitlik bilgileri yüklenirken hata oluştu.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const getWeekDates = (weekOffset: number) => {
     const today = new Date();
@@ -72,28 +120,78 @@ export default function TeacherAvailabilityPage() {
     return selectedSlots.includes(`${day}-${time}`);
   };
 
-  const saveAvailability = () => {
-    const newAvailability: Availability = { ...availability };
-    
-    selectedSlots.forEach(slot => {
-      const [day, time] = slot.split('-');
-      if (!newAvailability[day]) {
-        newAvailability[day] = [];
-      }
-      if (newAvailability[day].includes(time)) {
-        newAvailability[day] = newAvailability[day].filter(t => t !== time);
+  const isSlotReserved = (day: string, time: string) => {
+    return reservedSlots[day]?.includes(time);
+  };
+
+  const saveAvailability = async () => {
+    try {
+      setIsSaving(true);
+      setError(null);
+      
+      // Apply changes to local state
+      const newAvailability: Record<string, string[]> = { ...availability };
+      
+      selectedSlots.forEach(slot => {
+        const [day, time] = slot.split('-');
+        if (!newAvailability[day]) {
+          newAvailability[day] = [];
+        }
+        if (newAvailability[day].includes(time)) {
+          newAvailability[day] = newAvailability[day].filter(t => t !== time);
+        } else {
+          newAvailability[day].push(time);
+          newAvailability[day].sort();
+        }
+      });
+      
+      // Convert to API format
+      const slots: AvailabilitySlot[] = [];
+      Object.entries(newAvailability).forEach(([day, times]) => {
+        const dayIndex = daysOfWeek.indexOf(day);
+        times.forEach(time => {
+          const [hour] = time.split(':');
+          const endHour = String(parseInt(hour) + 1).padStart(2, '0');
+          slots.push({
+            dayOfWeek: dayIndex,
+            startTime: time,
+            endTime: `${endHour}:00`,
+            isRecurring: true,
+          });
+        });
+      });
+      
+      // Save to API
+      await api.updateTeacherAvailability(slots);
+      
+      setAvailability(newAvailability);
+      setSelectedSlots([]);
+      setIsEditing(false);
+    } catch (err: any) {
+      console.error('Error saving availability:', err);
+      if (err.response?.status === 401) {
+        setError('Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.');
       } else {
-        newAvailability[day].push(time);
-        newAvailability[day].sort();
+        setError('Kaydetme sırasında hata oluştu. Lütfen tekrar deneyin.');
       }
-    });
-    
-    setAvailability(newAvailability);
-    setSelectedSlots([]);
-    setIsEditing(false);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const totalHours = Object.values(availability).reduce((sum, times) => sum + times.length, 0);
+  const reservedCount = Object.values(reservedSlots).reduce((sum, times) => sum + times.length, 0);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-navy-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">Yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -116,6 +214,13 @@ export default function TeacherAvailabilityPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            {error}
+          </div>
+        )}
+
         {/* Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="card p-6">
@@ -123,11 +228,11 @@ export default function TeacherAvailabilityPage() {
             <div className="text-slate-600 text-sm">Haftalık Müsait Saat</div>
           </div>
           <div className="card p-6">
-            <div className="text-3xl font-bold text-green-600">12</div>
+            <div className="text-3xl font-bold text-green-600">{reservedCount}</div>
             <div className="text-slate-600 text-sm">Rezerve Edilmiş</div>
           </div>
           <div className="card p-6">
-            <div className="text-3xl font-bold text-gold-500">{totalHours - 12}</div>
+            <div className="text-3xl font-bold text-gold-500">{totalHours - reservedCount}</div>
             <div className="text-slate-600 text-sm">Boş Slot</div>
           </div>
         </div>
@@ -171,11 +276,16 @@ export default function TeacherAvailabilityPage() {
                   <button
                     onClick={() => { setIsEditing(false); setSelectedSlots([]); }}
                     className="btn-ghost"
+                    disabled={isSaving}
                   >
                     İptal
                   </button>
-                  <button onClick={saveAvailability} className="btn-primary">
-                    Kaydet ({selectedSlots.length} değişiklik)
+                  <button 
+                    onClick={saveAvailability} 
+                    className="btn-primary"
+                    disabled={isSaving || selectedSlots.length === 0}
+                  >
+                    {isSaving ? 'Kaydediliyor...' : `Kaydet (${selectedSlots.length} değişiklik)`}
                   </button>
                 </>
               ) : (
@@ -229,22 +339,22 @@ export default function TeacherAvailabilityPage() {
                     {daysOfWeek.map((day) => {
                       const isAvailable = isSlotAvailable(day, time);
                       const isSelected = isSlotSelected(day, time);
-                      const isReserved = reservedSlots[day]?.includes(time) || false;
+                      const isReserved = isSlotReserved(day, time);
                       
                       return (
                         <td key={`${day}-${time}`} className="p-1">
                           <button
                             onClick={() => toggleSlot(day, time)}
-                            disabled={!isEditing && !isAvailable}
+                            disabled={!isEditing || isReserved}
                             className={`w-full h-10 rounded-lg transition-all ${
                               isSelected
                                 ? 'bg-blue-500 hover:bg-blue-600'
                                 : isReserved
-                                ? 'bg-gold-500'
+                                ? 'bg-gold-500 cursor-not-allowed'
                                 : isAvailable
                                 ? 'bg-green-500 hover:bg-green-600'
                                 : 'bg-slate-200'
-                            } ${isEditing ? 'cursor-pointer' : ''}`}
+                            } ${isEditing && !isReserved ? 'cursor-pointer' : ''}`}
                           />
                         </td>
                       );
@@ -260,15 +370,60 @@ export default function TeacherAvailabilityPage() {
         <div className="card p-6">
           <h2 className="font-display text-lg font-semibold text-navy-900 mb-4">Hızlı Ayarlar</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left">
+            <button 
+              onClick={() => {
+                if (!isEditing) return;
+                const slots: string[] = [];
+                daysOfWeek.slice(0, 5).forEach(day => {
+                  ['09:00', '10:00', '11:00', '12:00'].forEach(time => {
+                    if (!isSlotReserved(day, time)) {
+                      slots.push(`${day}-${time}`);
+                    }
+                  });
+                });
+                setSelectedSlots(slots);
+              }}
+              disabled={!isEditing}
+              className="p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left disabled:opacity-50"
+            >
               <div className="font-medium text-navy-900 mb-1">Hafta İçi Sabah</div>
               <div className="text-sm text-slate-600">Pzt-Cum 09:00-12:00</div>
             </button>
-            <button className="p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left">
+            <button 
+              onClick={() => {
+                if (!isEditing) return;
+                const slots: string[] = [];
+                daysOfWeek.slice(0, 5).forEach(day => {
+                  ['14:00', '15:00', '16:00', '17:00', '18:00'].forEach(time => {
+                    if (!isSlotReserved(day, time)) {
+                      slots.push(`${day}-${time}`);
+                    }
+                  });
+                });
+                setSelectedSlots(slots);
+              }}
+              disabled={!isEditing}
+              className="p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left disabled:opacity-50"
+            >
               <div className="font-medium text-navy-900 mb-1">Hafta İçi Öğleden Sonra</div>
               <div className="text-sm text-slate-600">Pzt-Cum 14:00-18:00</div>
             </button>
-            <button className="p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left">
+            <button 
+              onClick={() => {
+                if (!isEditing) return;
+                const slots: string[] = [];
+                daysOfWeek.slice(5, 7).forEach(day => {
+                  ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'].forEach(time => {
+                    if (!isSlotReserved(day, time)) {
+                      slots.push(`${day}-${time}`);
+                    }
+                  });
+                });
+                setSelectedSlots(slots);
+              }}
+              disabled={!isEditing}
+              className="p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left disabled:opacity-50"
+            >
               <div className="font-medium text-navy-900 mb-1">Hafta Sonu</div>
               <div className="text-sm text-slate-600">Cmt-Paz 10:00-16:00</div>
             </button>
