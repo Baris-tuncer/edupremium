@@ -32,7 +32,7 @@ class ApiClient {
 
   constructor() {
     this.client = axios.create({
-      baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1',
+      baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app',
       headers: {
         'Content-Type': 'application/json',
       },
