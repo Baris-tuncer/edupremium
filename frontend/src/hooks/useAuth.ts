@@ -12,31 +12,10 @@ interface User {
   phone?: string;
 }
 
-interface TeacherProfile {
-  id: string;
-  userId: string;
-  hourlyRate: number;
-  bio?: string;
-  isApproved: boolean;
-  branch?: {
-    id: string;
-    name: string;
-  };
-}
-
-interface StudentProfile {
-  id: string;
-  userId: string;
-  gradeLevel?: number;
-  schoolName?: string;
-  parentName?: string;
-  parentEmail?: string;
-}
-
 interface AuthState {
   user: User | null;
-  teacherProfile: TeacherProfile | null;
-  studentProfile: StudentProfile | null;
+  teacherProfile: any;
+  studentProfile: any;
   isLoading: boolean;
   isAuthenticated: boolean;
 }
@@ -60,9 +39,7 @@ export function useAuth() {
       }
 
       try {
-        // Fetch current user
-        const userResponse = await api.getCurrentUser();
-        const user = userResponse.data || userResponse;
+        const user = await api.getCurrentUser();
 
         setState(prev => ({
           ...prev,
@@ -70,11 +47,9 @@ export function useAuth() {
           isAuthenticated: true,
         }));
 
-        // Fetch role-specific profile
         if (user.role === 'TEACHER') {
           try {
-            const dashboardResponse = await api.getTeacherDashboard();
-            const dashboard = dashboardResponse.data || dashboardResponse;
+            const dashboard = await api.getTeacherDashboard();
             setState(prev => ({
               ...prev,
               teacherProfile: dashboard.profile,
@@ -86,8 +61,7 @@ export function useAuth() {
           }
         } else if (user.role === 'STUDENT') {
           try {
-            const dashboardResponse = await api.getStudentDashboard();
-            const dashboard = dashboardResponse.data || dashboardResponse;
+            const dashboard = await api.getStudentDashboard();
             setState(prev => ({
               ...prev,
               studentProfile: dashboard.profile,
@@ -138,8 +112,10 @@ export function useAuth() {
   };
 
   const getFullName = () => {
-    if (!state.user) return 'Kullanıcı';
-    return `${state.user.firstName || ''} ${state.user.lastName || ''}`.trim() || 'Kullanıcı';
+    if (!state.user) return 'Kullanici';
+    const fn = state.user.firstName || '';
+    const ln = state.user.lastName || '';
+    return (fn + ' ' + ln).trim() || 'Kullanici';
   };
 
   return {

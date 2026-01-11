@@ -151,7 +151,7 @@ export default function TeacherProfilePage() {
         bio: profile.bio,
         hourlyRate: parseFloat(profile.hourlyRate) || undefined,
         iban: profile.iban || undefined,
-        isNative: profile.isNative,
+        // isNative: profile.isNative, // TODO: Add to API
       });
       
       setMessage({ type: 'success', text: 'Profil başarıyla güncellendi!' });
