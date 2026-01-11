@@ -40,7 +40,8 @@ class ApiClient {
 
     // Request interceptor
     this.client.interceptors.request.use((config) => {
-      if (this.accessToken || (typeof window !== "undefined" && localStorage.getItem("accessToken"))) { this.accessToken = this.accessToken || localStorage.getItem("accessToken");
+      if (this.accessToken || (typeof window !== "undefined" && localStorage.getItem("accessToken"))) {
+        this.accessToken = this.accessToken || localStorage.getItem("accessToken");
         config.headers.Authorization = `Bearer ${this.accessToken}`;
       }
       return config;
@@ -88,9 +89,10 @@ class ApiClient {
     }
 
     try {
-      const response = await this.client.post<TokenResponse>('/auth/refresh', { refreshToken });
-      this.setAccessToken(response.data.accessToken);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
+      const response = await this.client.post<any>('/auth/refresh', { refreshToken });
+      const tokens = response.data.data || response.data;
+      this.setAccessToken(tokens.accessToken);
+      localStorage.setItem('refreshToken', tokens.refreshToken);
     } catch {
       this.clearTokens();
       window.location.href = '/login';
@@ -101,24 +103,27 @@ class ApiClient {
   // AUTH
   // ========================================
   async login(data: LoginRequest): Promise<TokenResponse> {
-    const response = await this.client.post<TokenResponse>('/auth/login', data);
-    this.setAccessToken(response.data.accessToken);
-    localStorage.setItem('refreshToken', response.data.refreshToken);
-    return response.data;
+    const response = await this.client.post<any>('/auth/login', data);
+    const tokens = response.data.data || response.data;
+    this.setAccessToken(tokens.accessToken);
+    localStorage.setItem('refreshToken', tokens.refreshToken);
+    return tokens;
   }
 
   async registerStudent(data: RegisterStudentRequest): Promise<TokenResponse> {
-    const response = await this.client.post<TokenResponse>('/auth/register/student', data);
-    this.setAccessToken(response.data.accessToken);
-    localStorage.setItem('refreshToken', response.data.refreshToken);
-    return response.data;
+    const response = await this.client.post<any>('/auth/register/student', data);
+    const tokens = response.data.data || response.data;
+    this.setAccessToken(tokens.accessToken);
+    localStorage.setItem('refreshToken', tokens.refreshToken);
+    return tokens;
   }
 
   async registerTeacher(data: RegisterTeacherRequest): Promise<TokenResponse> {
-    const response = await this.client.post<TokenResponse>('/auth/register/teacher', data);
-    this.setAccessToken(response.data.accessToken);
-    localStorage.setItem('refreshToken', response.data.refreshToken);
-    return response.data;
+    const response = await this.client.post<any>('/auth/register/teacher', data);
+    const tokens = response.data.data || response.data;
+    this.setAccessToken(tokens.accessToken);
+    localStorage.setItem('refreshToken', tokens.refreshToken);
+    return tokens;
   }
 
   async logout(): Promise<void> {
@@ -139,7 +144,7 @@ class ApiClient {
   // ========================================
   async getCurrentUser(): Promise<any> {
     const response = await this.client.get('/users/me');
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
@@ -148,7 +153,7 @@ class ApiClient {
 
   async exportUserData(): Promise<any> {
     const response = await this.client.get('/users/me/data-export');
-    return response.data;
+    return response.data.data || response.data;
   }
 
   // ========================================
@@ -156,24 +161,24 @@ class ApiClient {
   // ========================================
   async listTeachers(query: TeacherListQuery): Promise<PaginatedResponse<Teacher>> {
     const response = await this.client.get('/teachers', { params: query });
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async getTeacher(id: string): Promise<Teacher> {
     const response = await this.client.get(`/teachers/${id}`);
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async getTeacherAvailability(teacherId: string, startDate: string, endDate: string) {
     const response = await this.client.get(`/teachers/${teacherId}/availability`, {
       params: { startDate, endDate },
     });
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async updateTeacherProfile(data: Partial<Teacher>): Promise<Teacher> {
     const response = await this.client.put('/teachers/me/profile', data);
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async updateTeacherAvailability(slots: any[]): Promise<void> {
@@ -182,7 +187,7 @@ class ApiClient {
 
   async getTeacherDashboard(): Promise<TeacherDashboard> {
     const response = await this.client.get('/teachers/me/dashboard');
-    return response.data;
+    return response.data.data || response.data;
   }
 
   // ========================================
@@ -190,22 +195,22 @@ class ApiClient {
   // ========================================
   async getStudentDashboard(): Promise<StudentDashboard> {
     const response = await this.client.get('/students/me/dashboard');
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async updateStudentProfile(data: Partial<Student>): Promise<Student> {
     const response = await this.client.put('/students/me/profile', data);
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async getStudentLessonHistory(page = 1, limit = 20): Promise<PaginatedResponse<Appointment>> {
     const response = await this.client.get('/students/me/lessons', { params: { page, limit } });
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async getLessonReport(appointmentId: string): Promise<Feedback> {
     const response = await this.client.get(`/students/me/lessons/${appointmentId}/report`);
-    return response.data;
+    return response.data.data || response.data;
   }
 
   // ========================================
@@ -213,32 +218,32 @@ class ApiClient {
   // ========================================
   async createAppointment(data: CreateAppointmentRequest): Promise<Appointment> {
     const response = await this.client.post('/appointments', data);
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async listAppointments(query: any): Promise<PaginatedResponse<Appointment>> {
     const response = await this.client.get('/appointments', { params: query });
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async getAppointment(id: string): Promise<Appointment> {
     const response = await this.client.get(`/appointments/${id}`);
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async cancelAppointment(id: string, reason: string): Promise<Appointment> {
     const response = await this.client.patch(`/appointments/${id}/cancel`, { reason });
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async startLesson(id: string): Promise<Appointment> {
     const response = await this.client.post(`/appointments/${id}/start`);
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async markNoShow(id: string, notes?: string): Promise<Appointment> {
     const response = await this.client.post(`/appointments/${id}/no-show`, { notes });
-    return response.data;
+    return response.data.data || response.data;
   }
 
   // ========================================
@@ -246,7 +251,7 @@ class ApiClient {
   // ========================================
   async initializePayment(appointmentId: string): Promise<{ paymentPageUrl: string }> {
     const response = await this.client.post(`/payments/iyzico/initialize`, { appointmentId });
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async uploadBankTransferReceipt(appointmentId: string, receiptUrl: string): Promise<void> {
@@ -258,7 +263,7 @@ class ApiClient {
   // ========================================
   async submitFeedback(appointmentId: string, data: any): Promise<Feedback> {
     const response = await this.client.post(`/feedback/${appointmentId}`, data);
-    return response.data;
+    return response.data.data || response.data;
   }
 
   // ========================================
@@ -266,7 +271,7 @@ class ApiClient {
   // ========================================
   async getWalletTransactions(page = 1, limit = 20): Promise<PaginatedResponse<WalletTransaction>> {
     const response = await this.client.get('/wallet/transactions', { params: { page, limit } });
-    return response.data;
+    return response.data.data || response.data;
   }
 
   // ========================================
@@ -274,12 +279,12 @@ class ApiClient {
   // ========================================
   async getAdminDashboard(): Promise<AdminDashboard> {
     const response = await this.client.get('/admin/dashboard');
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async getPendingTeachers(page = 1, limit = 20): Promise<PaginatedResponse<Teacher>> {
     const response = await this.client.get('/admin/teachers/pending', { params: { page, limit } });
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async approveTeacher(teacherId: string): Promise<void> {
@@ -292,12 +297,12 @@ class ApiClient {
 
   async createInvitationCodes(data: { count?: number; assignedEmail?: string; expiresInDays?: number }): Promise<InvitationCode[]> {
     const response = await this.client.post('/admin/invitations', data);
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async listInvitations(page = 1, limit = 20, status?: string): Promise<PaginatedResponse<InvitationCode>> {
     const response = await this.client.get('/admin/invitations', { params: { page, limit, status } });
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async revokeInvitation(id: string): Promise<void> {
@@ -314,7 +319,7 @@ class ApiClient {
 
   async getHakedisReport(year: number, month: number): Promise<any> {
     const response = await this.client.get('/admin/finance/hakedis', { params: { year, month } });
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async processPayout(walletId: string, amount: number, reference: string): Promise<void> {
@@ -326,12 +331,12 @@ class ApiClient {
   // ========================================
   async listBranches(): Promise<any[]> {
     const response = await this.client.get('/branches');
-    return response.data;
+    return response.data.data || response.data;
   }
 
   async listSubjects(branchId?: string): Promise<any[]> {
     const response = await this.client.get('/subjects', { params: { branchId } });
-    return response.data;
+    return response.data.data || response.data;
   }
 }
 
