@@ -40,7 +40,7 @@ class ApiClient {
 
     // Request interceptor
     this.client.interceptors.request.use((config) => {
-      if (this.accessToken) {
+      if (this.accessToken || (typeof window !== "undefined" && localStorage.getItem("accessToken"))) { this.accessToken = this.accessToken || localStorage.getItem("accessToken");
         config.headers.Authorization = `Bearer ${this.accessToken}`;
       }
       return config;
