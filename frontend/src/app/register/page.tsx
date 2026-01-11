@@ -103,8 +103,8 @@ export default function RegisterPage() {
           }
 
           // Başarılı - token'ları kaydet ve yönlendir
-          localStorage.setItem('accessToken', data.accessToken);
-          localStorage.setItem('refreshToken', data.refreshToken);
+          const tokens = data.data || data; localStorage.setItem('accessToken', tokens.accessToken);
+          localStorage.setItem('refreshToken', tokens.refreshToken);
           
           alert('Kayıt başarılı!');
           window.location.href = userType === 'student' ? '/student/dashboard' : '/teacher/dashboard';
