@@ -80,7 +80,7 @@ export class TeachersController {
   // GET OWN DASHBOARD (Teacher)
   // ========================================
   @Get('me/dashboard')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.TEACHER)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get teacher dashboard (own)' })
@@ -92,7 +92,7 @@ export class TeachersController {
   // UPDATE OWN PROFILE (Teacher)
   // ========================================
   @Put('me/profile')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.TEACHER)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update own profile' })
@@ -107,7 +107,7 @@ export class TeachersController {
   // UPDATE AVAILABILITY (Teacher)
   // ========================================
   @Put('me/availability')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.TEACHER)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update availability slots' })
