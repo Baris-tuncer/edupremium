@@ -1,7 +1,6 @@
 'use client';
 
 import { api } from '@/lib/api';
-
 import React, { useState } from 'react';
 import Link from 'next/link';
 
@@ -11,63 +10,61 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
 
-        try {
-          const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
-          
-         const response = await fetch(`${API_URL}/auth/login`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password }),
-          });
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
+      
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-            const data = await response.json();
+      const data = await response.json();
 
-                  if (!response.ok) {
-                    throw new Error(data.message || 'Giriş başarısız');
-                  }
+      if (!response.ok) {
+        throw new Error(data.message || 'Giriş başarısız');
+      }
 
-                  // Response yapısını kontrol et
-                  const tokens = data.data || data;
-                  
-                  if (!tokens.accessToken) {
-                    throw new Error('Giriş başarısız');
-                  }
+      const tokens = data.data || data;
+      
+      if (!tokens.accessToken) {
+        throw new Error('Giriş başarısız');
+      }
 
-                  localStorage.setItem('accessToken', tokens.accessToken);
-                  api.setAccessToken(tokens.accessToken);
-                  localStorage.setItem('refreshToken', tokens.refreshToken);
-                  
-                  // Kullanıcı rolüne göre yönlendir
-                  const payload = JSON.parse(atob(tokens.accessToken.split('.')[1]));
-                  const role = payload.role;
-          if (role === 'TEACHER') {
-            window.location.href = '/teacher/dashboard';
-          } else if (role === 'STUDENT') {
-            window.location.href = '/student/dashboard';
-          } else if (role === 'ADMIN') {
-            window.location.href = '/admin';
-          } else {
-            window.location.href = '/';
-          }
-          
-        } catch (error: any) {
-          alert(error.message || 'Bir hata oluştu');
-        } finally {
-          setIsLoading(false);
-        }
-      };
+      localStorage.setItem('accessToken', tokens.accessToken);
+      api.setAccessToken(tokens.accessToken);
+      localStorage.setItem('refreshToken', tokens.refreshToken);
+      
+      const payload = JSON.parse(atob(tokens.accessToken.split('.')[1]));
+      const role = payload.role;
+      
+      if (role === 'TEACHER') {
+        window.location.href = '/teacher/dashboard';
+      } else if (role === 'STUDENT') {
+        window.location.href = '/student/dashboard';
+      } else if (role === 'ADMIN') {
+        window.location.href = '/admin';
+      } else {
+        window.location.href = '/';
+      }
+      
+    } catch (error: any) {
+      alert(error.message || 'Bir hata oluştu');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex">
-      {/* Left Panel - Form */}
       <div className="flex-1 flex flex-col justify-center px-8 sm:px-16 lg:px-24 py-12">
         <div className="w-full max-w-md mx-auto">
-          {/* Logo */}
           <Link href="/" className="inline-flex items-center gap-3 mb-12 group">
             <div className="w-12 h-12 bg-gradient-navy rounded-xl flex items-center justify-center shadow-elegant group-hover:shadow-elevated transition-shadow duration-300">
               <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -79,21 +76,14 @@ export default function LoginPage() {
             </div>
           </Link>
 
-          {/* Header */}
           <div className="mb-10">
             <h1 className="text-3xl md:text-4xl mb-3">Hoş Geldiniz</h1>
-            <p className="text-slate-600 text-lg">
-              Hesabınıza giriş yaparak devam edin.
-            </p>
+            <p className="text-slate-600 text-lg">Hesabınıza giriş yaparak devam edin.</p>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email */}
             <div>
-              <label htmlFor="email" className="input-label">
-                E-posta Adresi
-              </label>
+              <label htmlFor="email" className="input-label">E-posta Adresi</label>
               <input
                 type="email"
                 id="email"
@@ -105,12 +95,9 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Password */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label htmlFor="password" className="input-label !mb-0">
-                  Şifre
-                </label>
+                <label htmlFor="password" className="input-label !mb-0">Şifre</label>
                 <Link href="/forgot-password" className="text-sm text-navy-600 hover:text-navy-800 font-medium">
                   Şifremi Unuttum
                 </Link>
@@ -144,12 +131,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="btn-primary w-full py-4 text-lg relative"
-            >
+            <button type="submit" disabled={isLoading} className="btn-primary w-full py-4 text-lg relative">
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
                   <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -164,7 +146,6 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Divider */}
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-slate-200" />
@@ -174,7 +155,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Social Login */}
           <button className="btn-secondary w-full py-4 mb-4">
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -185,7 +165,6 @@ export default function LoginPage() {
             Google ile Devam Et
           </button>
 
-          {/* Register Link */}
           <p className="text-center text-slate-600 mt-8">
             Hesabınız yok mu?{' '}
             <Link href="/register" className="font-semibold text-navy-600 hover:text-navy-800">
@@ -195,13 +174,10 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right Panel - Visual */}
       <div className="hidden lg:flex flex-1 bg-gradient-navy relative overflow-hidden">
-        {/* Decorative Elements */}
         <div className="absolute top-20 right-20 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
         <div className="absolute bottom-20 left-20 w-64 h-64 bg-gold-500/10 rounded-full blur-3xl" />
         
-        {/* Content */}
         <div className="relative z-10 flex flex-col justify-center px-16 text-white">
           <div className="max-w-lg">
             <blockquote className="text-2xl md:text-3xl font-display font-medium leading-relaxed mb-8">
@@ -219,7 +195,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Stats */}
           <div className="absolute bottom-16 left-16 right-16 flex justify-between">
             <div>
               <div className="text-4xl font-display font-bold">15.000+</div>
