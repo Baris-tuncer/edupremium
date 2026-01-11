@@ -1,5 +1,7 @@
 'use client';
 
+import { api } from '@/lib/api';
+
 import React, { useState } from 'react';
 import Link from 'next/link';
 
@@ -38,6 +40,7 @@ export default function LoginPage() {
                   }
 
                   localStorage.setItem('accessToken', tokens.accessToken);
+                  api.setAccessToken(tokens.accessToken);
                   localStorage.setItem('refreshToken', tokens.refreshToken);
                   
                   // Kullanıcı rolüne göre yönlendir
