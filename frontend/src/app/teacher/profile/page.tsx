@@ -112,7 +112,7 @@ export default function TeacherProfilePage() {
         
         setUser(userData);
         
-        const teacherProfile = dashboardData?.profile || {};
+        const teacherProfile = (dashboardData?.profile || {}) as any;
         setProfile({
           firstName: userData?.firstName || '',
           lastName: userData?.lastName || '',
