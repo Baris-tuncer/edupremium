@@ -18,7 +18,7 @@ export default function LoginPage() {
         try {
           const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
           
-          const response = await fetch(`${API_URL}/auth/login`, {
+         const response = await fetch(`${API_URL}/auth/login`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
