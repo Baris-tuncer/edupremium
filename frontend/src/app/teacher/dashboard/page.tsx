@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { api } from '@/lib/api';
 
 // ============================================
 // TEACHER SIDEBAR
 // ============================================
-const TeacherSidebar = ({ activeItem }: { activeItem: string }) => {
+const TeacherSidebar = ({ activeItem, user }: { activeItem: string; user: any }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Ana Sayfa', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
     { id: 'appointments', label: 'Derslerim', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
@@ -17,6 +18,18 @@ const TeacherSidebar = ({ activeItem }: { activeItem: string }) => {
     { id: 'profile', label: 'Profilim', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
     { id: 'settings', label: 'Ayarlar', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' },
   ];
+
+  const getInitials = () => {
+    if (!user) return '??';
+    const first = user.firstName?.charAt(0) || '';
+    const last = user.lastName?.charAt(0) || '';
+    return (first + last).toUpperCase() || '??';
+  };
+
+  const getFullName = () => {
+    if (!user) return 'Yükleniyor...';
+    return `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Kullanıcı';
+  };
 
   return (
     <aside className="fixed left-0 top-0 h-full w-64 bg-gradient-navy flex flex-col z-40">
@@ -62,11 +75,11 @@ const TeacherSidebar = ({ activeItem }: { activeItem: string }) => {
       <div className="p-4 border-t border-white/10">
         <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors">
           <div className="w-10 h-10 bg-gold-500 rounded-full flex items-center justify-center font-display font-semibold text-navy-900">
-            MÖ
+            {getInitials()}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-medium text-white truncate">Mehmet Öztürk</div>
-            <div className="text-sm text-navy-300">Matematik</div>
+            <div className="font-medium text-white truncate">{getFullName()}</div>
+            <div className="text-sm text-navy-300">Öğretmen</div>
           </div>
         </div>
       </div>
@@ -83,7 +96,6 @@ const TeacherHeader = () => (
       <h1 className="text-xl font-display font-semibold text-navy-900">Öğretmen Paneli</h1>
     </div>
     <div className="flex items-center gap-4">
-
       {/* Notifications */}
       <button className="relative p-2 text-slate-500 hover:text-navy-900 hover:bg-slate-50 rounded-lg transition-colors">
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -96,165 +108,52 @@ const TeacherHeader = () => (
 );
 
 // ============================================
-// EARNINGS CARD
+// MAIN DASHBOARD PAGE
 // ============================================
-const EarningsCard = () => (
-  <div className="card bg-gradient-navy text-white p-6 col-span-full lg:col-span-1">
-    <div className="flex items-center justify-between mb-6">
-      <h3 className="font-display font-semibold">Kazançlarım</h3>
-      <span className="text-sm text-navy-200">Ocak 2026</span>
-    </div>
-    
-    <div className="mb-6">
-      <div className="text-sm text-navy-200 mb-1">Kullanılabilir Bakiye</div>
-      <div className="font-display text-4xl font-bold">₺12,450</div>
-    </div>
+export default function TeacherDashboardPage() {
+  const [user, setUser] = useState<any>(null);
+  const [dashboard, setDashboard] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-    <div className="grid grid-cols-2 gap-4 mb-6">
-      <div className="bg-white/10 rounded-xl p-4">
-        <div className="text-sm text-navy-200 mb-1">Bu Ay Kazanç</div>
-        <div className="font-display text-xl font-semibold">₺4,500</div>
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [userData, dashboardData] = await Promise.all([
+          api.getCurrentUser(),
+          api.getTeacherDashboard(),
+        ]);
+        setUser(userData);
+        setDashboard(dashboardData);
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+        window.location.href = '/login';
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-navy-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">Yükleniyor...</p>
+        </div>
       </div>
-      <div className="bg-white/10 rounded-xl p-4">
-        <div className="text-sm text-navy-200 mb-1">Bekleyen</div>
-        <div className="font-display text-xl font-semibold">₺900</div>
-      </div>
-    </div>
+    );
+  }
 
-    <button className="w-full py-3 bg-gold-500 text-navy-900 font-semibold rounded-xl hover:bg-gold-400 transition-colors">
-    </button>
-  </div>
-);
+  const profile = dashboard?.profile || {};
+  const stats = dashboard?.monthlyStats || {};
+  const upcomingLessons = dashboard?.upcomingLessons || [];
+  const wallet = dashboard?.wallet || {};
 
-// ============================================
-// TODAY'S LESSONS
-// ============================================
-const TodaysLessons = () => {
-  const lessons = [
-    { id: 1, student: 'Ali Y.', subject: 'Matematik', time: '10:00', status: 'completed' },
-    { id: 2, student: 'Zeynep K.', subject: 'Geometri', time: '14:00', status: 'upcoming' },
-    { id: 3, student: 'Emre D.', subject: 'Matematik', time: '16:00', status: 'upcoming' },
-  ];
-
-  return (
-    <div className="card p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="font-display font-semibold text-navy-900">Bugünkü Dersler</h3>
-        <span className="badge badge-navy">{lessons.length} ders</span>
-      </div>
-
-      <div className="space-y-4">
-        {lessons.map((lesson) => (
-          <div key={lesson.id} className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl">
-            <div className="w-12 h-12 bg-navy-100 rounded-xl flex items-center justify-center font-display font-semibold text-navy-700">
-              {lesson.student.charAt(0)}
-            </div>
-            <div className="flex-1">
-              <div className="font-medium text-navy-900">{lesson.student}</div>
-              <div className="text-sm text-slate-500">{lesson.subject}</div>
-            </div>
-            <div className="text-right">
-              <div className="font-semibold text-navy-900">{lesson.time}</div>
-              {lesson.status === 'completed' ? (
-                <span className="text-xs text-emerald-600">Tamamlandı</span>
-              ) : (
-                <span className="text-xs text-gold-600">Bekliyor</span>
-              )}
-            </div>
-            {lesson.status === 'upcoming' && (
-              <Link href="/teacher/availability" className="btn-primary py-2 px-4 text-sm flex items-center gap-2">Başlat</Link>
-            )}
-            {lesson.status === 'completed' && (
-              <Link href={`/teacher/feedback/${lesson.id}`} className="btn-secondary py-2 px-4 text-sm">
-                Değerlendir
-              </Link>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// ============================================
-// PENDING FEEDBACKS
-// ============================================
-const PendingFeedbacks = () => {
-  const pending = [
-    { id: 1, student: 'Ali Y.', subject: 'Matematik', date: '14 Ocak 2026' },
-    { id: 2, student: 'Selin A.', subject: 'Geometri', date: '13 Ocak 2026' },
-  ];
-
-  return (
-    <div className="card p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="font-display font-semibold text-navy-900">Bekleyen Değerlendirmeler</h3>
-        <span className="badge badge-warning">{pending.length} adet</span>
-      </div>
-
-      <div className="space-y-3">
-        {pending.map((item) => (
-          <div key={item.id} className="flex items-center justify-between p-4 border border-amber-200 bg-amber-50 rounded-xl">
-            <div>
-              <div className="font-medium text-navy-900">{item.student} - {item.subject}</div>
-              <div className="text-sm text-slate-500">{item.date}</div>
-            </div>
-            <Link href={`/teacher/feedback/${item.id}`} className="btn-gold py-2 px-4 text-sm">
-              Değerlendir
-            </Link>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// ============================================
-// WEEKLY STATS
-// ============================================
-const WeeklyStats = () => (
-  <div className="card p-6">
-    <h3 className="font-display font-semibold text-navy-900 mb-6">Haftalık İstatistikler</h3>
-    
-    <div className="grid grid-cols-2 gap-4 mb-6">
-      <div className="text-center p-4 bg-slate-50 rounded-xl">
-        <div className="font-display text-3xl font-bold text-navy-900">12</div>
-        <div className="text-sm text-slate-500">Tamamlanan Ders</div>
-      </div>
-      <div className="text-center p-4 bg-slate-50 rounded-xl">
-        <div className="font-display text-3xl font-bold text-navy-900">4.9</div>
-        <div className="text-sm text-slate-500">Ortalama Puan</div>
-      </div>
-    </div>
-
-    {/* Simple Bar Chart */}
-    <div className="space-y-3">
-      {['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'].map((day, i) => {
-        const heights = [60, 80, 40, 100, 70, 30, 0];
-        return (
-          <div key={day} className="flex items-center gap-3">
-            <span className="w-8 text-sm text-slate-500">{day}</span>
-            <div className="flex-1 h-6 bg-slate-100 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-navy-500 rounded-full transition-all duration-500"
-                style={{ width: `${heights[i]}%` }}
-              />
-            </div>
-            <span className="w-6 text-sm text-slate-600">{Math.round(heights[i] / 20)}</span>
-          </div>
-        );
-      })}
-    </div>
-  </div>
-);
-
-// ============================================
-// MAIN DASHBOARD
-// ============================================
-export default function TeacherDashboard() {
   return (
     <div className="min-h-screen bg-slate-50">
-      <TeacherSidebar activeItem="dashboard" />
+      <TeacherSidebar activeItem="dashboard" user={user} />
       <TeacherHeader />
 
       <main className="ml-64 pt-16 p-8">
@@ -262,38 +161,113 @@ export default function TeacherDashboard() {
         <div className="card bg-gradient-to-r from-navy-900 to-navy-700 text-white p-8 mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="font-display text-2xl font-semibold mb-2 text-white">Hoş Geldiniz!</h2>
-              <p className="text-white/80">Bugün 3 dersiniz var. İlk ders saat 10:00'da.</p>
+              <h2 className="font-display text-2xl font-semibold mb-2 text-white">
+                Hoş Geldiniz, {user?.firstName || 'Öğretmen'}!
+              </h2>
+              <p className="text-white/80">
+                {upcomingLessons.length > 0 
+                  ? `Bugün ${upcomingLessons.length} dersiniz var.`
+                  : 'Bugün planlanmış dersiniz yok.'}
+              </p>
             </div>
             <div className="hidden md:flex items-center gap-4">
               <div className="text-center px-6 py-3 bg-white/10 rounded-xl">
-                <div className="font-display text-2xl font-bold">1,240</div>
-                <div className="text-sm text-navy-200">Toplam Ders</div>
+                <div className="font-display text-2xl font-bold">{stats.completedLessons || 0}</div>
+                <div className="text-sm text-navy-200">Bu Ay Ders</div>
               </div>
               <div className="text-center px-6 py-3 bg-white/10 rounded-xl">
-                <div className="font-display text-2xl font-bold">4.9</div>
-                <div className="text-sm text-navy-200">Puan</div>
-              </div>
-              <div className="text-center px-6 py-3 bg-white/10 rounded-xl">
-                <div className="font-display text-2xl font-bold">128</div>
-                <div className="text-sm text-navy-200">Değerlendirme</div>
+                <div className="font-display text-2xl font-bold">₺{stats.earnings || 0}</div>
+                <div className="text-sm text-navy-200">Bu Ay Kazanç</div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Main Grid */}
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Left Column */}
-          <div className="lg:col-span-2 space-y-8">
-            <TodaysLessons />
-            <PendingFeedbacks />
+          {/* Upcoming Lessons */}
+          <div className="lg:col-span-2">
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-display text-xl font-semibold text-navy-900">Yaklaşan Dersler</h3>
+                <span className="text-sm text-slate-500">{upcomingLessons.length} ders</span>
+              </div>
+              
+              {upcomingLessons.length > 0 ? (
+                <div className="space-y-4">
+                  {upcomingLessons.map((lesson: any, index: number) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-navy-100 rounded-full flex items-center justify-center font-semibold text-navy-600">
+                          {lesson.student?.firstName?.charAt(0) || 'Ö'}
+                        </div>
+                        <div>
+                          <div className="font-medium text-navy-900">
+                            {lesson.student?.firstName} {lesson.student?.lastName?.charAt(0)}.
+                          </div>
+                          <div className="text-sm text-slate-500">{lesson.subject?.name || 'Ders'}</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-medium text-navy-900">
+                          {new Date(lesson.scheduledAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                        <div className="text-sm text-slate-500">
+                          {new Date(lesson.scheduledAt).toLocaleDateString('tr-TR')}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-slate-500">
+                  <svg className="w-16 h-16 mx-auto mb-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p>Yaklaşan ders bulunmuyor</p>
+                  <Link href="/teacher/availability" className="text-navy-600 hover:underline text-sm mt-2 inline-block">
+                    Müsaitlik ekleyin →
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Right Column */}
-          <div className="space-y-8">
-            <EarningsCard />
-            <WeeklyStats />
+          {/* Wallet Card */}
+          <div className="space-y-6">
+            <div className="card bg-gradient-to-br from-gold-500 to-gold-600 text-white p-6">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-white/80">Ocak 2026</span>
+              </div>
+              <div className="mb-6">
+                <div className="text-white/80 text-sm mb-1">Kullanılabilir Bakiye</div>
+                <div className="font-display text-3xl font-bold">₺{wallet?.balance || 0}</div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white/20 rounded-xl p-3">
+                  <div className="text-white/80 text-sm">Bu Ay Kazanç</div>
+                  <div className="font-display text-xl font-bold">₺{stats.earnings || 0}</div>
+                </div>
+                <div className="bg-white/20 rounded-xl p-3">
+                  <div className="text-white/80 text-sm">Bekleyen</div>
+                  <div className="font-display text-xl font-bold">₺{wallet?.pendingBalance || 0}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="card p-6">
+              <h3 className="font-display text-lg font-semibold text-navy-900 mb-4">Haftalık İstatistikler</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-4 bg-slate-50 rounded-xl">
+                  <div className="font-display text-2xl font-bold text-navy-900">{stats.completedLessons || 0}</div>
+                  <div className="text-sm text-slate-500">Tamamlanan Ders</div>
+                </div>
+                <div className="text-center p-4 bg-slate-50 rounded-xl">
+                  <div className="font-display text-2xl font-bold text-navy-900">-</div>
+                  <div className="text-sm text-slate-500">Ortalama Puan</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </main>
