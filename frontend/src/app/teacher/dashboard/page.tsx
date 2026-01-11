@@ -169,7 +169,7 @@ const TodaysLessons = () => {
               )}
             </div>
             {lesson.status === 'upcoming' && (
-              <Link href="/teacher/availability" className="btn-primary py-2 px-4 text-sm flex items-center gap-2">Başlat</button>
+              <Link href="/teacher/availability" className="btn-primary py-2 px-4 text-sm flex items-center gap-2">Başlat</Link>
             )}
             {lesson.status === 'completed' && (
               <Link href={`/teacher/feedback/${lesson.id}`} className="btn-secondary py-2 px-4 text-sm">
