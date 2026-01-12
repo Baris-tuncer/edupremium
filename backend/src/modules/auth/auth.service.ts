@@ -261,7 +261,7 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
-      expiresIn: 900,
+      expiresIn: 604800,
       tokenType: 'Bearer',
       user: {
         id: user.id,
