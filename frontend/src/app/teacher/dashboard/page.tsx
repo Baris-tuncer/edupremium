@@ -33,7 +33,6 @@ const TeacherSidebar = ({ activeItem, user }: { activeItem: string; user: any })
 
   return (
     <aside className="fixed left-0 top-0 h-full w-64 bg-gradient-navy flex flex-col z-40">
-      {/* Logo */}
       <div className="p-6 border-b border-white/10">
         <Link href="/" className="flex items-center gap-3">
           <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
@@ -47,36 +46,20 @@ const TeacherSidebar = ({ activeItem, user }: { activeItem: string; user: any })
           </div>
         </Link>
       </div>
-
-      {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {menuItems.map((item) => (
-          <Link
-            key={item.id}
-            href={`/teacher/${item.id}`}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-              activeItem === item.id
-                ? 'bg-white/10 text-white'
-                : 'text-navy-200 hover:bg-white/5 hover:text-white'
-            }`}
-          >
+          <Link key={item.id} href={`/teacher/${item.id}`} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${activeItem === item.id ? 'bg-white/10 text-white' : 'text-navy-200 hover:bg-white/5 hover:text-white'}`}>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
             </svg>
             <span className="font-medium">{item.label}</span>
-            {activeItem === item.id && (
-              <span className="ml-auto w-1.5 h-1.5 bg-gold-400 rounded-full" />
-            )}
+            {activeItem === item.id && <span className="ml-auto w-1.5 h-1.5 bg-gold-400 rounded-full" />}
           </Link>
         ))}
       </nav>
-
-      {/* User */}
       <div className="p-4 border-t border-white/10">
         <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors">
-          <div className="w-10 h-10 bg-gold-500 rounded-full flex items-center justify-center font-display font-semibold text-navy-900">
-            {getInitials()}
-          </div>
+          <div className="w-10 h-10 bg-gold-500 rounded-full flex items-center justify-center font-display font-semibold text-navy-900">{getInitials()}</div>
           <div className="flex-1 min-w-0">
             <div className="font-medium text-white truncate">{getFullName()}</div>
             <div className="text-sm text-navy-300">Öğretmen</div>
@@ -87,16 +70,10 @@ const TeacherSidebar = ({ activeItem, user }: { activeItem: string; user: any })
   );
 };
 
-// ============================================
-// TEACHER HEADER
-// ============================================
 const TeacherHeader = () => (
   <header className="fixed top-0 left-64 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-slate-100 z-30 px-8 flex items-center justify-between">
-    <div>
-      <h1 className="text-xl font-display font-semibold text-navy-900">Öğretmen Paneli</h1>
-    </div>
+    <div><h1 className="text-xl font-display font-semibold text-navy-900">Öğretmen Paneli</h1></div>
     <div className="flex items-center gap-4">
-      {/* Notifications */}
       <button className="relative p-2 text-slate-500 hover:text-navy-900 hover:bg-slate-50 rounded-lg transition-colors">
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -107,9 +84,6 @@ const TeacherHeader = () => (
   </header>
 );
 
-// ============================================
-// MAIN DASHBOARD PAGE
-// ============================================
 export default function TeacherDashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [dashboard, setDashboard] = useState<any>(null);
@@ -117,6 +91,11 @@ export default function TeacherDashboardPage() {
 
   useEffect(() => {
     const fetchData = async () => {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+      if (!token) {
+        window.location.href = '/login';
+        return;
+      }
       try {
         const [userData, dashboardData] = await Promise.all([
           api.getCurrentUser(),
@@ -124,14 +103,17 @@ export default function TeacherDashboardPage() {
         ]);
         setUser(userData);
         setDashboard(dashboardData);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to fetch data:', error);
-        window.location.href = '/login';
+        if (error?.response?.status === 401) {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          window.location.href = '/login';
+        }
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
@@ -155,20 +137,12 @@ export default function TeacherDashboardPage() {
     <div className="min-h-screen bg-slate-50">
       <TeacherSidebar activeItem="dashboard" user={user} />
       <TeacherHeader />
-
       <main className="ml-64 pt-16 p-8">
-        {/* Welcome Banner */}
         <div className="card bg-gradient-to-r from-navy-900 to-navy-700 text-white p-8 mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="font-display text-2xl font-semibold mb-2 text-white">
-                Hoş Geldiniz, {user?.firstName || 'Öğretmen'}!
-              </h2>
-              <p className="text-white/80">
-                {upcomingLessons.length > 0 
-                  ? `Bugün ${upcomingLessons.length} dersiniz var.`
-                  : 'Bugün planlanmış dersiniz yok.'}
-              </p>
+              <h2 className="font-display text-2xl font-semibold mb-2 text-white">Hoş Geldiniz, {user?.firstName || 'Öğretmen'}!</h2>
+              <p className="text-white/80">{upcomingLessons.length > 0 ? `Bugün ${upcomingLessons.length} dersiniz var.` : 'Bugün planlanmış dersiniz yok.'}</p>
             </div>
             <div className="hidden md:flex items-center gap-4">
               <div className="text-center px-6 py-3 bg-white/10 rounded-xl">
@@ -182,38 +156,27 @@ export default function TeacherDashboardPage() {
             </div>
           </div>
         </div>
-
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Upcoming Lessons */}
           <div className="lg:col-span-2">
             <div className="card p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="font-display text-xl font-semibold text-navy-900">Yaklaşan Dersler</h3>
                 <span className="text-sm text-slate-500">{upcomingLessons.length} ders</span>
               </div>
-              
               {upcomingLessons.length > 0 ? (
                 <div className="space-y-4">
                   {upcomingLessons.map((lesson: any, index: number) => (
                     <div key={index} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-navy-100 rounded-full flex items-center justify-center font-semibold text-navy-600">
-                          {lesson.student?.firstName?.charAt(0) || 'Ö'}
-                        </div>
+                        <div className="w-12 h-12 bg-navy-100 rounded-full flex items-center justify-center font-semibold text-navy-600">{lesson.student?.firstName?.charAt(0) || 'Ö'}</div>
                         <div>
-                          <div className="font-medium text-navy-900">
-                            {lesson.student?.firstName} {lesson.student?.lastName?.charAt(0)}.
-                          </div>
+                          <div className="font-medium text-navy-900">{lesson.student?.firstName} {lesson.student?.lastName?.charAt(0)}.</div>
                           <div className="text-sm text-slate-500">{lesson.subject?.name || 'Ders'}</div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-medium text-navy-900">
-                          {new Date(lesson.scheduledAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
-                        </div>
-                        <div className="text-sm text-slate-500">
-                          {new Date(lesson.scheduledAt).toLocaleDateString('tr-TR')}
-                        </div>
+                        <div className="font-medium text-navy-900">{new Date(lesson.scheduledAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</div>
+                        <div className="text-sm text-slate-500">{new Date(lesson.scheduledAt).toLocaleDateString('tr-TR')}</div>
                       </div>
                     </div>
                   ))}
@@ -224,20 +187,14 @@ export default function TeacherDashboardPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   <p>Yaklaşan ders bulunmuyor</p>
-                  <Link href="/teacher/availability" className="text-navy-600 hover:underline text-sm mt-2 inline-block">
-                    Müsaitlik ekleyin →
-                  </Link>
+                  <Link href="/teacher/availability" className="text-navy-600 hover:underline text-sm mt-2 inline-block">Müsaitlik ekleyin →</Link>
                 </div>
               )}
             </div>
           </div>
-
-          {/* Wallet Card */}
           <div className="space-y-6">
             <div className="card bg-gradient-to-br from-gold-500 to-gold-600 text-white p-6">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-white/80">Ocak 2026</span>
-              </div>
+              <div className="flex items-center justify-between mb-4"><span className="text-white/80">Ocak 2026</span></div>
               <div className="mb-6">
                 <div className="text-white/80 text-sm mb-1">Kullanılabilir Bakiye</div>
                 <div className="font-display text-3xl font-bold">₺{wallet?.balance || 0}</div>
@@ -253,8 +210,6 @@ export default function TeacherDashboardPage() {
                 </div>
               </div>
             </div>
-
-            {/* Quick Stats */}
             <div className="card p-6">
               <h3 className="font-display text-lg font-semibold text-navy-900 mb-4">Haftalık İstatistikler</h3>
               <div className="grid grid-cols-2 gap-4">
