@@ -26,7 +26,7 @@ export default function TeacherAvailabilityPage() {
     try {
       setIsLoading(true);
       setError(null);
-      const data = await api.getMyAvailability();
+      const result = await api.getMyAvailability(); const data = result.data || result;
       
       // Convert API response to UI format
       const availMap: Record<string, string[]> = {};
