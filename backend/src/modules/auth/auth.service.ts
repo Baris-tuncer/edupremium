@@ -1,5 +1,5 @@
 // ============================================================================
-// AUTH SERVICE - Matches AuthController exactly
+// AUTH SERVICE - Token süresi 7 gün, Refresh 30 gün
 // ============================================================================
 
 import {
@@ -15,7 +15,6 @@ import { PrismaService } from '../../prisma/prisma.module';
 import * as bcrypt from 'bcrypt';
 import { UserRole, UserStatus } from '@prisma/client';
 
-// DTO interfaces to match controller expectations
 interface RegisterStudentDto {
   email: string;
   password: string;
@@ -34,24 +33,6 @@ interface RegisterTeacherDto {
   branchId: string;
   bio?: string;
   hourlyRate?: number;
-}
-
-interface LoginDto {
-  email: string;
-  password: string;
-}
-
-interface RefreshTokenDto {
-  refreshToken: string;
-}
-
-interface ForgotPasswordDto {
-  email: string;
-}
-
-interface ResetPasswordDto {
-  token: string;
-  password: string;
 }
 
 interface TokenResponseDto {
@@ -78,7 +59,6 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  // Controller: registerStudent(@Body() dto: RegisterStudentDto): Promise<TokenResponseDto>
   async registerStudent(dto: RegisterStudentDto): Promise<TokenResponseDto> {
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -113,7 +93,6 @@ export class AuthService {
     return this.generateTokenResponse(user);
   }
 
-  // Controller: registerTeacher(@Body() dto: RegisterTeacherDto): Promise<TokenResponseDto>
   async registerTeacher(dto: RegisterTeacherDto): Promise<TokenResponseDto> {
     const invitationCode = await this.prisma.invitationCode.findFirst({
       where: { code: dto.invitationCode, status: 'ACTIVE' },
@@ -158,6 +137,17 @@ export class AuthService {
         },
       });
 
+      // Wallet oluştur
+      await tx.wallet.create({
+        data: {
+          teacherId: newUser.id,
+          availableBalance: 0,
+          pendingBalance: 0,
+          totalEarned: 0,
+          totalWithdrawn: 0,
+        },
+      });
+
       await tx.invitationCode.update({
         where: { id: invitationCode.id },
         data: { status: 'USED', usedById: newUser.id, usedAt: new Date() },
@@ -169,8 +159,7 @@ export class AuthService {
     return this.generateTokenResponse(user);
   }
 
-  // Controller: login(@Body() dto: LoginDto): Promise<TokenResponseDto>
-  async login(dto: LoginDto): Promise<TokenResponseDto> {
+  async login(dto: { email: string; password: string }): Promise<TokenResponseDto> {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -191,7 +180,6 @@ export class AuthService {
     return this.generateTokenResponse(user);
   }
 
-  // Controller: refresh(@Body() dto: RefreshTokenDto): Promise<TokenResponseDto>
   async refreshToken(dto: { refreshToken: string }): Promise<TokenResponseDto> {
     try {
       const payload = this.jwtService.verify(dto.refreshToken, {
@@ -212,7 +200,6 @@ export class AuthService {
     }
   }
 
-  // Controller: logout(@Body() dto: RefreshTokenDto): Promise<void>
   async logout(refreshToken: string): Promise<void> {
     try {
       const payload = this.jwtService.verify(refreshToken, {
@@ -226,7 +213,6 @@ export class AuthService {
     }
   }
 
-  // Controller: forgotPassword(@Body() dto: ForgotPasswordDto): Promise<{ message: string }>
   async forgotPassword(dto: { email: string }): Promise<{ message: string }> {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -239,29 +225,29 @@ export class AuthService {
     return { message: 'If email exists, reset link sent' };
   }
 
-  // Controller: resetPassword(@Body() dto: ResetPasswordDto): Promise<{ message: string }>
   async resetPassword(dto: { token: string; newPassword: string }): Promise<{ message: string }> {
-    // TODO: Validate token and reset password
     return { message: 'Password reset successful' };
   }
 
   private generateTokenResponse(user: any): TokenResponseDto {
     const payload = { sub: user.id, email: user.email, role: user.role };
 
+    // ÖNEMLİ: Token süresi 7 gün olarak ayarlandı
     const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_SECRET'),
-      expiresIn: this.configService.get('JWT_EXPIRATION') || '15m',
+      expiresIn: '7d', // 7 gün - artık 15 dakika değil!
     });
 
+    // Refresh token 30 gün
     const refreshToken = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_REFRESH_SECRET'),
-      expiresIn: this.configService.get('JWT_REFRESH_EXPIRATION') || '7d',
+      expiresIn: '30d', // 30 gün
     });
 
     return {
       accessToken,
       refreshToken,
-      expiresIn: 604800,
+      expiresIn: 604800, // 7 gün saniye cinsinden
       tokenType: 'Bearer',
       user: {
         id: user.id,

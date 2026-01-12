@@ -1,5 +1,5 @@
 // ============================================================================
-// ADMIN CONTROLLER
+// ADMIN CONTROLLER - Öğretmen Onaylama ve Platform Yönetimi
 // ============================================================================
 
 import {
@@ -11,220 +11,560 @@ import {
   Param,
   Query,
   UseGuards,
-  HttpCode,
-  HttpStatus,
+  Request,
+  BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
-import { AdminService } from './admin.service';
-import { InvitationsService } from './invitations.service';
-import { FinanceService } from './finance.service';
-import { CurrentUser, Roles, RolesGuard } from '../../common/guards/auth.guard';
-import { UserRole, InvitationStatus } from '@prisma/client';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PrismaService } from '../../prisma/prisma.module';
 
-// ============================================
-// DTOs
-// ============================================
-
-class CreateInvitationsDto {
-  assignedEmail?: string;
-  expiresInDays?: number;
-  count?: number;
-}
-
-class ApproveTeacherDto {
-  // No additional fields needed
-}
-
-class RejectTeacherDto {
-  reason: string;
-}
-
-class ApproveBankTransferDto {
-  // No additional fields needed
-}
-
-class RejectBankTransferDto {
-  reason: string;
-}
-
-class ProcessPayoutDto {
-  walletId: string;
-  amount: number;
-  reference: string;
-}
-
-class BulkPayoutDto {
-  payouts: Array<{ walletId: string; amount: number }>;
-  batchReference: string;
-}
-
-// ============================================
-// CONTROLLER
-// ============================================
-
-@ApiTags('Admin')
-@ApiBearerAuth('JWT-auth')
 @Controller('admin')
-@UseGuards(RolesGuard)
-@Roles(UserRole.ADMIN)
+@UseGuards(JwtAuthGuard)
 export class AdminController {
-  constructor(
-    private readonly adminService: AdminService,
-    private readonly invitationsService: InvitationsService,
-    private readonly financeService: FinanceService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
-  // ========================================
-  // DASHBOARD
-  // ========================================
+  // Admin kontrolü
+  private async checkAdmin(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    
+    if (!user || user.role !== 'ADMIN') {
+      throw new ForbiddenException('Admin access required');
+    }
+    
+    return user;
+  }
+
+  // Admin Dashboard
   @Get('dashboard')
-  @ApiOperation({ summary: 'Get admin dashboard statistics' })
-  async getDashboard() {
-    return this.adminService.getDashboardStats();
+  async getDashboard(@Request() req: any) {
+    await this.checkAdmin(req.user.sub);
+
+    const [
+      totalTeachers,
+      pendingTeachers,
+      totalStudents,
+      totalAppointments,
+      completedAppointments,
+      pendingPayments,
+    ] = await Promise.all([
+      this.prisma.teacher.count(),
+      this.prisma.teacher.count({ where: { isApproved: false } }),
+      this.prisma.student.count(),
+      this.prisma.appointment.count(),
+      this.prisma.appointment.count({ where: { status: 'COMPLETED' } }),
+      this.prisma.appointment.count({ where: { paymentStatus: 'PENDING' } }),
+    ]);
+
+    // Bu ayki gelir
+    const thisMonth = new Date();
+    thisMonth.setDate(1);
+    thisMonth.setHours(0, 0, 0, 0);
+
+    const monthlyRevenue = await this.prisma.appointment.aggregate({
+      where: {
+        status: 'COMPLETED',
+        completedAt: { gte: thisMonth },
+      },
+      _sum: { platformFee: true },
+    });
+
+    return {
+      success: true,
+      data: {
+        totalTeachers,
+        pendingTeachers,
+        totalStudents,
+        totalAppointments,
+        completedAppointments,
+        pendingPayments,
+        monthlyRevenue: monthlyRevenue._sum.platformFee || 0,
+      },
+    };
   }
 
-  // ========================================
-  // INVITATIONS
-  // ========================================
-  @Post('invitations')
-  @ApiOperation({ summary: 'Create new invitation code(s)' })
-  async createInvitations(
-    @CurrentUser('id') adminId: string,
-    @Body() dto: CreateInvitationsDto,
-  ) {
-    return this.invitationsService.createInvitations(adminId, dto);
-  }
-
-  @Get('invitations')
-  @ApiOperation({ summary: 'List all invitation codes' })
-  async listInvitations(
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 20,
-    @Query('status') status?: InvitationStatus,
-  ) {
-    return this.invitationsService.listInvitations(page, limit, status);
-  }
-
-  @Delete('invitations/:id')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Revoke an invitation code' })
-  async revokeInvitation(@Param('id') id: string) {
-    return this.invitationsService.revokeInvitation(id);
-  }
-
-  // ========================================
-  // TEACHER MANAGEMENT
-  // ========================================
+  // Onay bekleyen öğretmenler
   @Get('teachers/pending')
-  @ApiOperation({ summary: 'Get pending teacher applications' })
   async getPendingTeachers(
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 20,
+    @Request() req: any,
+    @Query('page') page = '1',
+    @Query('limit') limit = '20',
   ) {
-    return this.adminService.getPendingTeachers(page, limit);
+    await this.checkAdmin(req.user.sub);
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const [teachers, total] = await Promise.all([
+      this.prisma.teacher.findMany({
+        where: { isApproved: false },
+        skip,
+        take: parseInt(limit),
+        include: {
+          user: { select: { email: true, phone: true, createdAt: true } },
+          branch: true,
+          subjects: { include: { subject: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.teacher.count({ where: { isApproved: false } }),
+    ]);
+
+    return {
+      success: true,
+      data: {
+        items: teachers,
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: Math.ceil(total / parseInt(limit)),
+      },
+    };
   }
 
-  @Post('teachers/:id/approve')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Approve a teacher application' })
+  // Öğretmen onayla
+  @Post('teachers/:teacherId/approve')
   async approveTeacher(
-    @Param('id') teacherId: string,
-    @CurrentUser('id') adminId: string,
+    @Request() req: any,
+    @Param('teacherId') teacherId: string,
   ) {
-    return this.adminService.approveTeacher(teacherId, adminId);
+    await this.checkAdmin(req.user.sub);
+
+    const teacher = await this.prisma.teacher.findUnique({
+      where: { id: teacherId },
+    });
+
+    if (!teacher) {
+      throw new BadRequestException('Teacher not found');
+    }
+
+    if (teacher.isApproved) {
+      throw new BadRequestException('Teacher is already approved');
+    }
+
+    await this.prisma.teacher.update({
+      where: { id: teacherId },
+      data: {
+        isApproved: true,
+        approvedAt: new Date(),
+      },
+    });
+
+    // User durumunu da güncelle
+    await this.prisma.user.update({
+      where: { id: teacher.userId },
+      data: { status: 'ACTIVE' },
+    });
+
+    return {
+      success: true,
+      message: 'Teacher approved successfully',
+    };
   }
 
-  @Post('teachers/:id/reject')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Reject a teacher application' })
+  // Öğretmen reddet
+  @Post('teachers/:teacherId/reject')
   async rejectTeacher(
-    @Param('id') teacherId: string,
-    @Body() dto: RejectTeacherDto,
+    @Request() req: any,
+    @Param('teacherId') teacherId: string,
+    @Body() body: { reason: string },
   ) {
-    return this.adminService.rejectTeacher(teacherId, dto.reason);
+    await this.checkAdmin(req.user.sub);
+
+    const teacher = await this.prisma.teacher.findUnique({
+      where: { id: teacherId },
+    });
+
+    if (!teacher) {
+      throw new BadRequestException('Teacher not found');
+    }
+
+    // User'ı suspended yap
+    await this.prisma.user.update({
+      where: { id: teacher.userId },
+      data: { status: 'SUSPENDED' },
+    });
+
+    return {
+      success: true,
+      message: 'Teacher rejected',
+      reason: body.reason,
+    };
   }
 
-  // ========================================
-  // BANK TRANSFERS
-  // ========================================
-  @Get('payments/bank-transfers/pending')
-  @ApiOperation({ summary: 'Get pending bank transfer approvals' })
-  async getPendingBankTransfers() {
-    // Uses raw query view
-    return this.adminService.getDashboardStats().then((stats) => ({
-      count: stats.finance.pendingBankTransfers,
-    }));
+  // Tüm öğretmenler
+  @Get('teachers')
+  async getAllTeachers(
+    @Request() req: any,
+    @Query('page') page = '1',
+    @Query('limit') limit = '20',
+    @Query('status') status?: string,
+  ) {
+    await this.checkAdmin(req.user.sub);
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const where: any = {};
+
+    if (status === 'approved') {
+      where.isApproved = true;
+    } else if (status === 'pending') {
+      where.isApproved = false;
+    }
+
+    const [teachers, total] = await Promise.all([
+      this.prisma.teacher.findMany({
+        where,
+        skip,
+        take: parseInt(limit),
+        include: {
+          user: { select: { email: true, phone: true, status: true } },
+          branch: true,
+          wallet: true,
+          _count: { select: { appointments: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.teacher.count({ where }),
+    ]);
+
+    return {
+      success: true,
+      data: {
+        items: teachers,
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: Math.ceil(total / parseInt(limit)),
+      },
+    };
   }
 
-  @Post('payments/:id/approve')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Approve a bank transfer payment' })
+  // Davetiye kodları oluştur
+  @Post('invitations')
+  async createInvitationCodes(
+    @Request() req: any,
+    @Body() body: { count?: number; assignedEmail?: string; expiresInDays?: number },
+  ) {
+    const admin = await this.checkAdmin(req.user.sub);
+
+    const count = body.count || 1;
+    const expiresInDays = body.expiresInDays || 30;
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + expiresInDays);
+
+    const codes: any[] = [];
+    
+    for (let i = 0; i < count; i++) {
+      const code = this.generateInvitationCode();
+      const invitation = await this.prisma.invitationCode.create({
+        data: {
+          code,
+          status: 'ACTIVE',
+          assignedEmail: body.assignedEmail,
+          createdById: admin.id,
+          expiresAt,
+        },
+      });
+      codes.push(invitation);
+    }
+
+    return {
+      success: true,
+      data: codes,
+    };
+  }
+
+  // Davetiye kodlarını listele
+  @Get('invitations')
+  async listInvitations(
+    @Request() req: any,
+    @Query('page') page = '1',
+    @Query('limit') limit = '20',
+    @Query('status') status?: string,
+  ) {
+    await this.checkAdmin(req.user.sub);
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const where: any = {};
+
+    if (status) {
+      where.status = status;
+    }
+
+    const [invitations, total] = await Promise.all([
+      this.prisma.invitationCode.findMany({
+        where,
+        skip,
+        take: parseInt(limit),
+        include: {
+          createdBy: { select: { firstName: true, lastName: true, email: true } },
+          teachers: { select: { firstName: true, lastName: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.invitationCode.count({ where }),
+    ]);
+
+    return {
+      success: true,
+      data: {
+        items: invitations,
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: Math.ceil(total / parseInt(limit)),
+      },
+    };
+  }
+
+  // Davetiye iptal et
+  @Delete('invitations/:id')
+  async revokeInvitation(@Request() req: any, @Param('id') id: string) {
+    await this.checkAdmin(req.user.sub);
+
+    const invitation = await this.prisma.invitationCode.findUnique({
+      where: { id },
+    });
+
+    if (!invitation) {
+      throw new BadRequestException('Invitation not found');
+    }
+
+    if (invitation.status !== 'ACTIVE') {
+      throw new BadRequestException('Invitation cannot be revoked');
+    }
+
+    await this.prisma.invitationCode.update({
+      where: { id },
+      data: { status: 'REVOKED' },
+    });
+
+    return {
+      success: true,
+      message: 'Invitation revoked',
+    };
+  }
+
+  // Banka transferi onayla
+  @Post('payments/:appointmentId/approve')
   async approveBankTransfer(
-    @Param('id') appointmentId: string,
-    @CurrentUser('id') adminId: string,
+    @Request() req: any,
+    @Param('appointmentId') appointmentId: string,
   ) {
-    return this.adminService.approveBankTransfer(appointmentId, adminId);
+    await this.checkAdmin(req.user.sub);
+
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: { teacher: { include: { wallet: true } } },
+    });
+
+    if (!appointment) {
+      throw new BadRequestException('Appointment not found');
+    }
+
+    if (appointment.paymentStatus !== 'PENDING') {
+      throw new BadRequestException('Payment is not pending');
+    }
+
+    // Transaction ile güncelle
+    await this.prisma.$transaction(async (tx) => {
+      // Appointment'ı güncelle
+      await tx.appointment.update({
+        where: { id: appointmentId },
+        data: {
+          paymentStatus: 'PAID',
+          status: 'CONFIRMED',
+        },
+      });
+
+      // Payment kaydı oluştur/güncelle
+      await tx.payment.upsert({
+        where: { appointmentId },
+        create: {
+          appointmentId,
+          amount: appointment.paymentAmount || 0,
+          platformFee: appointment.platformFee || 0,
+          teacherEarning: appointment.teacherEarning || 0,
+          status: 'PAID',
+          method: 'BANK_TRANSFER',
+          paidAt: new Date(),
+        },
+        update: {
+          status: 'PAID',
+          paidAt: new Date(),
+        },
+      });
+
+      // Öğretmen wallet'ına pending olarak ekle
+      if (appointment.teacher?.wallet) {
+        await tx.wallet.update({
+          where: { id: appointment.teacher.wallet.id },
+          data: {
+            pendingBalance: {
+              increment: appointment.teacherEarning || 0,
+            },
+          },
+        });
+
+        // Transaction kaydı
+        await tx.walletTransaction.create({
+          data: {
+            walletId: appointment.teacher.wallet.id,
+            appointmentId,
+            amount: appointment.teacherEarning || 0,
+            type: 'EARNING',
+            description: `Ders ücreti - ${appointmentId.substring(0, 8)}`,
+          },
+        });
+      }
+    });
+
+    return {
+      success: true,
+      message: 'Bank transfer approved',
+    };
   }
 
-  @Post('payments/:id/reject')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Reject a bank transfer payment' })
+  // Banka transferi reddet
+  @Post('payments/:appointmentId/reject')
   async rejectBankTransfer(
-    @Param('id') appointmentId: string,
-    @Body() dto: RejectBankTransferDto,
+    @Request() req: any,
+    @Param('appointmentId') appointmentId: string,
+    @Body() body: { reason: string },
   ) {
-    return this.adminService.rejectBankTransfer(appointmentId, dto.reason);
+    await this.checkAdmin(req.user.sub);
+
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
+    });
+
+    if (!appointment) {
+      throw new BadRequestException('Appointment not found');
+    }
+
+    await this.prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        paymentStatus: 'FAILED',
+        status: 'CANCELLED',
+        cancelReason: body.reason,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Bank transfer rejected',
+    };
   }
 
-  // ========================================
-  // FINANCE / HAKEDİŞ
-  // ========================================
+  // Hakediş raporu
   @Get('finance/hakedis')
-  @ApiOperation({ summary: 'Get monthly hakediş report' })
   async getHakedisReport(
-    @Query('year') year: number = new Date().getFullYear(),
-    @Query('month') month: number = new Date().getMonth() + 1,
+    @Request() req: any,
+    @Query('year') year: string,
+    @Query('month') month: string,
   ) {
-    return this.financeService.getMonthlyHakedisReport(year, month);
+    await this.checkAdmin(req.user.sub);
+
+    const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+    const endDate = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59);
+
+    const teachers = await this.prisma.teacher.findMany({
+      where: { isApproved: true },
+      include: {
+        wallet: true,
+        appointments: {
+          where: {
+            status: 'COMPLETED',
+            completedAt: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        },
+      },
+    });
+
+    const report = teachers.map((teacher) => {
+      const totalEarnings = teacher.appointments.reduce(
+        (sum, apt) => sum + parseFloat(apt.teacherEarning?.toString() || '0'),
+        0,
+      );
+
+      return {
+        teacherId: teacher.id,
+        teacherName: `${teacher.firstName} ${teacher.lastName}`,
+        iban: teacher.iban,
+        completedLessons: teacher.appointments.length,
+        totalEarnings,
+        availableBalance: teacher.wallet?.availableBalance || 0,
+      };
+    });
+
+    return {
+      success: true,
+      data: {
+        period: `${year}-${month}`,
+        teachers: report.filter((t) => t.completedLessons > 0),
+        totalPayout: report.reduce((sum, t) => sum + t.totalEarnings, 0),
+      },
+    };
   }
 
-  @Get('finance/pending-payouts')
-  @ApiOperation({ summary: 'Get list of pending payouts' })
-  async getPendingPayouts() {
-    return this.financeService.getPendingPayouts();
-  }
-
+  // Ödeme yap
   @Post('finance/payout')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Process a single payout' })
   async processPayout(
-    @CurrentUser('id') adminId: string,
-    @Body() dto: ProcessPayoutDto,
+    @Request() req: any,
+    @Body() body: { walletId: string; amount: number; reference: string },
   ) {
-    return this.financeService.processPayout(
-      dto.walletId,
-      dto.amount,
-      adminId,
-      dto.reference,
-    );
+    await this.checkAdmin(req.user.sub);
+
+    const wallet = await this.prisma.wallet.findUnique({
+      where: { id: body.walletId },
+    });
+
+    if (!wallet) {
+      throw new BadRequestException('Wallet not found');
+    }
+
+    if (parseFloat(wallet.availableBalance.toString()) < body.amount) {
+      throw new BadRequestException('Insufficient balance');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      // Wallet güncelle
+      await tx.wallet.update({
+        where: { id: body.walletId },
+        data: {
+          availableBalance: { decrement: body.amount },
+          totalWithdrawn: { increment: body.amount },
+        },
+      });
+
+      // Transaction kaydı
+      await tx.walletTransaction.create({
+        data: {
+          walletId: body.walletId,
+          amount: -body.amount,
+          type: 'WITHDRAWAL',
+          description: `Ödeme - ${body.reference}`,
+        },
+      });
+    });
+
+    return {
+      success: true,
+      message: 'Payout processed',
+    };
   }
 
-  @Post('finance/bulk-payout')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Process multiple payouts' })
-  async processBulkPayout(
-    @CurrentUser('id') adminId: string,
-    @Body() dto: BulkPayoutDto,
-  ) {
-    return this.financeService.processBulkPayout(
-      dto.payouts,
-      adminId,
-      dto.batchReference,
-    );
+  // Davetiye kodu oluşturucu
+  private generateInvitationCode(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = 'EDU-';
+    for (let i = 0; i < 8; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
   }
 }
