@@ -1,9 +1,9 @@
 import { Controller, Get, Put, Body, Query, UseGuards, Request, BadRequestException } from '@nestjs/common';
-import { AuthGuard } from '../../common/guards/auth.guard';
+import { JwtAuthGuard } from '../../common/guards/auth.guard';
 import { PrismaService } from '../../prisma/prisma.module';
 
 @Controller('teachers/me')
-@UseGuards(AuthGuard)
+@UseGuards(JwtAuthGuard)
 export class TeacherAvailabilityController {
   constructor(private prisma: PrismaService) {}
 

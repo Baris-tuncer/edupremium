@@ -1,9 +1,9 @@
 import { Controller, Post, Body, Param, UseGuards, Request, BadRequestException } from '@nestjs/common';
-import { AuthGuard } from '../../common/guards/auth.guard';
+import { JwtAuthGuard } from '../../common/guards/auth.guard';
 import { PrismaService } from '../../prisma/prisma.module';
 
 @Controller('feedback')
-@UseGuards(AuthGuard)
+@UseGuards(JwtAuthGuard)
 export class FeedbackController {
   constructor(private prisma: PrismaService) {}
 
