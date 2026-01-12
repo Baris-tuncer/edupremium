@@ -1,5 +1,5 @@
 import { Controller, Post, Body } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.module';
 
 @Controller('admin')
 export class MakeTeacherController {
