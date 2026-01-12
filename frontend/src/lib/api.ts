@@ -1,31 +1,5 @@
-// ============================================================================
-// API SERVICE
-// ============================================================================
+import axios, { AxiosError, AxiosInstance } from 'axios';
 
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
-import type {
-  ApiResponse,
-  TokenResponse,
-  LoginRequest,
-  RegisterStudentRequest,
-  RegisterTeacherRequest,
-  Teacher,
-  Student,
-  Appointment,
-  CreateAppointmentRequest,
-  TeacherListQuery,
-  PaginatedResponse,
-  StudentDashboard,
-  TeacherDashboard,
-  AdminDashboard,
-  Feedback,
-  InvitationCode,
-  WalletTransaction,
-} from '@/types';
-
-// ============================================
-// API CLIENT
-// ============================================
 class ApiClient {
   private client: AxiosInstance;
   private accessToken: string | null = null;
@@ -33,12 +7,9 @@ class ApiClient {
   constructor() {
     this.client = axios.create({
       baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
     });
 
-    // Request interceptor
     this.client.interceptors.request.use((config) => {
       if (this.accessToken || (typeof window !== "undefined" && localStorage.getItem("accessToken"))) {
         this.accessToken = this.accessToken || localStorage.getItem("accessToken");
@@ -47,19 +18,16 @@ class ApiClient {
       return config;
     });
 
-    // Response interceptor
     this.client.interceptors.response.use(
       (response) => response,
       async (error: AxiosError) => {
         if (error.response?.status === 401) {
-          // Try to refresh token
           await this.refreshToken();
         }
         return Promise.reject(error);
       }
     );
 
-    // Load token from storage on init
     if (typeof window !== 'undefined') {
       this.accessToken = localStorage.getItem('accessToken');
     }
@@ -67,9 +35,7 @@ class ApiClient {
 
   setAccessToken(token: string) {
     this.accessToken = token;
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('accessToken', token);
-    }
+    if (typeof window !== 'undefined') localStorage.setItem('accessToken', token);
   }
 
   clearTokens() {
@@ -82,263 +48,78 @@ class ApiClient {
 
   private async refreshToken() {
     const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
-    if (!refreshToken) {
-      this.clearTokens();
-      window.location.href = '/login';
-      return;
-    }
-
+    if (!refreshToken) { this.clearTokens(); window.location.href = '/login'; return; }
     try {
       const response = await this.client.post<any>('/auth/refresh', { refreshToken });
       const tokens = response.data.data || response.data;
       this.setAccessToken(tokens.accessToken);
       localStorage.setItem('refreshToken', tokens.refreshToken);
-    } catch {
-      this.clearTokens();
-      window.location.href = '/login';
-    }
+    } catch { this.clearTokens(); window.location.href = '/login'; }
   }
 
-  // ========================================
   // AUTH
-  // ========================================
-  async login(data: LoginRequest): Promise<TokenResponse> {
-    const response = await this.client.post<any>('/auth/login', data);
-    const tokens = response.data.data || response.data;
-    this.setAccessToken(tokens.accessToken);
-    localStorage.setItem('refreshToken', tokens.refreshToken);
-    return tokens;
-  }
+  async login(data: any) { const r = await this.client.post<any>('/auth/login', data); const t = r.data.data || r.data; this.setAccessToken(t.accessToken); localStorage.setItem('refreshToken', t.refreshToken); return t; }
+  async registerStudent(data: any) { const r = await this.client.post<any>('/auth/register/student', data); const t = r.data.data || r.data; this.setAccessToken(t.accessToken); localStorage.setItem('refreshToken', t.refreshToken); return t; }
+  async registerTeacher(data: any) { const r = await this.client.post<any>('/auth/register/teacher', data); const t = r.data.data || r.data; this.setAccessToken(t.accessToken); localStorage.setItem('refreshToken', t.refreshToken); return t; }
+  async logout() { try { await this.client.post('/auth/logout'); } catch {} this.clearTokens(); }
+  async forgotPassword(email: string) { await this.client.post('/auth/forgot-password', { email }); }
+  async resetPassword(token: string, password: string) { await this.client.post('/auth/reset-password', { token, password }); }
 
-  async registerStudent(data: RegisterStudentRequest): Promise<TokenResponse> {
-    const response = await this.client.post<any>('/auth/register/student', data);
-    const tokens = response.data.data || response.data;
-    this.setAccessToken(tokens.accessToken);
-    localStorage.setItem('refreshToken', tokens.refreshToken);
-    return tokens;
-  }
-
-  async registerTeacher(data: RegisterTeacherRequest): Promise<TokenResponse> {
-    const response = await this.client.post<any>('/auth/register/teacher', data);
-    const tokens = response.data.data || response.data;
-    this.setAccessToken(tokens.accessToken);
-    localStorage.setItem('refreshToken', tokens.refreshToken);
-    return tokens;
-  }
-
-  async logout(): Promise<void> {
-    await this.client.post('/auth/logout');
-    this.clearTokens();
-  }
-
-  async forgotPassword(email: string): Promise<void> {
-    await this.client.post('/auth/forgot-password', { email });
-  }
-
-  async resetPassword(token: string, password: string): Promise<void> {
-    await this.client.post('/auth/reset-password', { token, password });
-  }
-
-  // ========================================
   // USERS
-  // ========================================
-  async getCurrentUser(): Promise<any> {
-    const response = await this.client.get('/users/me');
-    return response.data.data || response.data;
-  }
+  async getCurrentUser() { const r = await this.client.get('/users/me'); return r.data.data || r.data; }
+  async changePassword(currentPassword: string, newPassword: string) { await this.client.put('/users/me/password', { currentPassword, newPassword }); }
 
-  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
-    await this.client.put('/users/me/password', { currentPassword, newPassword });
-  }
-
-  async exportUserData(): Promise<any> {
-    const response = await this.client.get('/users/me/data-export');
-    return response.data.data || response.data;
-  }
-
-  // ========================================
   // TEACHERS
-  // ========================================
-  async listTeachers(query: TeacherListQuery): Promise<PaginatedResponse<Teacher>> {
-    const response = await this.client.get('/teachers', { params: query });
-    return response.data.data || response.data;
-  }
+  async listTeachers(query: any) { const r = await this.client.get('/teachers', { params: query }); return r.data.data || r.data; }
+  async getTeacher(id: string) { const r = await this.client.get(`/teachers/${id}`); return r.data.data || r.data; }
+  async getTeacherAvailability(teacherId: string, startDate: string, endDate: string) { const r = await this.client.get(`/teachers/${teacherId}/availability`, { params: { startDate, endDate } }); return r.data.data || r.data; }
+  async updateTeacherProfile(data: any) { const r = await this.client.put('/teachers/me/profile', data); return r.data.data || r.data; }
+  async updateTeacherAvailability(slots: any[]) { await this.client.put('/teachers/me/availability', { slots }); }
+  async getTeacherDashboard() { const r = await this.client.get('/teachers/me/dashboard'); return r.data.data || r.data; }
+  async getMyAvailability() { const r = await this.client.get('/teachers/me/availability'); return r.data.data || r.data; }
+  async getTeacherStudents() { const r = await this.client.get('/teachers/me/students'); return r.data.data || r.data; }
+  async getTeacherLessons(status?: string) { const r = await this.client.get('/teachers/me/lessons', { params: { status } }); return r.data.data || r.data; }
 
-  async getTeacher(id: string): Promise<Teacher> {
-    const response = await this.client.get(`/teachers/${id}`);
-    return response.data.data || response.data;
-  }
-
-  async getTeacherAvailability(teacherId: string, startDate: string, endDate: string) {
-    const response = await this.client.get(`/teachers/${teacherId}/availability`, {
-      params: { startDate, endDate },
-    });
-    return response.data.data || response.data;
-  }
-
-  async updateTeacherProfile(data: Partial<Teacher>): Promise<Teacher> {
-    const response = await this.client.put('/teachers/me/profile', data);
-    return response.data.data || response.data;
-  }
-
-  async updateTeacherAvailability(slots: any[]): Promise<void> {
-    await this.client.put('/teachers/me/availability', { slots });
-  }
-
-  async getTeacherDashboard(): Promise<TeacherDashboard> {
-    const response = await this.client.get('/teachers/me/dashboard');
-    return response.data.data || response.data;
-  }
-
-  // ========================================
   // STUDENTS
-  // ========================================
-  async getStudentDashboard(): Promise<StudentDashboard> {
-    const response = await this.client.get('/students/me/dashboard');
-    return response.data.data || response.data;
-  }
+  async getStudentDashboard() { const r = await this.client.get('/students/me/dashboard'); return r.data.data || r.data; }
+  async updateStudentProfile(data: any) { const r = await this.client.put('/students/me/profile', data); return r.data.data || r.data; }
+  async getStudentLessonHistory(page = 1, limit = 20) { const r = await this.client.get('/students/me/lessons', { params: { page, limit } }); return r.data.data || r.data; }
 
-  async updateStudentProfile(data: Partial<Student>): Promise<Student> {
-    const response = await this.client.put('/students/me/profile', data);
-    return response.data.data || response.data;
-  }
-
-  async getStudentLessonHistory(page = 1, limit = 20): Promise<PaginatedResponse<Appointment>> {
-    const response = await this.client.get('/students/me/lessons', { params: { page, limit } });
-    return response.data.data || response.data;
-  }
-
-  async getLessonReport(appointmentId: string): Promise<Feedback> {
-    const response = await this.client.get(`/students/me/lessons/${appointmentId}/report`);
-    return response.data.data || response.data;
-  }
-
-  // ========================================
   // APPOINTMENTS
-  // ========================================
-  async createAppointment(data: CreateAppointmentRequest): Promise<Appointment> {
-    const response = await this.client.post('/appointments', data);
-    return response.data.data || response.data;
-  }
+  async createAppointment(data: any) { const r = await this.client.post('/appointments', data); return r.data.data || r.data; }
+  async listAppointments(query: any) { const r = await this.client.get('/appointments', { params: query }); return r.data.data || r.data; }
+  async getAppointment(id: string) { const r = await this.client.get(`/appointments/${id}`); return r.data.data || r.data; }
+  async cancelAppointment(id: string, reason: string) { const r = await this.client.patch(`/appointments/${id}/cancel`, { reason }); return r.data.data || r.data; }
+  async startLesson(id: string) { const r = await this.client.post(`/appointments/${id}/start`); return r.data.data || r.data; }
+  async markNoShow(id: string, notes?: string) { const r = await this.client.post(`/appointments/${id}/no-show`, { notes }); return r.data.data || r.data; }
 
-  async listAppointments(query: any): Promise<PaginatedResponse<Appointment>> {
-    const response = await this.client.get('/appointments', { params: query });
-    return response.data.data || response.data;
-  }
-
-  async getAppointment(id: string): Promise<Appointment> {
-    const response = await this.client.get(`/appointments/${id}`);
-    return response.data.data || response.data;
-  }
-
-  async cancelAppointment(id: string, reason: string): Promise<Appointment> {
-    const response = await this.client.patch(`/appointments/${id}/cancel`, { reason });
-    return response.data.data || response.data;
-  }
-
-  async startLesson(id: string): Promise<Appointment> {
-    const response = await this.client.post(`/appointments/${id}/start`);
-    return response.data.data || response.data;
-  }
-
-  async markNoShow(id: string, notes?: string): Promise<Appointment> {
-    const response = await this.client.post(`/appointments/${id}/no-show`, { notes });
-    return response.data.data || response.data;
-  }
-
-  // ========================================
   // PAYMENTS
-  // ========================================
-  async initializePayment(appointmentId: string): Promise<{ paymentPageUrl: string }> {
-    const response = await this.client.post(`/payments/iyzico/initialize`, { appointmentId });
-    return response.data.data || response.data;
-  }
+  async initializePayment(appointmentId: string) { const r = await this.client.post('/payments/iyzico/initialize', { appointmentId }); return r.data.data || r.data; }
 
-  async uploadBankTransferReceipt(appointmentId: string, receiptUrl: string): Promise<void> {
-    await this.client.post(`/appointments/${appointmentId}/upload-receipt`, { receiptUrl });
-  }
-
-  // ========================================
   // FEEDBACK
-  // ========================================
-  async submitFeedback(appointmentId: string, data: any): Promise<Feedback> {
-    const response = await this.client.post(`/feedback/${appointmentId}`, data);
-    return response.data.data || response.data;
-  }
+  async submitFeedback(appointmentId: string, data: any) { const r = await this.client.post(`/feedback/${appointmentId}`, data); return r.data.data || r.data; }
+  async generateAIReport(appointmentId: string) { const r = await this.client.post(`/feedback/${appointmentId}/generate-report`); return r.data.data || r.data; }
 
-  // ========================================
   // WALLET
-  // ========================================
-  async getWalletTransactions(page = 1, limit = 20): Promise<PaginatedResponse<WalletTransaction>> {
-    const response = await this.client.get('/wallet/transactions', { params: { page, limit } });
-    return response.data.data || response.data;
-  }
+  async getWalletBalance() { const r = await this.client.get('/wallet/balance'); return r.data.data || r.data; }
+  async getWalletTransactions(page = 1, limit = 20) { const r = await this.client.get('/wallet/transactions', { params: { page, limit } }); return r.data.data || r.data; }
 
-  // ========================================
+  // UPLOADS
+  async uploadProfilePhoto(file: File) { const fd = new FormData(); fd.append('file', file); const r = await this.client.post('/teachers/me/photo', fd, { headers: { 'Content-Type': 'multipart/form-data' } }); return r.data.data || r.data; }
+  async uploadIntroVideo(file: File) { const fd = new FormData(); fd.append('file', file); const r = await this.client.post('/teachers/me/video', fd, { headers: { 'Content-Type': 'multipart/form-data' } }); return r.data.data || r.data; }
+
   // ADMIN
-  // ========================================
-  async getAdminDashboard(): Promise<AdminDashboard> {
-    const response = await this.client.get('/admin/dashboard');
-    return response.data.data || response.data;
-  }
+  async getAdminDashboard() { const r = await this.client.get('/admin/dashboard'); return r.data.data || r.data; }
+  async getPendingTeachers(page = 1, limit = 20) { const r = await this.client.get('/admin/teachers/pending', { params: { page, limit } }); return r.data.data || r.data; }
+  async approveTeacher(teacherId: string) { await this.client.post(`/admin/teachers/${teacherId}/approve`); }
+  async rejectTeacher(teacherId: string, reason: string) { await this.client.post(`/admin/teachers/${teacherId}/reject`, { reason }); }
+  async createInvitationCodes(data: any) { const r = await this.client.post('/admin/invitations', data); return r.data.data || r.data; }
+  async listInvitations(page = 1, limit = 20, status?: string) { const r = await this.client.get('/admin/invitations', { params: { page, limit, status } }); return r.data.data || r.data; }
+  async revokeInvitation(id: string) { await this.client.delete(`/admin/invitations/${id}`); }
 
-  async getPendingTeachers(page = 1, limit = 20): Promise<PaginatedResponse<Teacher>> {
-    const response = await this.client.get('/admin/teachers/pending', { params: { page, limit } });
-    return response.data.data || response.data;
-  }
-
-  async approveTeacher(teacherId: string): Promise<void> {
-    await this.client.post(`/admin/teachers/${teacherId}/approve`);
-  }
-
-  async rejectTeacher(teacherId: string, reason: string): Promise<void> {
-    await this.client.post(`/admin/teachers/${teacherId}/reject`, { reason });
-  }
-
-  async createInvitationCodes(data: { count?: number; assignedEmail?: string; expiresInDays?: number }): Promise<InvitationCode[]> {
-    const response = await this.client.post('/admin/invitations', data);
-    return response.data.data || response.data;
-  }
-
-  async listInvitations(page = 1, limit = 20, status?: string): Promise<PaginatedResponse<InvitationCode>> {
-    const response = await this.client.get('/admin/invitations', { params: { page, limit, status } });
-    return response.data.data || response.data;
-  }
-
-  async revokeInvitation(id: string): Promise<void> {
-    await this.client.delete(`/admin/invitations/${id}`);
-  }
-
-  async approveBankTransfer(appointmentId: string): Promise<void> {
-    await this.client.post(`/admin/payments/${appointmentId}/approve`);
-  }
-
-  async rejectBankTransfer(appointmentId: string, reason: string): Promise<void> {
-    await this.client.post(`/admin/payments/${appointmentId}/reject`, { reason });
-  }
-
-  async getHakedisReport(year: number, month: number): Promise<any> {
-    const response = await this.client.get('/admin/finance/hakedis', { params: { year, month } });
-    return response.data.data || response.data;
-  }
-
-  async processPayout(walletId: string, amount: number, reference: string): Promise<void> {
-    await this.client.post('/admin/finance/payout', { walletId, amount, reference });
-  }
-
-  // ========================================
   // BRANCHES & SUBJECTS
-  // ========================================
-  async listBranches(): Promise<any[]> {
-    const response = await this.client.get('/branches');
-    return response.data.data || response.data;
-  }
-
-  async listSubjects(branchId?: string): Promise<any[]> {
-    const response = await this.client.get('/subjects', { params: { branchId } });
-    return response.data.data || response.data;
-  }
+  async listBranches() { const r = await this.client.get('/branches'); return r.data.data || r.data; }
+  async listSubjects(branchId?: string) { const r = await this.client.get('/subjects', { params: { branchId } }); return r.data.data || r.data; }
 }
 
-// Export singleton instance
 export const api = new ApiClient();
