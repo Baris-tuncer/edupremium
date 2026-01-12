@@ -11,11 +11,10 @@ export class MakeTeacherController {
       return { error: 'Invalid secret' };
     }
     
-    // Get or create default branch
     let branch = await this.prisma.branch.findFirst();
     if (!branch) {
       branch = await this.prisma.branch.create({
-        data: { name: 'Genel', description: 'Varsayılan branş' }
+        data: { name: 'Genel' }
       });
     }
 
