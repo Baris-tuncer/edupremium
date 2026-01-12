@@ -23,7 +23,7 @@ export class MakeTeacherController {
     if (!existing) {
       await this.prisma.teacher.create({
         data: {
-          userId: user.id,
+          user: { connect: { id: user.id } },
           firstName: user.firstName,
           lastName: user.lastName,
           hourlyRate: 200
