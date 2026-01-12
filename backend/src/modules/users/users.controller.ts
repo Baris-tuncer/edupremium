@@ -10,7 +10,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   async getMe(@Request() req: any) {
     const user = await this.prisma.user.findUnique({
-      where: { id: req.user.sub },
+      where: { id: req.user.id },
       select: {
         id: true,
         email: true,
