@@ -9,7 +9,7 @@ export class FeedbackController {
 
   @Post(':appointmentId')
   async createFeedback(@Param('appointmentId') appointmentId: string, @Body() dto: any, @Request() req: any) {
-    const teacher = await this.prisma.teacher.findUnique({ where: { userId: req.user.sub } });
+    const teacher = await this.prisma.teacher.findUnique({ where: { userId: req.user.id } });
     if (!teacher) throw new BadRequestException('Teacher not found');
     return { success: true, data: dto };
   }
