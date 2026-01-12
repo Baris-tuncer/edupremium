@@ -25,6 +25,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { FeedbackModule } from './modules/feedback/feedback.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { WalletModule } from './modules/wallet/wallet.module';
 
 // Health Check
 import { HealthController } from './health.controller';
@@ -98,6 +99,7 @@ import { HealthController } from './health.controller';
     NotificationsModule,
     FeedbackModule,
     AdminModule,
+    WalletModule,
   ],
   controllers: [HealthController],
   providers: [
