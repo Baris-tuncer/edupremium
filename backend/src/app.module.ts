@@ -26,6 +26,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { FeedbackModule } from './modules/feedback/feedback.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { BranchesModule } from './modules/branches/branches.module';
+import { UploadsModule } from './modules/uploads/uploads.module';
 import { WalletModule } from './modules/wallet/wallet.module';
 
 // Health Check
@@ -102,6 +103,7 @@ import { HealthController } from './health.controller';
     AdminModule,
     WalletModule,
     BranchesModule,
+    UploadsModule,
   ],
   controllers: [HealthController],
   providers: [
