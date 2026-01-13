@@ -71,7 +71,7 @@ export default function TeacherProfilePage() {
         api.listBranches()
       ]);
       setUser(userData);
-      const dash = dashResult?.data || dashResult;
+      const dash = dashResult?.data?.data || dashResult?.data || dashResult;
       const t = dash?.teacher || {};
       setTeacher(t);
       setPhotoUrl(t.profilePhotoUrl);
