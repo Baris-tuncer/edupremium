@@ -103,7 +103,7 @@ export default function TeacherProfilePage() {
     if (!file) return;
     try {
       const res = await api.uploadProfilePhoto(file);
-      setPhotoUrl(res.url);
+      setPhotoUrl(res.data?.url || res.url);
       setMessage({ type: 'success', text: 'Fotoğraf yüklendi!' });
     } catch { setMessage({ type: 'error', text: 'Fotoğraf yüklenemedi' }); }
   };
@@ -113,7 +113,7 @@ export default function TeacherProfilePage() {
     if (!file) return;
     try {
       const res = await api.uploadIntroVideo(file);
-      setVideoUrl(res.url);
+      setVideoUrl(res.data?.url || res.url);
       setMessage({ type: 'success', text: 'Video yüklendi!' });
     } catch { setMessage({ type: 'error', text: 'Video yüklenemedi' }); }
   };
