@@ -123,3 +123,7 @@ class ApiClient {
 }
 
 export const api = new ApiClient();
+
+  // Appointment actions
+  async approveAppointment(id: string) { const r = await this.client.put(`/teachers/me/appointments/${id}/approve`); return r.data; }
+  async rejectAppointment(id: string, reason?: string) { const r = await this.client.put(`/teachers/me/appointments/${id}/reject`, { reason }); return r.data; }
