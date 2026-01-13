@@ -104,7 +104,7 @@ export default function TeacherProfilePage() {
     try {
       const res = await api.uploadProfilePhoto(file);
       setPhotoUrl(res.data?.url || res.url);
-      setMessage({ type: 'success', text: 'Fotoğraf yüklendi!' });
+      setMessage({ type: "success", text: "Fotoğraf yüklendi!" }); fetchData();
     } catch { setMessage({ type: 'error', text: 'Fotoğraf yüklenemedi' }); }
   };
 
@@ -114,7 +114,7 @@ export default function TeacherProfilePage() {
     try {
       const res = await api.uploadIntroVideo(file);
       setVideoUrl(res.data?.url || res.url);
-      setMessage({ type: 'success', text: 'Video yüklendi!' });
+      setMessage({ type: "success", text: "Video yüklendi!" }); fetchData();
     } catch { setMessage({ type: 'error', text: 'Video yüklenemedi' }); }
   };
 
