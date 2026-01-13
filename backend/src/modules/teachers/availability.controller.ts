@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Body, Query, UseGuards, Request, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Put, Body, UseGuards, Request, BadRequestException } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/auth.guard';
 import { PrismaService } from '../../prisma/prisma.module';
 
@@ -44,11 +44,11 @@ export class TeacherAvailabilityController {
 
   @Get('dashboard')
   async getDashboard(@Request() req: any) {
-    const teacher = await this.prisma.teacher.findUnique({ where: { userId: req.user.id }, include: { wallet: true } });
+    const teacher = await this.prisma.teacher.findUnique({ where: { userId: req.user.id }, include: { wallet: true, subjects: { include: { subject: true } } } });
     if (!teacher) throw new BadRequestException('Teacher not found');
-    return { success: true, data: { teacher, stats: { upcomingLessonsCount: 0, completedLessonsCount: 0, monthlyEarnings: 0, availableBalance: 0 }, upcomingLessons: [] } };
+    const subjectIds = teacher.subjects.map(ts => ts.subjectId);
+    return { success: true, data: { teacher: { ...teacher, subjectIds }, stats: { upcomingLessonsCount: 0, completedLessonsCount: 0, monthlyEarnings: 0, availableBalance: 0 }, upcomingLessons: [] } };
   }
-}
 
   @Put('profile')
   async updateProfile(@Request() req: any, @Body() body: any) {
@@ -63,7 +63,6 @@ export class TeacherAvailabilityController {
     
     await this.prisma.teacher.update({ where: { id: teacher.id }, data: updateData });
     
-    // Update subjects if provided
     if (body.subjectIds && Array.isArray(body.subjectIds)) {
       await this.prisma.teacherSubject.deleteMany({ where: { teacherId: teacher.id } });
       for (const subjectId of body.subjectIds) {
@@ -73,3 +72,4 @@ export class TeacherAvailabilityController {
     
     return { success: true, message: 'Profile updated' };
   }
+}
