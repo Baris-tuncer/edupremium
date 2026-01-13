@@ -145,7 +145,7 @@ export default function TeacherProfilePage() {
               <h2 className="font-semibold text-xl text-slate-900 mb-6">Profil Görselleri</h2>
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Profil Fotoğrafı</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Profil Fotoğrafı</label>)}
                   <div className="flex items-center gap-4">
                     <div className="w-24 h-24 bg-slate-200 rounded-full overflow-hidden flex items-center justify-center">
                       {photoUrl ? <img src={photoUrl} alt="Profil" className="w-full h-full object-cover" /> : <span className="text-3xl text-slate-400">📷</span>}
@@ -158,7 +158,7 @@ export default function TeacherProfilePage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Tanıtım Videosu</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Tanıtım Videosu</label>)}
                   <div className="flex items-center gap-4">
                     <div className="w-32 h-24 bg-slate-200 rounded-lg overflow-hidden flex items-center justify-center">
                       {videoUrl ? <video src={videoUrl} className="w-full h-full object-cover" /> : <span className="text-3xl text-slate-400">🎥</span>}
@@ -178,23 +178,23 @@ export default function TeacherProfilePage() {
               <h2 className="font-semibold text-xl text-slate-900 mb-6">Kişisel Bilgiler</h2>
               <div className="grid md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Ad</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Ad</label>)}
                   <input type="text" value={user?.firstName || ''} disabled className="w-full px-4 py-3 rounded-xl border bg-slate-50 text-slate-500" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Soyad</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Soyad</label>)}
                   <input type="text" value={user?.lastName || ''} disabled className="w-full px-4 py-3 rounded-xl border bg-slate-50 text-slate-500" />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Hakkımda</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Hakkımda</label>)}
                 <textarea value={profile.bio} onChange={(e) => setProfile({...profile, bio: e.target.value})} rows={4} className="w-full px-4 py-3 rounded-xl border focus:border-blue-500 outline-none" placeholder="Kendinizi tanıtın..." />
               </div>
-              <div className="mt-4">
+              <div className="mt-4">{branches.find((b: any) => b.id === profile.branchId)?.name === "Yabancı Dil" && (
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input type="checkbox" checked={profile.isNative} onChange={(e) => setProfile({...profile, isNative: e.target.checked})} className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-                  <span className="text-slate-700">Anadili Türkçe (Native Speaker)</span>
-                </label>
+                  <span className="text-slate-700">Native (Yabancı dil öğretmenleri için)</span>
+                </label>)}
               </div>
             </div>
 
@@ -202,7 +202,7 @@ export default function TeacherProfilePage() {
             <div className="bg-white rounded-2xl shadow p-6">
               <h2 className="font-semibold text-xl text-slate-900 mb-6">Branş ve Dersler</h2>
               <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Branş</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Branş</label>)}
                 <select value={profile.branchId} onChange={(e) => handleBranchChange(e.target.value)} className="w-full px-4 py-3 rounded-xl border focus:border-blue-500 outline-none">
                   <option value="">Branş Seçin</option>
                   {branches.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
@@ -210,7 +210,7 @@ export default function TeacherProfilePage() {
               </div>
               {subjects.length > 0 && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Verdiğiniz Dersler</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Verdiğiniz Dersler</label>)}
                   <div className="flex flex-wrap gap-2">
                     {subjects.map((s: any) => (
                       <button key={s.id} type="button" onClick={() => handleSubjectToggle(s.id)} className={`px-4 py-2 rounded-full text-sm transition-colors ${profile.subjectIds.includes(s.id) ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>
@@ -227,11 +227,11 @@ export default function TeacherProfilePage() {
               <h2 className="font-semibold text-xl text-slate-900 mb-6">Ders ve Ödeme Bilgileri</h2>
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Saatlik Ücret (₺)</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Saatlik Ücret (₺)</label>)}
                   <input type="number" value={profile.hourlyRate} onChange={(e) => setProfile({...profile, hourlyRate: e.target.value})} className="w-full px-4 py-3 rounded-xl border focus:border-blue-500 outline-none" min="100" placeholder="450" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">IBAN</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">IBAN</label>)}
                   <input type="text" value={profile.iban} onChange={(e) => setProfile({...profile, iban: e.target.value})} className="w-full px-4 py-3 rounded-xl border focus:border-blue-500 outline-none" placeholder="TR00 0000 0000 0000 0000 0000 00" />
                 </div>
               </div>
