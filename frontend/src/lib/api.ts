@@ -120,10 +120,9 @@ class ApiClient {
   // BRANCHES & SUBJECTS
   async listBranches() { const r = await this.client.get('/branches'); return r.data.data || r.data; }
   async listSubjects(branchId?: string) { const r = await this.client.get('/subjects', { params: { branchId } }); return r.data.data || r.data; }
+  // Appointment actions
+  async approveAppointment(id: string) { const r = await this.client.put((`/teachers/me/appointments/${id}/approve`); return r.data; }
+  async rejectAppointment(id: string, reason?: string) { const r = await this.client.put((`/teachers/me/appointments/${id}/reject`, { reason }); return r.data; }
 }
 
 export const api = new ApiClient();
-
-  // Appointment actions
-  async approveAppointment(id: string) { const r = await this.client.put(`/teachers/me/appointments/${id}/approve`); return r.data; }
-  async rejectAppointment(id: string, reason?: string) { const r = await this.client.put(`/teachers/me/appointments/${id}/reject`, { reason }); return r.data; }
