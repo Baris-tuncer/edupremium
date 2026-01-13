@@ -45,10 +45,9 @@ const TeacherSidebar = ({ activeItem, user }: { activeItem: string; user: any })
 
 export default function TeacherProfilePage() {
   const [user, setUser] = useState<any>(null);
-  const [teacher, setTeacher] = useState<any>(null);
   const [branches, setBranches] = useState<any[]>([]);
-  const [subjects, setSubjects] = useState<any[]>([]);
-  const [profile, setProfile] = useState({ bio: '', hourlyRate: '', iban: '', isNative: false, branchId: '', subjectIds: [] as string[] });
+  const [allSubjects, setAllSubjects] = useState<any[]>([]);
+  const [profile, setProfile] = useState({ bio: '', hourlyRate: '', iban: '', isNative: false, subjectIds: [] as string[] });
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -73,29 +72,34 @@ export default function TeacherProfilePage() {
       setUser(userData);
       const dash = dashResult?.data?.data || dashResult?.data || dashResult;
       const t = dash?.teacher || {};
-      setTeacher(t);
       setPhotoUrl(t.profilePhotoUrl);
       setVideoUrl(t.introVideoUrl);
-      setProfile({ bio: t.bio || '', hourlyRate: t.hourlyRate?.toString() || '', iban: t.iban || '', isNative: t.isNative || false, branchId: t.branchId || '', subjectIds: t.subjectIds || [] });
-      const br = branchResult?.data || branchResult || [];
+      setProfile({ bio: t.bio || '', hourlyRate: t.hourlyRate?.toString() || '', iban: t.iban || '', isNative: t.isNative || false, subjectIds: t.subjectIds || [] });
+      
+      const br = branchResult?.data?.data || branchResult?.data || branchResult || [];
       setBranches(br);
-      if (t.branchId) { const subjResult = await api.listSubjects(t.branchId); setSubjects(subjResult?.data || subjResult || []); }
+      
+      // Tüm dersleri yükle
+      const allSubj: any[] = [];
+      for (const branch of br) {
+        const subjResult = await api.listSubjects(branch.id);
+        const subjects = subjResult?.data?.data || subjResult?.data || subjResult || [];
+        subjects.forEach((s: any) => allSubj.push({ ...s, branchName: branch.name }));
+      }
+      setAllSubjects(allSubj);
     } catch (error: any) {
       console.error('Fetch error:', error);
       if (error?.response?.status === 401) { localStorage.clear(); window.location.href = '/login'; }
     } finally { setIsLoading(false); }
   };
 
-  const handleBranchChange = async (branchId: string) => {
-    setProfile({ ...profile, branchId, subjectIds: [] });
-    if (branchId) { const res = await api.listSubjects(branchId); setSubjects(res?.data || res || []); }
-    else { setSubjects([]); }
-  };
-
   const handleSubjectToggle = (subjectId: string) => {
     const current = profile.subjectIds;
-    if (current.includes(subjectId)) { setProfile({ ...profile, subjectIds: current.filter(id => id !== subjectId) }); }
-    else { setProfile({ ...profile, subjectIds: [...current, subjectId] }); }
+    if (current.includes(subjectId)) {
+      setProfile({ ...profile, subjectIds: current.filter(id => id !== subjectId) });
+    } else {
+      setProfile({ ...profile, subjectIds: [...current, subjectId] });
+    }
   };
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -123,13 +127,26 @@ export default function TeacherProfilePage() {
     setIsSaving(true);
     setMessage(null);
     try {
-      await api.updateTeacherProfile({ bio: profile.bio, hourlyRate: parseFloat(profile.hourlyRate) || undefined, iban: profile.iban || undefined, isNative: profile.isNative, branchId: profile.branchId || undefined, subjectIds: profile.subjectIds });
+      await api.updateTeacherProfile({ bio: profile.bio, hourlyRate: parseFloat(profile.hourlyRate) || undefined, iban: profile.iban || undefined, isNative: profile.isNative, subjectIds: profile.subjectIds });
       setMessage({ type: 'success', text: 'Profil güncellendi!' });
     } catch (error: any) { setMessage({ type: 'error', text: error.message || 'Hata oluştu' }); }
     finally { setIsSaving(false); }
   };
 
+  // Yabancı Dil dersi seçili mi kontrol et
+  const hasYabanciDilSelected = () => {
+    const yabanciDilBranch = branches.find((b: any) => b.name === 'Yabancı Dil');
+    if (!yabanciDilBranch) return false;
+    return allSubjects.some(s => s.branchId === yabanciDilBranch.id && profile.subjectIds.includes(s.id));
+  };
+
   if (isLoading) return <div className="min-h-screen bg-slate-50 flex items-center justify-center"><div className="w-12 h-12 border-4 border-slate-600 border-t-transparent rounded-full animate-spin"></div></div>;
+
+  // Dersleri branşa göre grupla
+  const subjectsByBranch = branches.map(b => ({
+    branch: b,
+    subjects: allSubjects.filter(s => s.branchId === b.id)
+  })).filter(g => g.subjects.length > 0);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -145,7 +162,7 @@ export default function TeacherProfilePage() {
               <h2 className="font-semibold text-xl text-slate-900 mb-6">Profil Görselleri</h2>
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Profil Fotoğrafı</label>)}
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Profil Fotoğrafı</label>
                   <div className="flex items-center gap-4">
                     <div className="w-24 h-24 bg-slate-200 rounded-full overflow-hidden flex items-center justify-center">
                       {photoUrl ? <img src={photoUrl} alt="Profil" className="w-full h-full object-cover" /> : <span className="text-3xl text-slate-400">📷</span>}
@@ -158,7 +175,7 @@ export default function TeacherProfilePage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Tanıtım Videosu</label>)}
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Tanıtım Videosu</label>
                   <div className="flex items-center gap-4">
                     <div className="w-32 h-24 bg-slate-200 rounded-lg overflow-hidden flex items-center justify-center">
                       {videoUrl ? <video src={videoUrl} className="w-full h-full object-cover" /> : <span className="text-3xl text-slate-400">🎥</span>}
@@ -178,48 +195,50 @@ export default function TeacherProfilePage() {
               <h2 className="font-semibold text-xl text-slate-900 mb-6">Kişisel Bilgiler</h2>
               <div className="grid md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Ad</label>)}
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Ad</label>
                   <input type="text" value={user?.firstName || ''} disabled className="w-full px-4 py-3 rounded-xl border bg-slate-50 text-slate-500" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Soyad</label>)}
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Soyad</label>
                   <input type="text" value={user?.lastName || ''} disabled className="w-full px-4 py-3 rounded-xl border bg-slate-50 text-slate-500" />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Hakkımda</label>)}
-                <textarea value={profile.bio} onChange={(e) => setProfile({...profile, bio: e.target.value})} rows={4} className="w-full px-4 py-3 rounded-xl border focus:border-blue-500 outline-none" placeholder="Kendinizi tanıtın..." />
+                <label className="block text-sm font-medium text-slate-700 mb-2">Hakkımda</label>
+                <textarea value={profile.bio} onChange={(e) => setProfile({...profile, bio: e.target.value})} rows={4} className="w-full px-4 py-3 rounded-xl border focus:border-blue-500 outline-none" placeholder="Kendinizi tanıtın, uzmanlık alanlarınızdan bahsedin..." />
               </div>
-              <div className="mt-4">{branches.find((b: any) => b.id === profile.branchId)?.name === "Yabancı Dil" && (
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input type="checkbox" checked={profile.isNative} onChange={(e) => setProfile({...profile, isNative: e.target.checked})} className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-                  <span className="text-slate-700">Native (Yabancı dil öğretmenleri için)</span>
-                </label>)}
-              </div>
+              {hasYabanciDilSelected() && (
+                <div className="mt-4">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" checked={profile.isNative} onChange={(e) => setProfile({...profile, isNative: e.target.checked})} className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                    <span className="text-slate-700">Native (Yabancı dil öğretmenleri için)</span>
+                  </label>
+                </div>
+              )}
             </div>
 
-            {/* Branş ve Dersler */}
+            {/* Verdiğiniz Dersler */}
             <div className="bg-white rounded-2xl shadow p-6">
-              <h2 className="font-semibold text-xl text-slate-900 mb-6">Branş ve Dersler</h2>
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Branş</label>)}
-                <select value={profile.branchId} onChange={(e) => handleBranchChange(e.target.value)} className="w-full px-4 py-3 rounded-xl border focus:border-blue-500 outline-none">
-                  <option value="">Branş Seçin</option>
-                  {branches.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
-                </select>
-              </div>
-              {subjects.length > 0 && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Verdiğiniz Dersler</label>)}
+              <h2 className="font-semibold text-xl text-slate-900 mb-6">Verdiğiniz Dersler</h2>
+              <p className="text-sm text-slate-500 mb-4">Ders vermek istediğiniz alanları seçin. Birden fazla seviye ve ders seçebilirsiniz.</p>
+              
+              {subjectsByBranch.map(({ branch, subjects }) => (
+                <div key={branch.id} className="mb-6">
+                  <h3 className="font-medium text-slate-800 mb-3">{branch.name}</h3>
                   <div className="flex flex-wrap gap-2">
                     {subjects.map((s: any) => (
-                      <button key={s.id} type="button" onClick={() => handleSubjectToggle(s.id)} className={`px-4 py-2 rounded-full text-sm transition-colors ${profile.subjectIds.includes(s.id) ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => handleSubjectToggle(s.id)}
+                        className={`px-4 py-2 rounded-full text-sm transition-colors ${profile.subjectIds.includes(s.id) ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                      >
                         {s.name}
                       </button>
                     ))}
                   </div>
                 </div>
-              )}
+              ))}
             </div>
 
             {/* Ödeme Bilgileri */}
@@ -227,11 +246,11 @@ export default function TeacherProfilePage() {
               <h2 className="font-semibold text-xl text-slate-900 mb-6">Ders ve Ödeme Bilgileri</h2>
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Saatlik Ücret (₺)</label>)}
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Saatlik Ücret (₺)</label>
                   <input type="number" value={profile.hourlyRate} onChange={(e) => setProfile({...profile, hourlyRate: e.target.value})} className="w-full px-4 py-3 rounded-xl border focus:border-blue-500 outline-none" min="100" placeholder="450" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">IBAN</label>)}
+                  <label className="block text-sm font-medium text-slate-700 mb-2">IBAN</label>
                   <input type="text" value={profile.iban} onChange={(e) => setProfile({...profile, iban: e.target.value})} className="w-full px-4 py-3 rounded-xl border focus:border-blue-500 outline-none" placeholder="TR00 0000 0000 0000 0000 0000 00" />
                 </div>
               </div>
