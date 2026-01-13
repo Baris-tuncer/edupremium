@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Body, UseGuards, Request, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Put, Body, UseGuards, Request, BadRequestException, Param } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/auth.guard';
 import { PrismaService } from '../../prisma/prisma.module';
 
@@ -54,22 +54,38 @@ export class TeacherAvailabilityController {
   async updateProfile(@Request() req: any, @Body() body: any) {
     const teacher = await this.prisma.teacher.findUnique({ where: { userId: req.user.id } });
     if (!teacher) throw new BadRequestException('Teacher not found');
-    
     const updateData: any = {};
     if (body.bio !== undefined) updateData.bio = body.bio;
     if (body.hourlyRate !== undefined) updateData.hourlyRate = body.hourlyRate;
     if (body.iban !== undefined) updateData.iban = body.iban;
     if (body.isNative !== undefined) updateData.isNative = body.isNative;
-    
     await this.prisma.teacher.update({ where: { id: teacher.id }, data: updateData });
-    
     if (body.subjectIds && Array.isArray(body.subjectIds)) {
       await this.prisma.teacherSubject.deleteMany({ where: { teacherId: teacher.id } });
       for (const subjectId of body.subjectIds) {
         await this.prisma.teacherSubject.create({ data: { teacherId: teacher.id, subjectId } });
       }
     }
-    
     return { success: true, message: 'Profile updated' };
+  }
+
+  @Put('appointments/:id/approve')
+  async approveAppointment(@Request() req: any, @Param('id') id: string) {
+    const teacher = await this.prisma.teacher.findUnique({ where: { userId: req.user.id } });
+    if (!teacher) throw new BadRequestException('Teacher not found');
+    const appointment = await this.prisma.appointment.findUnique({ where: { id } });
+    if (!appointment || appointment.teacherId !== teacher.id) throw new BadRequestException('Appointment not found');
+    await this.prisma.appointment.update({ where: { id }, data: { status: 'CONFIRMED' } });
+    return { success: true, message: 'Appointment approved' };
+  }
+
+  @Put('appointments/:id/reject')
+  async rejectAppointment(@Request() req: any, @Param('id') id: string, @Body() body: { reason?: string }) {
+    const teacher = await this.prisma.teacher.findUnique({ where: { userId: req.user.id } });
+    if (!teacher) throw new BadRequestException('Teacher not found');
+    const appointment = await this.prisma.appointment.findUnique({ where: { id } });
+    if (!appointment || appointment.teacherId !== teacher.id) throw new BadRequestException('Appointment not found');
+    await this.prisma.appointment.update({ where: { id }, data: { status: 'CANCELLED', notes: body.reason || 'Öğretmen tarafından reddedildi' } });
+    return { success: true, message: 'Appointment rejected' };
   }
 }
