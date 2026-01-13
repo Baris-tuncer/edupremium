@@ -5,6 +5,7 @@
 import {
   Controller,
   Post,
+  Get,
   Body,
   HttpCode,
   HttpStatus,
@@ -121,5 +122,16 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Invalid or expired token' })
   async resetPassword(@Body() dto: ResetPasswordDto): Promise<{ message: string }> {
     return this.authService.resetPassword(dto);
+  }
+
+  // ========================================
+  // GET CURRENT USER
+  // ========================================
+  @Get('me')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current user info' })
+  @ApiResponse({ status: 200, description: 'User info' })
+  async getMe(@Req() req: any) {
+    return { success: true, data: req.user };
   }
 }
