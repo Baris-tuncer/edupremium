@@ -75,6 +75,7 @@ class ApiClient {
   async getTeacherAvailability(teacherId: string, startDate: string, endDate: string) { const r = await this.client.get(`/teachers/${teacherId}/availability`, { params: { startDate, endDate } }); return r.data.data || r.data; }
   async updateTeacherProfile(data: any) { const r = await this.client.put('/teachers/me/profile', data); return r.data.data || r.data; }
   async updateTeacherAvailability(slots: any[]) { await this.client.put('/teachers/me/availability', { slots }); }
+  async getMe() { const r = await this.client.get('/auth/me'); return r.data.data || r.data; }
   async getTeacherDashboard() { const r = await this.client.get('/teachers/me/dashboard'); return r.data.data || r.data; }
   async getMyAvailability() { const r = await this.client.get('/teachers/me/availability'); return r.data.data || r.data; }
   async getTeacherStudents() { const r = await this.client.get('/teachers/me/students'); return r.data.data || r.data; }
