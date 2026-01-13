@@ -12,14 +12,14 @@ const tabs = [
 
 const statusColors: Record<string, string> = {
   CONFIRMED: 'bg-green-100 text-green-700 border border-green-200',
-  PENDING: 'bg-yellow-100 text-yellow-700 border border-yellow-200',
+  PENDING_PAYMENT: 'bg-yellow-100 text-yellow-700 border border-yellow-200',
   COMPLETED: 'bg-blue-100 text-blue-700 border border-blue-200',
   CANCELLED: 'bg-red-100 text-red-700 border border-red-200',
 };
 
 const statusLabels: Record<string, string> = {
   CONFIRMED: 'Onaylandı',
-  PENDING: 'Bekliyor',
+  PENDING_PAYMENT: 'Bekliyor',
   COMPLETED: 'Tamamlandı',
   CANCELLED: 'İptal',
 };
@@ -73,7 +73,7 @@ export default function TeacherLessonsPage() {
   };
 
   const filteredAppointments = appointments.filter((apt) => {
-    if (activeTab === 'upcoming') return apt.status === 'PENDING' || apt.status === 'CONFIRMED';
+    if (activeTab === 'upcoming') return apt.status === 'PENDING_PAYMENT' || apt.status === 'CONFIRMED';
     if (activeTab === 'completed') return apt.status === 'COMPLETED';
     if (activeTab === 'cancelled') return apt.status === 'CANCELLED';
     return true;
@@ -139,10 +139,10 @@ export default function TeacherLessonsPage() {
                     
                     <div className="text-right min-w-[160px]">
                       <div className="font-medium text-slate-900">
-                        {new Date(apt.startTime).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' })}
+                        {new Date(apt.scheduledAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' })}
                       </div>
                       <div className="text-slate-500 text-sm">
-                        {new Date(apt.startTime).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(apt.scheduledAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </div>
                     
@@ -157,7 +157,7 @@ export default function TeacherLessonsPage() {
                         </button>
                       )}
 
-                      {apt.status === 'PENDING' && (
+                      {apt.status === 'PENDING_PAYMENT' && (
                         <>
                           <button 
                             onClick={() => handleApprove(apt.id)}
