@@ -85,7 +85,7 @@ export class TeacherAvailabilityController {
     if (!teacher) throw new BadRequestException('Teacher not found');
     const appointment = await this.prisma.appointment.findUnique({ where: { id } });
     if (!appointment || appointment.teacherId !== teacher.id) throw new BadRequestException('Appointment not found');
-    await this.prisma.appointment.update({ where: { id }, data: { status: 'CANCELLED', notes: body.reason || 'Öğretmen tarafından reddedildi' } });
+    await this.prisma.appointment.update({ where: { id }, data: { status: 'CANCELLED' } });
     return { success: true, message: 'Appointment rejected' };
   }
 }
