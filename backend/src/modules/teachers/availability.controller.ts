@@ -49,3 +49,27 @@ export class TeacherAvailabilityController {
     return { success: true, data: { teacher, stats: { upcomingLessonsCount: 0, completedLessonsCount: 0, monthlyEarnings: 0, availableBalance: 0 }, upcomingLessons: [] } };
   }
 }
+
+  @Put('profile')
+  async updateProfile(@Request() req: any, @Body() body: any) {
+    const teacher = await this.prisma.teacher.findUnique({ where: { userId: req.user.id } });
+    if (!teacher) throw new BadRequestException('Teacher not found');
+    
+    const updateData: any = {};
+    if (body.bio !== undefined) updateData.bio = body.bio;
+    if (body.hourlyRate !== undefined) updateData.hourlyRate = body.hourlyRate;
+    if (body.iban !== undefined) updateData.iban = body.iban;
+    if (body.isNative !== undefined) updateData.isNative = body.isNative;
+    
+    await this.prisma.teacher.update({ where: { id: teacher.id }, data: updateData });
+    
+    // Update subjects if provided
+    if (body.subjectIds && Array.isArray(body.subjectIds)) {
+      await this.prisma.teacherSubject.deleteMany({ where: { teacherId: teacher.id } });
+      for (const subjectId of body.subjectIds) {
+        await this.prisma.teacherSubject.create({ data: { teacherId: teacher.id, subjectId } });
+      }
+    }
+    
+    return { success: true, message: 'Profile updated' };
+  }
