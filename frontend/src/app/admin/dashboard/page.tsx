@@ -39,9 +39,8 @@ const TeacherDetailModal = ({ teacherId, onClose, onApprove }: {
     try {
       setApproving(true);
       await api.approveTeacher(teacherId);
-      alert('Öğretmen başarıyla onaylandı!');
-      onApprove();
-      onClose();
+      alert('Öğretmen başarıyla onaylandı! Artık sistemde aktif.');
+      window.location.reload();
     } catch (error) {
       console.error('Approve error:', error);
       alert('Onaylama başarısız!');
