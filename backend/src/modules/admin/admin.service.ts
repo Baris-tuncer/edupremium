@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.module';
 import { DashboardStatsDto, ApproveTeacherDto } from './dto/admin.dto';
 
 @Injectable()
