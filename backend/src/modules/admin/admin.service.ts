@@ -223,6 +223,7 @@ export class AdminService {
       where: { id: teacherId },
       data: {
         isApproved: dto.isApproved,
+        approvedAt: dto.isApproved ? new Date() : null,
       },
       include: {
         user: {
