@@ -43,9 +43,9 @@ const TeacherDetailModal = ({ teacherId, onClose, onApprove }: {
       alert('Öğretmen başarıyla onaylandı! Artık sistemde aktif.');
       await new Promise(resolve => setTimeout(resolve, 500)); // 500ms bekle
       window.location.reload();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Approve error:', error);
-      alert('Onaylama başarısız: ' + (error?.response?.data?.message || error?.message));
+      alert('Onaylama başarısız: ' + (error?.response?.data?.message || error?.message || 'Bilinmeyen hata'));
       setApproving(false);
     }
   };
