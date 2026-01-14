@@ -120,6 +120,7 @@ const PendingApprovals = ({ teachers }: { teachers: any[] }) => {
     try {
       setApproving(teacherId);
       await api.approveTeacher(teacherId);
+      alert('Öğretmen başarıyla onaylandı!');
       window.location.reload();
     } catch (error) {
       console.error('Approve error:', error);
@@ -131,9 +132,11 @@ const PendingApprovals = ({ teachers }: { teachers: any[] }) => {
 
   const handleReject = async (teacherId: string) => {
     const reason = prompt('Reddetme sebebini yazın (opsiyonel):');
+    if (reason === null) return; // Cancel basıldı
     try {
       setApproving(teacherId);
       await api.rejectTeacher(teacherId, reason || undefined);
+      alert('Öğretmen reddedildi!');
       window.location.reload();
     } catch (error) {
       console.error('Reject error:', error);
