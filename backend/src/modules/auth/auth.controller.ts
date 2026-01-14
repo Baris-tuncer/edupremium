@@ -28,7 +28,7 @@ import {
   ForgotPasswordDto,
   ResetPasswordDto,
 } from './dto/auth.dto';
-import { Public } from '../../common/guards/auth.guard';
+import { Public, JwtAuthGuard } from '../../common/guards/auth.guard';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -128,6 +128,7 @@ export class AuthController {
   // GET CURRENT USER
   // ========================================
   @Get('me')
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user info' })
   @ApiResponse({ status: 200, description: 'User info' })
