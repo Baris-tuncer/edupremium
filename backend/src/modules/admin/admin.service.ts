@@ -1,269 +1,325 @@
-// ============================================================================
-// ADMIN SERVICE
-// ============================================================================
-
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.module';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { UserStatus } from '@prisma/client';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+import { DashboardStatsDto, ApproveTeacherDto } from './dto/admin.dto';
 
 @Injectable()
 export class AdminService {
-  constructor(
-    private prisma: PrismaService,
-    private eventEmitter: EventEmitter2,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
-  // ========================================
-  // GET PENDING TEACHERS
-  // ========================================
-  async getPendingTeachers(page: number = 1, limit: number = 20) {
-    const skip = (page - 1) * limit;
+  async getDashboardStats(): Promise<DashboardStatsDto> {
+    // Öğretmen istatistikleri
+    const totalTeachers = await this.prisma.teacher.count();
+    const activeTeachers = await this.prisma.teacher.count({
+      where: { isApproved: true },
+    });
+    const pendingTeachers = await this.prisma.teacher.count({
+      where: { isApproved: false },
+    });
 
-    const [teachers, total] = await Promise.all([
-      this.prisma.teacher.findMany({
-        where: { isApproved: false },
-        include: {
-          user: {
-            select: { email: true, createdAt: true },
-          },
-          branch: {
-            select: { name: true },
-          },
-          invitationCode: {
-            select: { code: true },
-          },
+    // Öğrenci istatistikleri
+    const totalStudents = await this.prisma.student.count();
+    const activeStudents = await this.prisma.user.count({
+      where: {
+        role: 'STUDENT',
+        status: 'ACTIVE',
+      },
+    });
+
+    // Randevu istatistikleri
+    const totalAppointments = await this.prisma.appointment.count();
+    const completedAppointments = await this.prisma.appointment.count({
+      where: { status: 'COMPLETED' },
+    });
+
+    // Gelir hesaplama
+    const revenueData = await this.prisma.appointment.aggregate({
+      where: {
+        status: 'COMPLETED',
+      },
+      _sum: {
+        price: true,
+      },
+    });
+    const totalRevenue = Number(revenueData._sum.price || 0);
+
+    // Bu ay geliri
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const monthlyRevenueData = await this.prisma.appointment.aggregate({
+      where: {
+        status: 'COMPLETED',
+        createdAt: {
+          gte: startOfMonth,
         },
-        orderBy: { createdAt: 'asc' },
-        skip,
-        take: limit,
-      }),
-      this.prisma.teacher.count({ where: { isApproved: false } }),
-    ]);
+      },
+      _sum: {
+        price: true,
+      },
+    });
+    const monthlyRevenue = Number(monthlyRevenueData._sum.price || 0);
 
     return {
-      data: teachers,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
-  }
-
-  // ========================================
-  // APPROVE TEACHER
-  // ========================================
-  async approveTeacher(teacherId: string, adminUserId: string) {
-    const teacher = await this.prisma.teacher.findUnique({
-      where: { id: teacherId },
-      include: { user: true },
-    });
-
-    if (!teacher) {
-      throw new NotFoundException('Teacher not found');
-    }
-
-    if (teacher.isApproved) {
-      throw new BadRequestException('Teacher is already approved');
-    }
-
-    const [updatedTeacher] = await this.prisma.$transaction([
-      this.prisma.teacher.update({
-        where: { id: teacherId },
-        data: {
-          isApproved: true,
-          approvedAt: new Date(),
-        },
-      }),
-      this.prisma.user.update({
-        where: { id: teacher.userId },
-        data: { status: UserStatus.ACTIVE },
-      }),
-    ]);
-
-    // Emit event for welcome email
-    this.eventEmitter.emit('teacher.approved', {
-      teacherId,
-      email: teacher.user.email,
-      firstName: teacher.firstName,
-    });
-
-    return updatedTeacher;
-  }
-
-  // ========================================
-  // REJECT TEACHER
-  // ========================================
-  async rejectTeacher(teacherId: string, reason: string) {
-    const teacher = await this.prisma.teacher.findUnique({
-      where: { id: teacherId },
-      include: { user: true, invitationCode: true },
-    });
-
-    if (!teacher) {
-      throw new NotFoundException('Teacher not found');
-    }
-
-    await this.prisma.$transaction([
-      // Soft delete user
-      this.prisma.user.update({
-        where: { id: teacher.userId },
-        data: { deletedAt: new Date() },
-      }),
-      // Reactivate invitation code
-      ...(teacher.invitationCodeId
-        ? [
-            this.prisma.invitationCode.update({
-              where: { id: teacher.invitationCodeId },
-              data: { status: 'ACTIVE', usedAt: null },
-            }),
-          ]
-        : []),
-    ]);
-
-    // Emit event for rejection email
-    this.eventEmitter.emit('teacher.rejected', {
-      email: teacher.user.email,
-      firstName: teacher.firstName,
-      reason,
-    });
-
-    return { message: 'Teacher rejected' };
-  }
-
-  // ========================================
-  // GET DASHBOARD STATS
-  // ========================================
-  async getDashboardStats() {
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
-
-    const [
-      totalStudents,
       totalTeachers,
+      activeTeachers,
       pendingTeachers,
-      monthlyAppointments,
-      weeklyAppointments,
+      totalStudents,
+      activeStudents,
+      totalAppointments,
+      completedAppointments,
+      totalRevenue,
       monthlyRevenue,
-      pendingBankTransfers,
-    ] = await Promise.all([
-      this.prisma.student.count(),
-      this.prisma.teacher.count({ where: { isApproved: true } }),
-      this.prisma.teacher.count({ where: { isApproved: false } }),
-      this.prisma.appointment.count({
-        where: {
-          createdAt: { gte: startOfMonth },
-          status: { not: 'CANCELLED' },
-        },
-      }),
-      this.prisma.appointment.count({
-        where: {
-          createdAt: { gte: startOfWeek },
-          status: { not: 'CANCELLED' },
-        },
-      }),
-      this.prisma.appointment.aggregate({
-        where: {
-          createdAt: { gte: startOfMonth },
-          paymentStatus: 'PAID',
-        },
-        _sum: { paymentAmount: true },
-      }),
-      this.prisma.appointment.count({
-        where: {
-          paymentMethod: 'BANK_TRANSFER',
-          paymentStatus: 'PENDING',
-          status: 'PENDING_PAYMENT',
-        },
-      }),
-    ]);
-
-    return {
-      users: {
-        totalStudents,
-        totalTeachers,
-        pendingTeachers,
-      },
-      appointments: {
-        monthlyTotal: monthlyAppointments,
-        weeklyTotal: weeklyAppointments,
-      },
-      finance: {
-        monthlyRevenue: monthlyRevenue._sum.paymentAmount || 0,
-        pendingBankTransfers,
-      },
     };
   }
 
-  // ========================================
-  // APPROVE BANK TRANSFER
-  // ========================================
-  async approveBankTransfer(appointmentId: string, adminUserId: string) {
-    const appointment = await this.prisma.appointment.findUnique({
-      where: { id: appointmentId },
-    });
-
-    if (!appointment) {
-      throw new NotFoundException('Appointment not found');
-    }
-
-    if (appointment.paymentMethod !== 'BANK_TRANSFER') {
-      throw new BadRequestException('This is not a bank transfer payment');
-    }
-
-    if (appointment.paymentStatus !== 'PENDING') {
-      throw new BadRequestException('Payment is not pending');
-    }
-
-    const updated = await this.prisma.appointment.update({
-      where: { id: appointmentId },
-      data: {
-        paymentStatus: 'PAID',
-        status: 'CONFIRMED',
+  async getAllTeachers() {
+    const teachers = await this.prisma.teacher.findMany({
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            createdAt: true,
+          },
+        },
+        branch: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        subjects: {
+          include: {
+            subject: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     });
 
-    // Emit event for Teams meeting creation and notifications
-    this.eventEmitter.emit('appointment.confirmed', {
-      appointmentId,
-      teacherId: appointment.teacherId,
-      studentId: appointment.studentId,
-      scheduledAt: appointment.scheduledAt,
-    });
-
-    return updated;
+    return teachers.map((teacher) => ({
+      id: teacher.id,
+      firstName: teacher.user.firstName,
+      lastName: teacher.user.lastName,
+      email: teacher.user.email,
+      phone: teacher.user.phone,
+      branch: teacher.branch,
+      subjects: teacher.subjects.map((ts) => ts.subject),
+      experience: teacher.experience,
+      hourlyRate: Number(teacher.hourlyRate),
+      isApproved: teacher.isApproved,
+      rating: teacher.rating,
+      totalLessons: teacher.totalLessons,
+      createdAt: teacher.user.createdAt,
+      photoUrl: teacher.photoUrl,
+    }));
   }
 
-  // ========================================
-  // REJECT BANK TRANSFER
-  // ========================================
-  async rejectBankTransfer(appointmentId: string, reason: string) {
-    const appointment = await this.prisma.appointment.findUnique({
-      where: { id: appointmentId },
-    });
-
-    if (!appointment) {
-      throw new NotFoundException('Appointment not found');
-    }
-
-    const updated = await this.prisma.appointment.update({
-      where: { id: appointmentId },
-      data: {
-        paymentStatus: 'FAILED',
-        status: 'CANCELLED',
-        cancelReason: reason,
+  async getTeacherById(teacherId: string) {
+    const teacher = await this.prisma.teacher.findUnique({
+      where: { id: teacherId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            createdAt: true,
+            status: true,
+          },
+        },
+        branch: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        subjects: {
+          include: {
+            subject: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        appointments: {
+          include: {
+            student: {
+              include: {
+                user: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            scheduledAt: 'desc',
+          },
+          take: 10,
+        },
       },
     });
 
-    // Emit event for notification
-    this.eventEmitter.emit('payment.rejected', {
-      appointmentId,
-      reason,
+    if (!teacher) {
+      throw new NotFoundException('Öğretmen bulunamadı');
+    }
+
+    return {
+      id: teacher.id,
+      firstName: teacher.user.firstName,
+      lastName: teacher.user.lastName,
+      email: teacher.user.email,
+      phone: teacher.user.phone,
+      status: teacher.user.status,
+      branch: teacher.branch,
+      subjects: teacher.subjects.map((ts) => ts.subject),
+      bio: teacher.bio,
+      experience: teacher.experience,
+      hourlyRate: Number(teacher.hourlyRate),
+      isApproved: teacher.isApproved,
+      rating: teacher.rating,
+      totalLessons: teacher.totalLessons,
+      photoUrl: teacher.photoUrl,
+      videoUrl: teacher.videoUrl,
+      createdAt: teacher.user.createdAt,
+      recentAppointments: teacher.appointments.map((apt) => ({
+        id: apt.id,
+        studentName: `${apt.student.user.firstName} ${apt.student.user.lastName}`,
+        scheduledAt: apt.scheduledAt,
+        status: apt.status,
+        price: Number(apt.price),
+      })),
+    };
+  }
+
+  async approveTeacher(teacherId: string, dto: ApproveTeacherDto) {
+    const teacher = await this.prisma.teacher.findUnique({
+      where: { id: teacherId },
     });
 
-    return updated;
+    if (!teacher) {
+      throw new NotFoundException('Öğretmen bulunamadı');
+    }
+
+    return this.prisma.teacher.update({
+      where: { id: teacherId },
+      data: {
+        isApproved: dto.isApproved,
+      },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+    });
+  }
+
+  async getAllStudents() {
+    const students = await this.prisma.student.findMany({
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            createdAt: true,
+          },
+        },
+        appointments: {
+          select: {
+            id: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return students.map((student) => ({
+      id: student.id,
+      firstName: student.user.firstName,
+      lastName: student.user.lastName,
+      email: student.user.email,
+      phone: student.user.phone,
+      grade: student.grade,
+      school: student.school,
+      parentPhone: student.parentPhone,
+      totalLessons: student.appointments.length,
+      createdAt: student.user.createdAt,
+    }));
+  }
+
+  async getAllAppointments() {
+    const appointments = await this.prisma.appointment.findMany({
+      include: {
+        teacher: {
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+        student: {
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        scheduledAt: 'desc',
+      },
+    });
+
+    return appointments.map((apt) => ({
+      id: apt.id,
+      teacher: {
+        id: apt.teacher.id,
+        firstName: apt.teacher.user.firstName,
+        lastName: apt.teacher.user.lastName,
+      },
+      student: {
+        id: apt.student.id,
+        firstName: apt.student.user.firstName,
+        lastName: apt.student.user.lastName,
+      },
+      scheduledAt: apt.scheduledAt,
+      duration: apt.duration,
+      status: apt.status,
+      price: Number(apt.price),
+      createdAt: apt.createdAt,
+    }));
   }
 }

@@ -1,16 +1,11 @@
-// ============================================================================
-// ADMIN MODULE
-// ============================================================================
-
 import { Module } from '@nestjs/common';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
-import { InvitationsService } from './invitations.service';
-import { FinanceService } from './finance.service';
+import { PrismaModule } from '../../prisma/prisma.module';
 
 @Module({
+  imports: [PrismaModule],
   controllers: [AdminController],
-  providers: [AdminService, InvitationsService, FinanceService],
-  exports: [AdminService, InvitationsService, FinanceService],
+  providers: [AdminService],
 })
 export class AdminModule {}
