@@ -22,12 +22,11 @@ export default function LoginPage() {
       setDebug('Got tokens, redirecting...');
       if (!tokens.accessToken) { throw new Error('Giris basarisiz'); }
       const payload = JSON.parse(atob(tokens.accessToken.split('.')[1]));
-      setDebug('Role: ' + payload.role + ' - Redirecting in 2s...');
-      setTimeout(() => {
-        if (payload.role === 'TEACHER') { window.location.href = '/teacher/dashboard'; }
-        else if (payload.role === 'STUDENT') { window.location.href = '/student/dashboard'; }
-        else if (payload.role === 'ADMIN') { window.location.href = '/admin/dashboard'; } else { window.location.href = '/'; }
-      }, 2000);
+      setDebug('Role: ' + payload.role + ' - Redirecting...');
+      if (payload.role === 'TEACHER') { window.location.href = '/teacher/dashboard'; }
+      else if (payload.role === 'STUDENT') { window.location.href = '/student/dashboard'; }
+      else if (payload.role === 'ADMIN') { window.location.href = '/admin/dashboard'; }
+      else { window.location.href = '/'; }
     } catch (err: any) { 
       setDebug('Error: ' + err.message);
       setError(err.message || 'Giris basarisiz'); 
