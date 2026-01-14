@@ -38,13 +38,14 @@ const TeacherDetailModal = ({ teacherId, onClose, onApprove }: {
     
     try {
       setApproving(true);
-      await api.approveTeacher(teacherId);
+      const result = await api.approveTeacher(teacherId);
+      console.log('Approve result:', result);
       alert('Öğretmen başarıyla onaylandı! Artık sistemde aktif.');
+      await new Promise(resolve => setTimeout(resolve, 500)); // 500ms bekle
       window.location.reload();
     } catch (error) {
       console.error('Approve error:', error);
-      alert('Onaylama başarısız!');
-    } finally {
+      alert('Onaylama başarısız: ' + (error?.response?.data?.message || error?.message));
       setApproving(false);
     }
   };
