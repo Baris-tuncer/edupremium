@@ -150,7 +150,7 @@ const TeacherDetailModal = ({ teacherId, onClose, onApprove }: {
                 <div className="flex flex-wrap gap-2">
                   {teacher.subjects.map((ts: any) => (
                     <span key={ts.id} className="badge badge-emerald">
-                      {ts.subject.name}
+                      {ts.subject?.name || 'Bilinmiyor'}
                     </span>
                   ))}
                 </div>
