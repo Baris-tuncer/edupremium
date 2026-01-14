@@ -37,10 +37,10 @@ export class AdminService {
         status: 'COMPLETED',
       },
       _sum: {
-        price: true,
+        paymentAmount: true,
       },
     });
-    const totalRevenue = Number(revenueData._sum.price || 0);
+    const totalRevenue = Number(revenueData._sum.paymentAmount || 0);
 
     // Bu ay geliri
     const startOfMonth = new Date();
@@ -55,10 +55,10 @@ export class AdminService {
         },
       },
       _sum: {
-        price: true,
+        paymentAmount: true,
       },
     });
-    const monthlyRevenue = Number(monthlyRevenueData._sum.price || 0);
+    const monthlyRevenue = Number(monthlyRevenueData._sum.paymentAmount || 0);
 
     return {
       totalTeachers,
@@ -116,13 +116,13 @@ export class AdminService {
       phone: teacher.user.phone,
       branch: teacher.branch,
       subjects: teacher.subjects.map((ts) => ts.subject),
-      experience: teacher.experience,
+      experience: 0, // Teacher modelinde bu field yok
       hourlyRate: Number(teacher.hourlyRate),
       isApproved: teacher.isApproved,
-      rating: teacher.rating,
-      totalLessons: teacher.totalLessons,
+      rating: 0, // Teacher modelinde bu field yok
+      totalLessons: 0, // Teacher modelinde bu field yok
       createdAt: teacher.user.createdAt,
-      photoUrl: teacher.photoUrl,
+      photoUrl: teacher.profilePhotoUrl,
     }));
   }
 
@@ -192,20 +192,20 @@ export class AdminService {
       branch: teacher.branch,
       subjects: teacher.subjects.map((ts) => ts.subject),
       bio: teacher.bio,
-      experience: teacher.experience,
+      experience: 0, // Teacher modelinde bu field yok
       hourlyRate: Number(teacher.hourlyRate),
       isApproved: teacher.isApproved,
-      rating: teacher.rating,
-      totalLessons: teacher.totalLessons,
-      photoUrl: teacher.photoUrl,
-      videoUrl: teacher.videoUrl,
+      rating: 0, // Teacher modelinde bu field yok
+      totalLessons: 0, // Teacher modelinde bu field yok
+      photoUrl: teacher.profilePhotoUrl,
+      videoUrl: teacher.introVideoUrl,
       createdAt: teacher.user.createdAt,
       recentAppointments: teacher.appointments.map((apt) => ({
         id: apt.id,
         studentName: `${apt.student.user.firstName} ${apt.student.user.lastName}`,
         scheduledAt: apt.scheduledAt,
         status: apt.status,
-        price: Number(apt.price),
+        price: Number(apt.paymentAmount || 0),
       })),
     };
   }
@@ -266,8 +266,8 @@ export class AdminService {
       lastName: student.user.lastName,
       email: student.user.email,
       phone: student.user.phone,
-      grade: student.grade,
-      school: student.school,
+      grade: student.gradeLevel?.toString(),
+      school: student.schoolName,
       parentPhone: student.parentPhone,
       totalLessons: student.appointments.length,
       createdAt: student.user.createdAt,
@@ -316,9 +316,9 @@ export class AdminService {
         lastName: apt.student.user.lastName,
       },
       scheduledAt: apt.scheduledAt,
-      duration: apt.duration,
+      duration: apt.durationMinutes,
       status: apt.status,
-      price: Number(apt.price),
+      price: Number(apt.paymentAmount || 0),
       createdAt: apt.createdAt,
     }));
   }
