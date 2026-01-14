@@ -26,7 +26,7 @@ export default function LoginPage() {
       setTimeout(() => {
         if (payload.role === 'TEACHER') { window.location.href = '/teacher/dashboard'; }
         else if (payload.role === 'STUDENT') { window.location.href = '/student/dashboard'; }
-        else { window.location.href = '/'; }
+        else if (payload.role === 'ADMIN') { window.location.href = '/admin/dashboard'; } else { window.location.href = '/'; }
       }, 2000);
     } catch (err: any) { 
       setDebug('Error: ' + err.message);
