@@ -111,9 +111,12 @@ class ApiClient {
 
   // ADMIN
   async getAdminDashboard() { const r = await this.client.get('/admin/dashboard'); return r.data.data || r.data; }
-  async getPendingTeachers(page = 1, limit = 20) { const r = await this.client.get('/admin/teachers/pending', { params: { page, limit } }); return r.data.data || r.data; }
-  async approveTeacher(teacherId: string) { await this.client.post(`/admin/teachers/${teacherId}/approve`); }
-  async rejectTeacher(teacherId: string, reason: string) { await this.client.post(`/admin/teachers/${teacherId}/reject`, { reason }); }
+  async getAllTeachers() { const r = await this.client.get('/admin/teachers'); return r.data.data || r.data; }
+  async getTeacherById(teacherId: string) { const r = await this.client.get(`/admin/teachers/${teacherId}`); return r.data.data || r.data; }
+  async approveTeacher(teacherId: string) { const r = await this.client.put(`/admin/teachers/${teacherId}/approve`, { isApproved: true }); return r.data.data || r.data; }
+  async rejectTeacher(teacherId: string, reason?: string) { const r = await this.client.put(`/admin/teachers/${teacherId}/approve`, { isApproved: false, rejectionReason: reason }); return r.data.data || r.data; }
+  async getAllStudents() { const r = await this.client.get('/admin/students'); return r.data.data || r.data; }
+  async getAllAppointments() { const r = await this.client.get('/admin/appointments'); return r.data.data || r.data; }
   async createInvitationCodes(data: any) { const r = await this.client.post('/admin/invitations', data); return r.data.data || r.data; }
   async listInvitations(page = 1, limit = 20, status?: string) { const r = await this.client.get('/admin/invitations', { params: { page, limit, status } }); return r.data.data || r.data; }
   async revokeInvitation(id: string) { await this.client.delete(`/admin/invitations/${id}`); }

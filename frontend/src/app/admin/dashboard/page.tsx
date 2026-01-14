@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { api } from '@/lib/api';
 
 // ============================================
 // ADMIN SIDEBAR
@@ -78,7 +79,7 @@ const AdminSidebar = ({ activeItem }: { activeItem: string }) => {
 const StatCard = ({ icon, label, value, change, trend, color }: {
   icon: React.ReactNode;
   label: string;
-  value: string;
+  value: string | number;
   change?: string;
   trend?: 'up' | 'down';
   color: 'navy' | 'gold' | 'emerald' | 'violet' | 'rose';
@@ -112,138 +113,92 @@ const StatCard = ({ icon, label, value, change, trend, color }: {
 // ============================================
 // PENDING APPROVALS
 // ============================================
-const PendingApprovals = () => {
-  const pendingTeachers = [
-    { id: 1, name: 'Ahmet Yılmaz', email: 'ahmet@email.com', branch: 'Fizik', date: '14 Ocak 2026' },
-    { id: 2, name: 'Fatma Demir', email: 'fatma@email.com', branch: 'Kimya', date: '13 Ocak 2026' },
-    { id: 3, name: 'Mustafa Kaya', email: 'mustafa@email.com', branch: 'Biyoloji', date: '12 Ocak 2026' },
-  ];
+const PendingApprovals = ({ teachers }: { teachers: any[] }) => {
+  const [approving, setApproving] = useState<string | null>(null);
+
+  const handleApprove = async (teacherId: string) => {
+    try {
+      setApproving(teacherId);
+      await api.approveTeacher(teacherId);
+      window.location.reload();
+    } catch (error) {
+      console.error('Approve error:', error);
+      alert('Onaylama başarısız!');
+    } finally {
+      setApproving(null);
+    }
+  };
+
+  const handleReject = async (teacherId: string) => {
+    const reason = prompt('Reddetme sebebini yazın (opsiyonel):');
+    try {
+      setApproving(teacherId);
+      await api.rejectTeacher(teacherId, reason || undefined);
+      window.location.reload();
+    } catch (error) {
+      console.error('Reject error:', error);
+      alert('Reddetme başarısız!');
+    } finally {
+      setApproving(null);
+    }
+  };
 
   return (
     <div className="card p-6">
       <div className="flex items-center justify-between mb-6">
         <h3 className="font-display font-semibold text-navy-900">Onay Bekleyen Öğretmenler</h3>
-        <span className="badge badge-warning">{pendingTeachers.length} adet</span>
+        <span className="badge badge-warning">{teachers.length} adet</span>
       </div>
 
-      <div className="space-y-4">
-        {pendingTeachers.map((teacher) => (
-          <div key={teacher.id} className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl">
-            <div className="w-12 h-12 bg-navy-100 rounded-xl flex items-center justify-center font-display font-semibold text-navy-700">
-              {teacher.name.split(' ').map(n => n[0]).join('')}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-medium text-navy-900">{teacher.name}</div>
-              <div className="text-sm text-slate-500">{teacher.email}</div>
-            </div>
-            <div className="text-right">
-              <div className="badge badge-navy">{teacher.branch}</div>
-              <div className="text-xs text-slate-400 mt-1">{teacher.date}</div>
-            </div>
-            <div className="flex gap-2">
-              <button className="p-2 bg-emerald-100 text-emerald-600 rounded-lg hover:bg-emerald-200 transition-colors">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </button>
-              <button className="p-2 bg-rose-100 text-rose-600 rounded-lg hover:bg-rose-200 transition-colors">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <Link href="/admin/teachers?status=pending" className="btn-secondary w-full mt-6">
-        Tümünü Gör
-      </Link>
-    </div>
-  );
-};
-
-// ============================================
-// PENDING BANK TRANSFERS
-// ============================================
-const PendingBankTransfers = () => {
-  const transfers = [
-    { id: 1, student: 'Ali Yılmaz', amount: 450, orderCode: 'ORD-2026-ABC123', date: '15 Ocak 2026', deadline: '2 saat' },
-    { id: 2, student: 'Zeynep Kaya', amount: 400, orderCode: 'ORD-2026-DEF456', date: '14 Ocak 2026', deadline: '5 saat' },
-  ];
-
-  return (
-    <div className="card p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="font-display font-semibold text-navy-900">Bekleyen Havale/EFT</h3>
-        <span className="badge badge-gold">{transfers.length} adet</span>
-      </div>
-
-      <div className="space-y-4">
-        {transfers.map((transfer) => (
-          <div key={transfer.id} className="p-4 border border-amber-200 bg-amber-50 rounded-xl">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <div className="font-medium text-navy-900">{transfer.student}</div>
-                <div className="text-sm text-slate-500 font-mono">{transfer.orderCode}</div>
+      {teachers.length === 0 ? (
+        <div className="text-center py-8 text-slate-500">
+          Onay bekleyen öğretmen bulunmuyor
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {teachers.slice(0, 3).map((teacher) => (
+            <div key={teacher.id} className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl">
+              <div className="w-12 h-12 bg-navy-100 rounded-xl flex items-center justify-center font-display font-semibold text-navy-700">
+                {teacher.firstName[0]}{teacher.lastName[0]}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-navy-900">{teacher.firstName} {teacher.lastName}</div>
+                <div className="text-sm text-slate-500">{teacher.email}</div>
               </div>
               <div className="text-right">
-                <div className="font-display text-xl font-bold text-navy-900">₺{transfer.amount}</div>
-                <div className="text-xs text-amber-600">Son: {transfer.deadline}</div>
+                <div className="badge badge-navy">{teacher.branch.name}</div>
+                <div className="text-xs text-slate-400 mt-1">{new Date(teacher.createdAt).toLocaleDateString('tr-TR')}</div>
+              </div>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => handleApprove(teacher.id)}
+                  disabled={approving === teacher.id}
+                  className="p-2 bg-emerald-100 text-emerald-600 rounded-lg hover:bg-emerald-200 transition-colors disabled:opacity-50"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </button>
+                <button 
+                  onClick={() => handleReject(teacher.id)}
+                  disabled={approving === teacher.id}
+                  className="p-2 bg-rose-100 text-rose-600 rounded-lg hover:bg-rose-200 transition-colors disabled:opacity-50"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
             </div>
-            <div className="flex gap-2">
-              <button className="flex-1 btn-primary py-2 text-sm">Onayla</button>
-              <button className="flex-1 btn-secondary py-2 text-sm">Reddet</button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
-      <Link href="/admin/payments?type=bank_transfer&status=pending" className="btn-secondary w-full mt-6">
-        Tümünü Gör
-      </Link>
-    </div>
-  );
-};
-
-// ============================================
-// RECENT ACTIVITY
-// ============================================
-const RecentActivity = () => {
-  const activities = [
-    { id: 1, type: 'teacher_approved', text: 'Mehmet Öztürk öğretmen olarak onaylandı', time: '5 dk önce' },
-    { id: 2, type: 'payment_received', text: 'Ali Yılmaz ₺450 ödeme yaptı', time: '15 dk önce' },
-    { id: 3, type: 'lesson_completed', text: 'Matematik dersi tamamlandı', time: '1 saat önce' },
-    { id: 4, type: 'new_registration', text: 'Yeni öğrenci kaydı: Zeynep K.', time: '2 saat önce' },
-    { id: 5, type: 'feedback_submitted', text: 'Ders değerlendirmesi gönderildi', time: '3 saat önce' },
-  ];
-
-  const typeIcons: Record<string, { icon: string; color: string }> = {
-    teacher_approved: { icon: '✓', color: 'bg-emerald-100 text-emerald-600' },
-    payment_received: { icon: '₺', color: 'bg-gold-100 text-gold-600' },
-    lesson_completed: { icon: '📚', color: 'bg-navy-100 text-navy-600' },
-    new_registration: { icon: '👤', color: 'bg-violet-100 text-violet-600' },
-    feedback_submitted: { icon: '⭐', color: 'bg-amber-100 text-amber-600' },
-  };
-
-  return (
-    <div className="card p-6">
-      <h3 className="font-display font-semibold text-navy-900 mb-6">Son Aktiviteler</h3>
-
-      <div className="space-y-4">
-        {activities.map((activity) => (
-          <div key={activity.id} className="flex items-start gap-3">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 ${typeIcons[activity.type].color}`}>
-              {typeIcons[activity.type].icon}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm text-slate-700">{activity.text}</div>
-              <div className="text-xs text-slate-400">{activity.time}</div>
-            </div>
-          </div>
-        ))}
-      </div>
+      {teachers.length > 0 && (
+        <Link href="/admin/teachers?status=pending" className="btn-secondary w-full mt-6">
+          Tümünü Gör ({teachers.length})
+        </Link>
+      )}
     </div>
   );
 };
@@ -252,6 +207,42 @@ const RecentActivity = () => {
 // MAIN DASHBOARD
 // ============================================
 export default function AdminDashboard() {
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<any>(null);
+  const [teachers, setTeachers] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [dashboardData, teachersData] = await Promise.all([
+          api.getAdminDashboard(),
+          api.getAllTeachers()
+        ]);
+        
+        setStats(dashboardData);
+        setTeachers(teachersData.filter((t: any) => !t.isApproved));
+      } catch (error) {
+        console.error('Dashboard data fetch error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-navy-500 mx-auto mb-4"></div>
+          <p className="text-slate-600">Yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-100">
       <AdminSidebar activeItem="dashboard" />
@@ -263,12 +254,12 @@ export default function AdminDashboard() {
           <p className="text-sm text-slate-500">Hoş geldiniz, Admin</p>
         </div>
         <div className="flex items-center gap-4">
-          <button className="btn-primary py-2 px-4 text-sm">
+          <Link href="/admin/invitations" className="btn-primary py-2 px-4 text-sm">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
             Davet Kodu Oluştur
-          </button>
+          </Link>
         </div>
       </header>
 
@@ -278,39 +269,31 @@ export default function AdminDashboard() {
           <StatCard
             icon={<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}
             label="Toplam Öğretmen"
-            value="248"
-            change="12"
-            trend="up"
+            value={stats?.totalTeachers || 0}
             color="navy"
           />
           <StatCard
             icon={<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>}
             label="Toplam Öğrenci"
-            value="1,847"
-            change="89"
-            trend="up"
+            value={stats?.totalStudents || 0}
             color="emerald"
           />
           <StatCard
             icon={<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>}
-            label="Bu Ay Ders"
-            value="3,240"
-            change="18%"
-            trend="up"
+            label="Toplam Ders"
+            value={stats?.totalAppointments || 0}
             color="violet"
           />
           <StatCard
             icon={<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-            label="Bu Ay Gelir"
-            value="₺428K"
-            change="24%"
-            trend="up"
+            label="Toplam Gelir"
+            value={`₺${(stats?.totalRevenue || 0).toLocaleString('tr-TR')}`}
             color="gold"
           />
           <StatCard
             icon={<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" /></svg>}
-            label="Bekleyen Hakediş"
-            value="₺52K"
+            label="Bu Ay Gelir"
+            value={`₺${(stats?.monthlyRevenue || 0).toLocaleString('tr-TR')}`}
             color="rose"
           />
         </div>
@@ -319,34 +302,54 @@ export default function AdminDashboard() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-8">
-            <PendingApprovals />
-            <PendingBankTransfers />
+            <PendingApprovals teachers={teachers} />
           </div>
 
           {/* Right Column */}
           <div className="space-y-8">
-            <RecentActivity />
-            
             {/* Quick Links */}
             <div className="card p-6">
               <h3 className="font-display font-semibold text-navy-900 mb-4">Hızlı İşlemler</h3>
               <div className="grid grid-cols-2 gap-3">
+                <Link href="/admin/teachers" className="p-4 bg-slate-50 rounded-xl text-center hover:bg-slate-100 transition-colors">
+                  <div className="text-2xl mb-2">👨‍🏫</div>
+                  <div className="text-sm font-medium text-slate-700">Öğretmenler</div>
+                </Link>
+                <Link href="/admin/students" className="p-4 bg-slate-50 rounded-xl text-center hover:bg-slate-100 transition-colors">
+                  <div className="text-2xl mb-2">👨‍🎓</div>
+                  <div className="text-sm font-medium text-slate-700">Öğrenciler</div>
+                </Link>
+                <Link href="/admin/appointments" className="p-4 bg-slate-50 rounded-xl text-center hover:bg-slate-100 transition-colors">
+                  <div className="text-2xl mb-2">📅</div>
+                  <div className="text-sm font-medium text-slate-700">Randevular</div>
+                </Link>
                 <Link href="/admin/invitations" className="p-4 bg-slate-50 rounded-xl text-center hover:bg-slate-100 transition-colors">
                   <div className="text-2xl mb-2">🎟️</div>
                   <div className="text-sm font-medium text-slate-700">Davet Kodları</div>
                 </Link>
-                <Link href="/admin/hakedis" className="p-4 bg-slate-50 rounded-xl text-center hover:bg-slate-100 transition-colors">
-                  <div className="text-2xl mb-2">💰</div>
-                  <div className="text-sm font-medium text-slate-700">Hakediş Öde</div>
-                </Link>
-                <Link href="/admin/reports" className="p-4 bg-slate-50 rounded-xl text-center hover:bg-slate-100 transition-colors">
-                  <div className="text-2xl mb-2">📊</div>
-                  <div className="text-sm font-medium text-slate-700">Raporlar</div>
-                </Link>
-                <Link href="/admin/settings" className="p-4 bg-slate-50 rounded-xl text-center hover:bg-slate-100 transition-colors">
-                  <div className="text-2xl mb-2">⚙️</div>
-                  <div className="text-sm font-medium text-slate-700">Ayarlar</div>
-                </Link>
+              </div>
+            </div>
+
+            {/* Stats Summary */}
+            <div className="card p-6">
+              <h3 className="font-display font-semibold text-navy-900 mb-4">Özet İstatistikler</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Aktif Öğretmen</span>
+                  <span className="font-semibold text-navy-900">{stats?.activeTeachers || 0}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Onay Bekleyen</span>
+                  <span className="font-semibold text-amber-600">{stats?.pendingTeachers || 0}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Aktif Öğrenci</span>
+                  <span className="font-semibold text-navy-900">{stats?.activeStudents || 0}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Tamamlanan Ders</span>
+                  <span className="font-semibold text-emerald-600">{stats?.completedAppointments || 0}</span>
+                </div>
               </div>
             </div>
           </div>
