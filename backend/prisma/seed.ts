@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -13,15 +14,21 @@ async function main() {
   });
   console.log('Branch:', branch.name, '- ID:', branch.id);
 
-  // Davet kodu oluştur
-  const invitation = await prisma.invitationCode.create({
-    data: {
-      code: 'TEST123',
-      status: 'ACTIVE',
-      expiresAt: new Date('2027-12-31'),
+  // Admin kullanıcı oluştur
+  const adminPassword = await bcrypt.hash('Admin123!', 10);
+  const admin = await prisma.user.upsert({
+    where: { email: 'admin@edupremium.com' },
+    update: {},
+    create: {
+      email: 'admin@edupremium.com',
+      passwordHash: adminPassword,
+      role: 'ADMIN',
+      firstName: 'Admin',
+      lastName: 'User',
+      isEmailVerified: true,
     },
   });
-  console.log('Davet kodu:', invitation.code);
+  console.log('Admin:', admin.email);
 }
 
 main()

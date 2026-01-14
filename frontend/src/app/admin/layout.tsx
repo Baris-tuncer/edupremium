@@ -14,19 +14,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          router.push('/giris');
+          router.push('/login');
           return;
         }
         
         const user = await api.getMe();
         if (user?.role !== 'ADMIN') {
-          router.push('/giris');
+          router.push('/login');
           return;
         }
         
         setAuthorized(true);
       } catch (error) {
-        router.push('/giris');
+        router.push('/login');
       } finally {
         setLoading(false);
       }
