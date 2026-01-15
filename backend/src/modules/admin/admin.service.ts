@@ -6,15 +6,7 @@ export class AdminService {
   constructor(private prisma: PrismaService) {}
 
   async getDashboardStats() {
-    const [
-      totalTeachers,
-      activeTeachers,
-      pendingTeachers,
-      totalStudents,
-      activeStudents,
-      totalAppointments,
-      completedAppointments,
-    ] = await Promise.all([
+    const [totalTeachers, activeTeachers, pendingTeachers, totalStudents, activeStudents, totalAppointments, completedAppointments] = await Promise.all([
       this.prisma.teacher.count(),
       this.prisma.teacher.count({ where: { isApproved: true } }),
       this.prisma.teacher.count({ where: { isApproved: false } }),
@@ -30,25 +22,15 @@ export class AdminService {
     });
 
     const monthlyPayments = await this.prisma.appointment.aggregate({
-      where: {
-        status: 'COMPLETED',
-        completedAt: {
-          gte: new Date(new Date().setDate(1)),
-        },
-      },
+      where: { status: 'COMPLETED', completedAt: { gte: new Date(new Date().setDate(1)) } },
       _sum: { paymentAmount: true },
     });
 
     return {
       success: true,
       data: {
-        totalTeachers,
-        activeTeachers,
-        pendingTeachers,
-        totalStudents,
-        activeStudents,
-        totalAppointments,
-        completedAppointments,
+        totalTeachers, activeTeachers, pendingTeachers, totalStudents, activeStudents,
+        totalAppointments, completedAppointments,
         totalRevenue: payments._sum.paymentAmount?.toNumber() || 0,
         monthlyRevenue: monthlyPayments._sum.paymentAmount?.toNumber() || 0,
       },
@@ -59,44 +41,21 @@ export class AdminService {
   async getAllTeachers() {
     const teachers = await this.prisma.teacher.findMany({
       include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            phone: true,
-            status: true,
-            createdAt: true,
-          },
-        },
+        user: { select: { id: true, email: true, firstName: true, lastName: true, phone: true, status: true, createdAt: true } },
         branch: true,
-        subjects: {
-          include: {
-            subject: true,
-          },
-        },
+        subjects: { include: { subject: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    const formattedTeachers = teachers.map((teacher) => ({
-      id: teacher.id,
-      firstName: teacher.firstName,
-      lastName: teacher.lastName,
-      email: teacher.user.email,
-      phone: teacher.user.phone,
-      branch: teacher.branch,
-      subjects: teacher.subjects.map(ts => ts.subject),
-      hourlyRate: teacher.hourlyRate.toNumber(),
-      isApproved: teacher.isApproved,
-      isActive: teacher.user.status === 'ACTIVE',
-      createdAt: teacher.createdAt,
-    }));
-
     return {
       success: true,
-      data: formattedTeachers,
+      data: teachers.map((t) => ({
+        id: t.id, firstName: t.firstName, lastName: t.lastName, email: t.user.email,
+        phone: t.user.phone, branch: t.branch, subjects: t.subjects.map(ts => ts.subject),
+        hourlyRate: t.hourlyRate.toNumber(), isApproved: t.isApproved,
+        isActive: t.user.status === 'ACTIVE', createdAt: t.createdAt,
+      })),
       timestamp: new Date().toISOString(),
     };
   }
@@ -105,182 +64,72 @@ export class AdminService {
     const teachers = await this.prisma.teacher.findMany({
       where: { isApproved: false },
       include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            phone: true,
-            createdAt: true,
-          },
-        },
+        user: { select: { id: true, email: true, firstName: true, lastName: true, phone: true, createdAt: true } },
         branch: true,
-        subjects: {
-          include: {
-            subject: true,
-          },
-        },
+        subjects: { include: { subject: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    const formattedTeachers = teachers.map((teacher) => ({
-      id: teacher.id,
-      firstName: teacher.firstName,
-      lastName: teacher.lastName,
-      email: teacher.user.email,
-      phone: teacher.user.phone,
-      branch: teacher.branch,
-      subjects: teacher.subjects.map(ts => ts.subject),
-      hourlyRate: teacher.hourlyRate.toNumber(),
-      bio: teacher.bio,
-      photoUrl: teacher.profilePhotoUrl,
-      videoUrl: teacher.introVideoUrl,
-      createdAt: teacher.createdAt,
-    }));
-
     return {
       success: true,
-      data: formattedTeachers,
+      data: teachers.map((t) => ({
+        id: t.id, firstName: t.firstName, lastName: t.lastName, email: t.user.email,
+        phone: t.user.phone, branch: t.branch, subjects: t.subjects.map(ts => ts.subject),
+        hourlyRate: t.hourlyRate.toNumber(), bio: t.bio,
+        photoUrl: t.profilePhotoUrl, videoUrl: t.introVideoUrl, createdAt: t.createdAt,
+      })),
       timestamp: new Date().toISOString(),
     };
   }
 
   async approveTeacher(teacherId: string) {
-    const teacher = await this.prisma.teacher.findUnique({
+    const teacher = await this.prisma.teacher.findUnique({ where: { id: teacherId }, include: { user: true } });
+    if (!teacher) throw new NotFoundException('Öğretmen bulunamadı');
+    if (teacher.isApproved) throw new BadRequestException('Bu öğretmen zaten onaylanmış');
+
+    const updated = await this.prisma.teacher.update({
       where: { id: teacherId },
-      include: { user: true },
-    });
-
-    if (!teacher) {
-      throw new NotFoundException('Öğretmen bulunamadı');
-    }
-
-    if (teacher.isApproved) {
-      throw new BadRequestException('Bu öğretmen zaten onaylanmış');
-    }
-
-    // Öğretmeni onayla
-    const updatedTeacher = await this.prisma.teacher.update({
-      where: { id: teacherId },
-      data: { 
-        isApproved: true,
-        approvedAt: new Date(),
-      },
+      data: { isApproved: true, approvedAt: new Date() },
       include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
+        user: { select: { id: true, email: true, firstName: true, lastName: true } },
         branch: true,
-        subjects: {
-          include: {
-            subject: true,
-          },
-        },
+        subjects: { include: { subject: true } },
       },
     });
 
-    // User'ı da aktif et
-    await this.prisma.user.update({
-      where: { id: teacher.userId },
-      data: { 
-        status: 'ACTIVE',
-        isActive: true,
-      },
-    });
+    await this.prisma.user.update({ where: { id: teacher.userId }, data: { status: 'ACTIVE', isActive: true } });
 
-    return {
-      success: true,
-      message: 'Öğretmen başarıyla onaylandı',
-      data: updatedTeacher,
-      timestamp: new Date().toISOString(),
-    };
+    return { success: true, message: 'Öğretmen başarıyla onaylandı', data: updated, timestamp: new Date().toISOString() };
   }
 
   async rejectTeacher(teacherId: string, reason?: string) {
-    const teacher = await this.prisma.teacher.findUnique({
+    const teacher = await this.prisma.teacher.findUnique({ where: { id: teacherId }, include: { user: true } });
+    if (!teacher) throw new NotFoundException('Öğretmen bulunamadı');
+
+    const updated = await this.prisma.teacher.update({
       where: { id: teacherId },
-      include: { user: true },
+      data: { isApproved: false, approvedAt: null },
+      include: { user: { select: { id: true, email: true, firstName: true, lastName: true } } },
     });
 
-    if (!teacher) {
-      throw new NotFoundException('Öğretmen bulunamadı');
-    }
+    await this.prisma.user.update({ where: { id: teacher.userId }, data: { status: 'INACTIVE', isActive: false } });
 
-    // Öğretmeni reddet
-    const updatedTeacher = await this.prisma.teacher.update({
-      where: { id: teacherId },
-      data: { 
-        isApproved: false,
-        approvedAt: null,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
-    });
-
-    // User'ı pasif et
-    await this.prisma.user.update({
-      where: { id: teacher.userId },
-      data: { 
-        status: 'INACTIVE',
-        isActive: false,
-      },
-    });
-
-    return {
-      success: true,
-      message: 'Öğretmen reddedildi',
-      data: updatedTeacher,
-      timestamp: new Date().toISOString(),
-    };
+    return { success: true, message: 'Öğretmen reddedildi', data: updated, timestamp: new Date().toISOString() };
   }
 
   async getAllStudents() {
     const students = await this.prisma.student.findMany({
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            phone: true,
-            status: true,
-            createdAt: true,
-          },
-        },
-      },
+      include: { user: { select: { id: true, email: true, firstName: true, lastName: true, phone: true, status: true, createdAt: true } } },
       orderBy: { createdAt: 'desc' },
     });
 
-    const formattedStudents = students.map((student) => ({
-      id: student.id,
-      firstName: student.firstName,
-      lastName: student.lastName,
-      email: student.user.email,
-      phone: student.user.phone,
-      gradeLevel: student.gradeLevel,
-      isActive: student.user.status === 'ACTIVE',
-      createdAt: student.createdAt,
-    }));
-
     return {
       success: true,
-      data: formattedStudents,
+      data: students.map((s) => ({
+        id: s.id, firstName: s.firstName, lastName: s.lastName, email: s.user.email,
+        phone: s.user.phone, gradeLevel: s.gradeLevel, isActive: s.user.status === 'ACTIVE', createdAt: s.createdAt,
+      })),
       timestamp: new Date().toISOString(),
     };
   }
@@ -288,66 +137,26 @@ export class AdminService {
   async getAllAppointments() {
     const appointments = await this.prisma.appointment.findMany({
       include: {
-        teacher: {
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                email: true,
-              },
-            },
-          },
-        },
-        student: {
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                email: true,
-              },
-            },
-          },
-        },
+        teacher: { include: { user: { select: { firstName: true, lastName: true, email: true } } } },
+        student: { include: { user: { select: { firstName: true, lastName: true, email: true } } } },
         subject: true,
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    return {
-      success: true,
-      data: appointments,
-      timestamp: new Date().toISOString(),
-    };
+    return { success: true, data: appointments, timestamp: new Date().toISOString() };
   }
 
   async getAllPayments() {
     const payments = await this.prisma.appointment.findMany({
-      where: {
-        paymentStatus: { in: ['COMPLETED', 'PAID'] },
-      },
+      where: { paymentStatus: { in: ['COMPLETED', 'PAID'] } },
       include: {
-        teacher: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-        student: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
+        teacher: { select: { firstName: true, lastName: true } },
+        student: { select: { firstName: true, lastName: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    return {
-      success: true,
-      data: payments,
-      timestamp: new Date().toISOString(),
-    };
+    return { success: true, data: payments, timestamp: new Date().toISOString() };
   }
 }

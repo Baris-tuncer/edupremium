@@ -1,8 +1,6 @@
 import { Controller, Get, Put, Param, UseGuards, Body } from '@nestjs/common';
 import { AdminService } from './admin.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
+import { JwtAuthGuard, RolesGuard, Roles } from '../../common/guards/auth.guard';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -31,10 +29,7 @@ export class AdminController {
   }
 
   @Put('teachers/:id/reject')
-  async rejectTeacher(
-    @Param('id') id: string,
-    @Body('reason') reason?: string,
-  ) {
+  async rejectTeacher(@Param('id') id: string, @Body('reason') reason?: string) {
     return this.adminService.rejectTeacher(id, reason);
   }
 
