@@ -60,6 +60,16 @@ class ApiClient {
     return r.data.data || r.data;
   }
 
+  async approveTeacher(teacherId: string) {
+    const r = await this.client.put(`/admin/teachers/${teacherId}/approve`);
+    return r.data;
+  }
+
+  async rejectTeacher(teacherId: string) {
+    const r = await this.client.put(`/admin/teachers/${teacherId}/reject`);
+    return r.data;
+  }
+
   async listBranches() {
     const r = await this.client.get('/branches');
     return r.data.data || r.data;
@@ -73,4 +83,4 @@ class ApiClient {
 }
 
 const api = new ApiClient();
-export default api;  // DEFAULT EXPORT ✅
+export default api;
