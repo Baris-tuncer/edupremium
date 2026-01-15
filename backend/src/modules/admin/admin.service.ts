@@ -26,17 +26,17 @@ export class AdminService {
 
     const payments = await this.prisma.appointment.aggregate({
       where: { status: 'COMPLETED' },
-      _sum: { price: true },
+      _sum: { paymentAmount: true },
     });
 
     const monthlyPayments = await this.prisma.appointment.aggregate({
       where: {
         status: 'COMPLETED',
         completedAt: {
-          gte: new Date(new Date().setDate(1)), // Bu ayın başı
+          gte: new Date(new Date().setDate(1)),
         },
       },
-      _sum: { price: true },
+      _sum: { paymentAmount: true },
     });
 
     return {
@@ -49,8 +49,8 @@ export class AdminService {
         activeStudents,
         totalAppointments,
         completedAppointments,
-        totalRevenue: payments._sum.price || 0,
-        monthlyRevenue: monthlyPayments._sum.price || 0,
+        totalRevenue: payments._sum.paymentAmount?.toNumber() || 0,
+        monthlyRevenue: monthlyPayments._sum.paymentAmount?.toNumber() || 0,
       },
       timestamp: new Date().toISOString(),
     };
@@ -71,25 +71,26 @@ export class AdminService {
           },
         },
         branch: true,
-        subjects: true,
+        subjects: {
+          include: {
+            subject: true,
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
 
     const formattedTeachers = teachers.map((teacher) => ({
       id: teacher.id,
-      firstName: teacher.user.firstName,
-      lastName: teacher.user.lastName,
+      firstName: teacher.firstName,
+      lastName: teacher.lastName,
       email: teacher.user.email,
       phone: teacher.user.phone,
       branch: teacher.branch,
-      subjects: teacher.subjects,
-      experience: teacher.experience,
-      hourlyRate: teacher.hourlyRate,
+      subjects: teacher.subjects.map(ts => ts.subject),
+      hourlyRate: teacher.hourlyRate.toNumber(),
       isApproved: teacher.isApproved,
       isActive: teacher.user.status === 'ACTIVE',
-      rating: teacher.rating,
-      totalLessons: teacher.totalLessons,
       createdAt: teacher.createdAt,
     }));
 
@@ -115,24 +116,27 @@ export class AdminService {
           },
         },
         branch: true,
-        subjects: true,
+        subjects: {
+          include: {
+            subject: true,
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
 
     const formattedTeachers = teachers.map((teacher) => ({
       id: teacher.id,
-      firstName: teacher.user.firstName,
-      lastName: teacher.user.lastName,
+      firstName: teacher.firstName,
+      lastName: teacher.lastName,
       email: teacher.user.email,
       phone: teacher.user.phone,
       branch: teacher.branch,
-      subjects: teacher.subjects,
-      experience: teacher.experience,
-      hourlyRate: teacher.hourlyRate,
+      subjects: teacher.subjects.map(ts => ts.subject),
+      hourlyRate: teacher.hourlyRate.toNumber(),
       bio: teacher.bio,
-      photoUrl: teacher.photoUrl,
-      videoUrl: teacher.videoUrl,
+      photoUrl: teacher.profilePhotoUrl,
+      videoUrl: teacher.introVideoUrl,
       createdAt: teacher.createdAt,
     }));
 
@@ -160,7 +164,10 @@ export class AdminService {
     // Öğretmeni onayla
     const updatedTeacher = await this.prisma.teacher.update({
       where: { id: teacherId },
-      data: { isApproved: true },
+      data: { 
+        isApproved: true,
+        approvedAt: new Date(),
+      },
       include: {
         user: {
           select: {
@@ -171,14 +178,21 @@ export class AdminService {
           },
         },
         branch: true,
-        subjects: true,
+        subjects: {
+          include: {
+            subject: true,
+          },
+        },
       },
     });
 
     // User'ı da aktif et
     await this.prisma.user.update({
       where: { id: teacher.userId },
-      data: { status: 'ACTIVE' },
+      data: { 
+        status: 'ACTIVE',
+        isActive: true,
+      },
     });
 
     return {
@@ -199,13 +213,12 @@ export class AdminService {
       throw new NotFoundException('Öğretmen bulunamadı');
     }
 
-    // Reddetme işlemi için öğretmeni sil veya bir "rejected" durumu ekle
-    // Şimdilik sadece isApproved = false yapıyoruz
+    // Öğretmeni reddet
     const updatedTeacher = await this.prisma.teacher.update({
       where: { id: teacherId },
       data: { 
         isApproved: false,
-        // rejectionReason alanı varsa ekleyebilirsiniz
+        approvedAt: null,
       },
       include: {
         user: {
@@ -222,7 +235,10 @@ export class AdminService {
     // User'ı pasif et
     await this.prisma.user.update({
       where: { id: teacher.userId },
-      data: { status: 'INACTIVE' },
+      data: { 
+        status: 'INACTIVE',
+        isActive: false,
+      },
     });
 
     return {
@@ -247,18 +263,17 @@ export class AdminService {
             createdAt: true,
           },
         },
-        grade: true,
       },
       orderBy: { createdAt: 'desc' },
     });
 
     const formattedStudents = students.map((student) => ({
       id: student.id,
-      firstName: student.user.firstName,
-      lastName: student.user.lastName,
+      firstName: student.firstName,
+      lastName: student.lastName,
       email: student.user.email,
       phone: student.user.phone,
-      grade: student.grade,
+      gradeLevel: student.gradeLevel,
       isActive: student.user.status === 'ACTIVE',
       createdAt: student.createdAt,
     }));
@@ -310,27 +325,19 @@ export class AdminService {
   async getAllPayments() {
     const payments = await this.prisma.appointment.findMany({
       where: {
-        status: { in: ['COMPLETED', 'CONFIRMED'] },
+        paymentStatus: { in: ['COMPLETED', 'PAID'] },
       },
       include: {
         teacher: {
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-              },
-            },
+          select: {
+            firstName: true,
+            lastName: true,
           },
         },
         student: {
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-              },
-            },
+          select: {
+            firstName: true,
+            lastName: true,
           },
         },
       },
