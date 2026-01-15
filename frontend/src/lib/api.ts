@@ -154,7 +154,7 @@ class ApiClient {
     return r.data;
   }
 
-  async uploadVideo(file: File) {
+  async uploadIntroVideo(file: File) {
     const formData = new FormData();
     formData.append('file', file);
     const r = await this.client.post('/teachers/me/video', formData, {
