@@ -145,8 +145,9 @@ class ApiClient {
     return r.data.data || r.data;
   }
 
-  async listSubjects() {
-    const r = await this.client.get('/subjects');
+  async listSubjects(branchId?: string) {
+    const url = branchId ? `/subjects?branchId=${branchId}` : '/subjects';
+    const r = await this.client.get(url);
     return r.data.data || r.data;
   }
 }
