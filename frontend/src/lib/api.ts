@@ -144,6 +144,34 @@ class ApiClient {
     return r.data;
   }
 
+  // UPLOADS
+  async uploadProfilePhoto(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const r = await this.client.post('/teachers/me/photo', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return r.data;
+  }
+
+  async uploadVideo(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const r = await this.client.post('/teachers/me/video', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return r.data;
+  }
+
+  async uploadDiploma(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const r = await this.client.post('/teachers/me/diploma', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return r.data;
+  }
+
   // GENERAL
   async listBranches() {
     const r = await this.client.get('/branches');
