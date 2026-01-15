@@ -114,6 +114,12 @@ class ApiClient {
     return r.data;
   }
 
+
+  async updateTeacherProfile(data: any) {
+    const r = await this.client.put('/teachers/me/profile', data);
+    return r.data;
+  }
+
   async uploadProfilePhoto(file: File) {
     const formData = new FormData();
     formData.append('photo', file);
