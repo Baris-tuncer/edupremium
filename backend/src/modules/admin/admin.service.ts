@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.module';
 
 @Injectable()
 export class AdminService {
@@ -19,7 +19,7 @@ export class AdminService {
       this.prisma.teacher.count({ where: { isApproved: true } }),
       this.prisma.teacher.count({ where: { isApproved: false } }),
       this.prisma.student.count(),
-      this.prisma.student.count({ where: { user: { isActive: true } } }),
+      this.prisma.student.count({ where: { user: { status: 'ACTIVE' } } }),
       this.prisma.appointment.count(),
       this.prisma.appointment.count({ where: { status: 'COMPLETED' } }),
     ]);
@@ -66,7 +66,7 @@ export class AdminService {
             firstName: true,
             lastName: true,
             phone: true,
-            isActive: true,
+            status: true,
             createdAt: true,
           },
         },
@@ -87,7 +87,7 @@ export class AdminService {
       experience: teacher.experience,
       hourlyRate: teacher.hourlyRate,
       isApproved: teacher.isApproved,
-      isActive: teacher.user.isActive,
+      isActive: teacher.user.status === 'ACTIVE',
       rating: teacher.rating,
       totalLessons: teacher.totalLessons,
       createdAt: teacher.createdAt,
@@ -178,7 +178,7 @@ export class AdminService {
     // User'ı da aktif et
     await this.prisma.user.update({
       where: { id: teacher.userId },
-      data: { isActive: true },
+      data: { status: 'ACTIVE' },
     });
 
     return {
@@ -199,7 +199,7 @@ export class AdminService {
       throw new NotFoundException('Öğretmen bulunamadı');
     }
 
-    // Not: Reddetme işlemi için öğretmeni silmek veya bir "rejected" durumu eklemek gerekebilir
+    // Reddetme işlemi için öğretmeni sil veya bir "rejected" durumu ekle
     // Şimdilik sadece isApproved = false yapıyoruz
     const updatedTeacher = await this.prisma.teacher.update({
       where: { id: teacherId },
@@ -222,7 +222,7 @@ export class AdminService {
     // User'ı pasif et
     await this.prisma.user.update({
       where: { id: teacher.userId },
-      data: { isActive: false },
+      data: { status: 'INACTIVE' },
     });
 
     return {
@@ -243,7 +243,7 @@ export class AdminService {
             firstName: true,
             lastName: true,
             phone: true,
-            isActive: true,
+            status: true,
             createdAt: true,
           },
         },
@@ -259,7 +259,7 @@ export class AdminService {
       email: student.user.email,
       phone: student.user.phone,
       grade: student.grade,
-      isActive: student.user.isActive,
+      isActive: student.user.status === 'ACTIVE',
       createdAt: student.createdAt,
     }));
 
