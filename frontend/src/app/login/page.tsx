@@ -23,7 +23,7 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const data = await api.login({ email, password });
+      const data = await api.login(email, password);
       
       if (!data.accessToken) {
         throw new Error('Token alınamadı');
