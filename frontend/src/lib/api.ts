@@ -114,6 +114,21 @@ class ApiClient {
     return r.data;
   }
 
+  async approveAppointment(appointmentId: string) {
+    const r = await this.client.put(`/appointments/${appointmentId}/approve`);
+    return r.data;
+  }
+
+  async rejectAppointment(appointmentId: string) {
+    const r = await this.client.put(`/appointments/${appointmentId}/reject`);
+    return r.data;
+  }
+
+  async loadAppointments() {
+    const r = await this.client.get('/teachers/me/appointments');
+    return r.data.data || r.data;
+  }
+
   // COMMON
   async getBranches() {
     const r = await this.client.get('/branches');
