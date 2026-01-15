@@ -12,10 +12,23 @@ class ApiClient {
       withCredentials: true,
     });
 
+    this.client.interceptors.request.use(
+      (config) => {
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+
     this.client.interceptors.response.use(
       (response) => response,
-      (error) => {
+      async (error) => {
         if (error.response?.status === 401) {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
           window.location.href = '/login';
         }
         return Promise.reject(error);
@@ -47,126 +60,8 @@ class ApiClient {
     return r.data.data || r.data;
   }
 
-  async getAllTeachers() {
-    const r = await this.client.get('/admin/teachers');
-    return r.data.data || r.data;
-  }
-
-  async getPendingTeachers() {
-    const r = await this.client.get('/admin/teachers/pending');
-    return r.data.data || r.data;
-  }
-
-  async approveTeacher(teacherId: string) {
-    const r = await this.client.put(`/admin/teachers/${teacherId}/approve`);
-    return r.data;
-  }
-
-  async rejectTeacher(teacherId: string, reason?: string) {
-    const r = await this.client.put(`/admin/teachers/${teacherId}/reject`, { reason });
-    return r.data;
-  }
-
-  async getAllStudents() {
-    const r = await this.client.get('/admin/students');
-    return r.data.data || r.data;
-  }
-
-  async getStudentDashboard() {
-    const r = await this.client.get('/students/me/dashboard');
-    return r.data.data || r.data;
-  }
-
-  async getTeacherDashboard() {
-    const r = await this.client.get('/teachers/me/dashboard');
-    return r.data.data || r.data;
-  }
-
-  async getTeacherLessons() {
-    const r = await this.client.get('/teachers/me/lessons');
-    return r.data.data || r.data;
-  }
-
-  async getMyAvailability() {
-    const r = await this.client.get('/teachers/me/availability');
-    return r.data.data || r.data;
-  }
-
-  async updateTeacherAvailability(availability: any) {
-    const r = await this.client.put('/teachers/me/availability', { availability });
-    return r.data;
-  }
-
-  async getMyProfile() {
-    const r = await this.client.get('/teachers/me/profile');
-    return r.data.data || r.data;
-  }
-
-  async updateProfile(data: any) {
-    const r = await this.client.put('/teachers/me/profile', data);
-    return r.data;
-  }
-
-  async updateTeacherProfile(data: any) {
-    const r = await this.client.put('/teachers/me/profile', data);
-    return r.data;
-  }
-
-  async uploadProfilePhoto(file: File) {
-    const formData = new FormData();
-    formData.append('photo', file);
-    const r = await this.client.post('/teachers/me/photo', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    return r.data;
-  }
-
-  async uploadProfileVideo(file: File) {
-    const formData = new FormData();
-    formData.append('video', file);
-    const r = await this.client.post('/teachers/me/video', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    return r.data;
-  }
-
-  async uploadIntroVideo(file: File) {
-    const formData = new FormData();
-    formData.append('video', file);
-    const r = await this.client.post('/teachers/me/intro-video', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    return r.data;
-  }
-
-  async approveAppointment(appointmentId: string) {
-    const r = await this.client.put(`/appointments/${appointmentId}/approve`);
-    return r.data;
-  }
-
-  async rejectAppointment(appointmentId: string, reason?: string) {
-    const r = await this.client.put(`/appointments/${appointmentId}/reject`, { reason });
-    return r.data;
-  }
-
-  async loadAppointments() {
-    const r = await this.client.get('/teachers/me/appointments');
-    return r.data.data || r.data;
-  }
-
-  async getBranches() {
-    const r = await this.client.get('/branches');
-    return r.data.data || r.data;
-  }
-
   async listBranches() {
     const r = await this.client.get('/branches');
-    return r.data.data || r.data;
-  }
-
-  async getSubjects(branchId?: string) {
-    const url = branchId ? `/subjects?branchId=${branchId}` : '/subjects';
-    const r = await this.client.get(url);
     return r.data.data || r.data;
   }
 
@@ -177,4 +72,5 @@ class ApiClient {
   }
 }
 
-export const api = new ApiClient();
+const api = new ApiClient();
+export default api;  // DEFAULT EXPORT ✅
