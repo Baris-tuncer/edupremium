@@ -13,10 +13,10 @@ export class AuthService {
   async login(email: string, password: string) {
     const user = await this.prisma.user.findUnique({ 
       where: { email },
-      include: { teacher: true, student: true, admin: true }
+      include: { teacher: true, student: true }
     });
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
       throw new UnauthorizedException('Email veya şifre hatalı');
     }
 
@@ -38,7 +38,14 @@ export class AuthService {
   async register(data: any) {
     const hashedPassword = await bcrypt.hash(data.password, 10);
     const user = await this.prisma.user.create({
-      data: { ...data, password: hashedPassword },
+      data: { 
+        email: data.email,
+        phone: data.phone,
+        passwordHash: hashedPassword,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        role: data.role,
+      },
     });
     return user;
   }
@@ -46,7 +53,7 @@ export class AuthService {
   async getMe(userId: string) {
     return this.prisma.user.findUnique({
       where: { id: userId },
-      include: { teacher: true, student: true, admin: true },
+      include: { teacher: true, student: true },
     });
   }
 }
