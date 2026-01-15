@@ -75,8 +75,8 @@ class ApiClient {
     return r.data;
   }
 
-  async rejectTeacher(teacherId: string) {
-    const r = await this.client.put(`/admin/teachers/${teacherId}/reject`);
+  async rejectTeacher(teacherId: string, reason?: string) {
+    const r = await this.client.put(`/admin/teachers/${teacherId}/reject`, { reason });
     return r.data;
   }
 
