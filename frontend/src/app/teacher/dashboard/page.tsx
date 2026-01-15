@@ -98,7 +98,7 @@ export default function TeacherDashboardPage() {
       }
       try {
         const [userData, dashboardData] = await Promise.all([
-          api.getCurrentUser(),
+          api.getMe(),
           api.getTeacherDashboard(),
         ]);
         setUser(userData);

@@ -118,7 +118,7 @@ export default function StudentDashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userData = await api.getCurrentUser();
+        const userData = await api.getMe();
         setUser(userData);
         
         try {

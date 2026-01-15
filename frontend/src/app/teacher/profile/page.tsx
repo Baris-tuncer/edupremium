@@ -65,7 +65,7 @@ export default function TeacherProfilePage() {
   const fetchData = async () => {
     try {
       const [userData, dashResult, branchResult] = await Promise.all([
-        api.getCurrentUser(),
+        api.getMe(),
         api.getTeacherDashboard(),
         api.listBranches()
       ]);
