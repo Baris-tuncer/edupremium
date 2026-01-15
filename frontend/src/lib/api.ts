@@ -99,7 +99,7 @@ class ApiClient {
     return r.data.data || r.data;
   }
 
-  async updateAvailability(availability: any) {
+  async updateTeacherAvailability(availability: any) {
     const r = await this.client.put('/teachers/me/availability', { availability });
     return r.data;
   }
