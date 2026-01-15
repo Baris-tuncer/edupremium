@@ -29,6 +29,7 @@ import { BranchesModule } from './modules/branches/branches.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { WalletModule } from './modules/wallet/wallet.module';
 import { InvitationModule } from './modules/invitation/invitation.module';
+import { ExamTypesModule } from './modules/exam-types/exam-types.module';
 
 // Health Check
 import { HealthController } from './health.controller';
@@ -106,6 +107,7 @@ import { HealthController } from './health.controller';
     BranchesModule,
     UploadsModule,
     InvitationModule,
+    ExamTypesModule,
   ],
   controllers: [HealthController],
   providers: [

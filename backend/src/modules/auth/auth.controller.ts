@@ -31,7 +31,7 @@ export class AuthController {
     return this.authService.registerStudent(body);
   }
 
-  // DAVET KODU İLE ÖĞRETMEN KAYDI
+  // Öğretmen kaydı
   @Post('register/teacher')
   async registerTeacher(
     @Body()
@@ -42,7 +42,9 @@ export class AuthController {
       password: string;
       firstName: string;
       lastName: string;
-      branchId: string;
+      branchIds: string[];  // CHANGED: array of branch IDs
+      subjectIds?: string[]; // NEW: array of subject IDs
+      examTypeIds?: string[]; // NEW: array of exam type IDs
       bio?: string;
       hourlyRate: number;
       iban?: string;

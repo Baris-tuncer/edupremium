@@ -50,7 +50,7 @@ export class AppointmentsService {
     // Validate teacher exists and is approved
     const teacher = await this.prisma.teacher.findUnique({
       where: { id: dto.teacherId },
-      include: { branches: { include: { branch: true } } },
+      include: { branch: true },
     });
 
     if (!teacher) {
@@ -62,7 +62,7 @@ export class AppointmentsService {
       where: { id: dto.subjectId },
     });
 
-    if (!subject || !teacher.branches.some(tb => tb.branchId === subject.branchId)) {
+    if (!subject || subject.branchId !== teacher.branchId) {
       throw new BadRequestException('Invalid subject for this teacher');
     }
 

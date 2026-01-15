@@ -53,4 +53,23 @@ export class UploadsController {
     await this.prisma.teacher.update({ where: { id: teacher.id }, data: { introVideoUrl: result.secure_url } });
     return { success: true, data: { url: result.secure_url } };
   }
+
+  @Post('diploma')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadDiploma(@UploadedFile() file: Express.Multer.File, @Request() req: any) {
+    if (!file) throw new BadRequestException('No file uploaded');
+    const teacher = await this.prisma.teacher.findUnique({ where: { userId: req.user.id } });
+    if (!teacher) throw new BadRequestException('Teacher not found');
+
+    const result = await new Promise<any>((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { folder: 'edupremium/diplomas', resource_type: 'auto' },
+        (error, result) => { if (error) reject(error); else resolve(result); }
+      );
+      Readable.from(file.buffer).pipe(uploadStream);
+    });
+
+    await this.prisma.teacher.update({ where: { id: teacher.id }, data: { diplomaUrl: result.secure_url } });
+    return { success: true, data: { url: result.secure_url } };
+  }
 }

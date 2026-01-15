@@ -1,32 +1,55 @@
-import { Injectable, UnauthorizedException, BadRequestException, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException, BadRequestException, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.module';
 import { InvitationService } from '../invitation/invitation.service';
-import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    @Inject(forwardRef(() => InvitationService))
     private invitationService: InvitationService,
   ) {}
 
   async login(email: string, password: string) {
     const user = await this.prisma.user.findUnique({
       where: { email },
-      include: { teacher: true, student: true }
+      include: { teacher: true, student: true },
     });
 
-    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-      throw new UnauthorizedException('Email veya şifre hatalı');
+    if (!user || user.status !== 'ACTIVE') {
+      throw new UnauthorizedException('Geçersiz kullanıcı adı veya şifre');
     }
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
-    const accessToken = this.jwtService.sign(payload);
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Geçersiz kullanıcı adı veya şifre');
+    }
+
+    const accessToken = this.jwtService.sign({
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
+    const refreshToken = this.jwtService.sign(
+      { sub: user.id },
+      { expiresIn: '999y' },
+    );
+
+    await this.prisma.session.create({
+      data: {
+        userId: user.id,
+        refreshToken,
+        expiresAt: new Date(Date.now() + 999 * 365 * 24 * 60 * 60 * 1000),
+      },
+    });
 
     return {
       accessToken,
+      refreshToken,
       user: {
         id: user.id,
         email: user.email,
@@ -37,7 +60,6 @@ export class AuthService {
     };
   }
 
-  // Öğrenci kaydı (değişiklik yok)
   async registerStudent(data: {
     email: string;
     phone?: string;
@@ -50,19 +72,21 @@ export class AuthService {
     parentEmail?: string;
     parentPhone?: string;
   }) {
-    // Email kontrolü
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: data.email },
+    const existingUser = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: data.email },
+          ...(data.phone ? [{ phone: data.phone }] : []),
+        ],
+      },
     });
 
     if (existingUser) {
-      throw new ConflictException('Bu email adresi zaten kullanılıyor');
+      throw new ConflictException('Bu email veya telefon numarası zaten kullanılıyor');
     }
 
-    // Şifre hash
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
-    // Transaction ile user ve student oluştur
     const user = await this.prisma.user.create({
       data: {
         email: data.email,
@@ -83,19 +107,11 @@ export class AuthService {
           },
         },
       },
-      include: {
-        student: true,
-      },
     });
 
-    return {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-    };
+    return { id: user.id, email: user.email, role: user.role };
   }
 
-  // DAVET KODU İLE ÖĞRETMEN KAYDI
   async registerTeacher(data: {
     invitationCode: string;
     email: string;
@@ -103,7 +119,9 @@ export class AuthService {
     password: string;
     firstName: string;
     lastName: string;
-    branchId: string;
+    branchIds: string[];
+    subjectIds?: string[];
+    examTypeIds?: string[];
     bio?: string;
     hourlyRate: number;
     iban?: string;
@@ -135,19 +153,45 @@ export class AuthService {
       throw new BadRequestException('Bu davet kodu başka bir telefon numarasına tanımlanmış');
     }
 
-    // 4. Branch kontrolü
-    const branch = await this.prisma.branch.findUnique({
-      where: { id: data.branchId },
-    });
-
-    if (!branch) {
-      throw new BadRequestException('Geçersiz branş');
+    // 4. Branch kontrolü (en az 1 tane olmalı)
+    if (!data.branchIds || data.branchIds.length === 0) {
+      throw new BadRequestException('En az bir branş seçmelisiniz');
     }
 
-    // 5. Şifre hash
+    const branches = await this.prisma.branch.findMany({
+      where: { id: { in: data.branchIds } },
+    });
+
+    if (branches.length !== data.branchIds.length) {
+      throw new BadRequestException('Geçersiz branş seçimi');
+    }
+
+    // 5. Subject kontrolü (opsiyonel)
+    if (data.subjectIds && data.subjectIds.length > 0) {
+      const subjects = await this.prisma.subject.findMany({
+        where: { id: { in: data.subjectIds } },
+      });
+
+      if (subjects.length !== data.subjectIds.length) {
+        throw new BadRequestException('Geçersiz ders seçimi');
+      }
+    }
+
+    // 6. ExamType kontrolü (opsiyonel)
+    if (data.examTypeIds && data.examTypeIds.length > 0) {
+      const examTypes = await this.prisma.examType.findMany({
+        where: { id: { in: data.examTypeIds } },
+      });
+
+      if (examTypes.length !== data.examTypeIds.length) {
+        throw new BadRequestException('Geçersiz sınav tipi seçimi');
+      }
+    }
+
+    // 7. Şifre hash
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
-    // 6. Transaction ile user ve teacher oluştur
+    // 8. Transaction ile user ve teacher oluştur
     const user = await this.prisma.user.create({
       data: {
         email: data.email,
@@ -160,21 +204,35 @@ export class AuthService {
           create: {
             firstName: data.firstName,
             lastName: data.lastName,
-            branchId: data.branchId,
             bio: data.bio,
             hourlyRate: data.hourlyRate,
             iban: data.iban,
             isNative: data.isNative || false,
             invitationCodeId: invitation.id,
+            branches: {
+              create: data.branchIds.map(branchId => ({ branchId })),
+            },
+            subjects: data.subjectIds && data.subjectIds.length > 0 ? {
+              create: data.subjectIds.map(subjectId => ({ subjectId })),
+            } : undefined,
+            examTypes: data.examTypeIds && data.examTypeIds.length > 0 ? {
+              create: data.examTypeIds.map(examTypeId => ({ examTypeId })),
+            } : undefined,
           },
         },
       },
       include: {
-        teacher: true,
+        teacher: {
+          include: {
+            branches: { include: { branch: true } },
+            subjects: { include: { subject: true } },
+            examTypes: { include: { examType: true } },
+          },
+        },
       },
     });
 
-    // 7. Davet kodunu kullanıldı olarak işaretle
+    // 9. Davet kodunu kullanıldı olarak işaretle
     await this.invitationService.useInvitationCode(data.invitationCode, user.teacher.id);
 
     return {
@@ -198,20 +256,6 @@ export class AuthService {
 
   // Davet kodunu doğrula (frontend için)
   async checkInvitationCode(code: string) {
-    try {
-      const invitation = await this.invitationService.validateInvitationCode(code);
-      return {
-        valid: true,
-        code: invitation.code,
-        assignedEmail: invitation.assignedEmail,
-        assignedPhone: invitation.assignedPhone,
-        expiresAt: invitation.expiresAt,
-      };
-    } catch (error) {
-      return {
-        valid: false,
-        message: error.message,
-      };
-    }
+    return this.invitationService.validateInvitationCode(code);
   }
 }

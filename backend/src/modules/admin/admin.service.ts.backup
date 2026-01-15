@@ -40,7 +40,7 @@ export class AdminService {
     const teachers = await this.prisma.teacher.findMany({
       include: {
         user: { select: { id: true, email: true, firstName: true, lastName: true, phone: true, status: true, createdAt: true } },
-        branches: { include: { branch: true } },
+        branch: true,
         subjects: { include: { subject: true } },
       },
       orderBy: { createdAt: 'desc' },
@@ -50,7 +50,7 @@ export class AdminService {
       success: true,
       data: teachers.map((t) => ({
         id: t.id, firstName: t.firstName, lastName: t.lastName, email: t.user.email,
-        phone: t.user.phone, branches: t.branches.map(tb => tb.branch), subjects: t.subjects.map(ts => ts.subject),
+        phone: t.user.phone, branch: t.branch, subjects: t.subjects.map(ts => ts.subject),
         hourlyRate: t.hourlyRate.toNumber(),
         isActive: t.user.status === 'ACTIVE', createdAt: t.createdAt,
       })),

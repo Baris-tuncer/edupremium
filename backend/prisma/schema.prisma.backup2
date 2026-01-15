@@ -1,7 +1,3 @@
-// ============================================================================
-// EDUPREMIUM - UPDATED SCHEMA WITH EXAM TYPES & MULTI-BRANCH
-// ============================================================================
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -73,9 +69,9 @@ model User {
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 
-  student            Student?
-  teacher            Teacher?
-  sessions           Session[]
+  student         Student?
+  teacher         Teacher?
+  sessions        Session[]
   createdInvitations InvitationCode[] @relation("CreatedInvitations")
 }
 
@@ -127,7 +123,7 @@ model Teacher {
   commissionRate   Decimal   @default(20) @db.Decimal(5, 2)
   profilePhotoUrl  String?
   introVideoUrl    String?
-  diplomaUrl       String?
+  branchId         String
   invitationCodeId String?
   iban             String?
   isNative         Boolean   @default(false)
@@ -135,11 +131,10 @@ model Teacher {
   updatedAt        DateTime  @updatedAt
 
   user           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branch         Branch                @relation(fields: [branchId], references: [id])
   invitationCode InvitationCode?       @relation(fields: [invitationCodeId], references: [id])
   appointments   Appointment[]
   subjects       TeacherSubject[]
-  branches       TeacherBranch[]
-  examTypes      TeacherExamType[]
   availability   TeacherAvailability[]
   wallet         Wallet?
   feedbacks      Feedback[]
@@ -151,7 +146,7 @@ model Branch {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  teachers TeacherBranch[]
+  teachers Teacher[]
   subjects Subject[]
 }
 
@@ -167,29 +162,6 @@ model Subject {
   appointments Appointment[]
 }
 
-model ExamType {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  code      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  teachers TeacherExamType[]
-}
-
-// İlişki Tabloları
-model TeacherBranch {
-  id        String   @id @default(uuid())
-  teacherId String
-  branchId  String
-  createdAt DateTime @default(now())
-
-  teacher Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  branch  Branch  @relation(fields: [branchId], references: [id])
-
-  @@unique([teacherId, branchId])
-}
-
 model TeacherSubject {
   id        String   @id @default(uuid())
   teacherId String
@@ -200,18 +172,6 @@ model TeacherSubject {
   subject Subject @relation(fields: [subjectId], references: [id])
 
   @@unique([teacherId, subjectId])
-}
-
-model TeacherExamType {
-  id         String   @id @default(uuid())
-  teacherId  String
-  examTypeId String
-  createdAt  DateTime @default(now())
-
-  teacher  Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  examType ExamType @relation(fields: [examTypeId], references: [id])
-
-  @@unique([teacherId, examTypeId])
 }
 
 model TeacherAvailability {

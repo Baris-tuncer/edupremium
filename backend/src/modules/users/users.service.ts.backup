@@ -31,7 +31,7 @@ export class UsersService {
             firstName: true,
             lastName: true,
             profilePhotoUrl: true,
-            branches: { include: { branch: { select: { name: true } } } },
+            branch: { select: { name: true } },
           },
         },
         student: {

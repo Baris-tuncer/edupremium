@@ -24,7 +24,7 @@ interface TeacherPublicProfile {
   introVideoUrl: string;
   bio: string | null;
   hourlyRate: number;
-  branches: string[];
+  branchName: string;
   subjects: string[];
   completedLessons: number;
   averageRating: number | null;
@@ -82,7 +82,7 @@ export class TeachersService {
       this.prisma.teacher.findMany({
         where,
         include: {
-          branches: { include: { branch: { select: { name: true } } } },
+          branch: { select: { name: true } },
           subjects: {
             include: { subject: { select: { name: true } } },
           },
@@ -131,7 +131,7 @@ export class TeachersService {
       introVideoUrl: t.introVideoUrl,
       bio: t.bio,
       hourlyRate: t.hourlyRate.toNumber(),
-      branches: t.branches.map(tb => tb.branch.name),
+      branchName: t.branch.name,
       subjects: t.subjects.map((s) => s.subject.name),
       completedLessons: t._count.appointments,
       averageRating: ratingsMap.get(t.id) || null,
@@ -147,7 +147,7 @@ export class TeachersService {
     const teacher = await this.prisma.teacher.findUnique({
       where: { id },
       include: {
-        branches: { include: { branch: { select: { name: true } } } },
+        branch: { select: { name: true } },
         subjects: {
           include: { subject: { select: { name: true } } },
         },
@@ -189,7 +189,7 @@ export class TeachersService {
       introVideoUrl: teacher.introVideoUrl,
       bio: teacher.bio,
       hourlyRate: teacher.hourlyRate.toNumber(),
-      branches: teacher.branches.map(tb => tb.branch.name),
+      branchName: teacher.branch.name,
       subjects: teacher.subjects.map((s) => s.subject.name),
       completedLessons: teacher._count.appointments,
       averageRating: avgRating || null,

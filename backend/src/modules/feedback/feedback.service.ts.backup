@@ -94,7 +94,7 @@ export class FeedbackService {
         appointment: {
           include: {
             student: true,
-            teacher: { include: { branches: { include: { branch: true } } } },
+            teacher: { include: { branch: true } },
             subject: true,
           },
         },
