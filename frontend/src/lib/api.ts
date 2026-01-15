@@ -132,6 +132,16 @@ class ApiClient {
     return r.data;
   }
 
+
+  async uploadIntroVideo(file: File) {
+    const formData = new FormData();
+    formData.append('video', file);
+    const r = await this.client.post('/teachers/me/intro-video', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return r.data;
+  }
+
   // APPOINTMENTS
   async approveAppointment(appointmentId: string) {
     const r = await this.client.put(`/appointments/${appointmentId}/approve`);
