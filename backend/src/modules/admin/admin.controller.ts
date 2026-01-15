@@ -1,66 +1,55 @@
-import {
-  Controller,
-  Get,
-  Put,
-  Param,
-  Body,
-  UseGuards,
-  Request,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Controller, Get, Put, Param, UseGuards, Body } from '@nestjs/common';
 import { AdminService } from './admin.service';
-import { ApproveTeacherDto } from './dto/admin.dto';
-import { JwtAuthGuard } from '../../common/guards/auth.guard';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @Controller('admin')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('ADMIN')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
-  // Admin guard - tüm endpoint'lerde kontrol
-  private checkAdminRole(req: any) {
-    if (req.user?.role !== 'ADMIN') {
-      throw new ForbiddenException('Bu işlem için admin yetkisi gereklidir');
-    }
-  }
-
   @Get('dashboard')
-  async getDashboard(@Request() req) {
-    this.checkAdminRole(req);
+  async getDashboard() {
     return this.adminService.getDashboardStats();
   }
 
   @Get('teachers')
-  async getAllTeachers(@Request() req) {
-    this.checkAdminRole(req);
+  async getAllTeachers() {
     return this.adminService.getAllTeachers();
   }
 
-  @Get('teachers/:id')
-  async getTeacherById(@Request() req, @Param('id') id: string) {
-    this.checkAdminRole(req);
-    return this.adminService.getTeacherById(id);
+  @Get('teachers/pending')
+  async getPendingTeachers() {
+    return this.adminService.getPendingTeachers();
   }
 
   @Put('teachers/:id/approve')
-  async approveTeacher(
-    @Request() req,
+  async approveTeacher(@Param('id') id: string) {
+    return this.adminService.approveTeacher(id);
+  }
+
+  @Put('teachers/:id/reject')
+  async rejectTeacher(
     @Param('id') id: string,
-    @Body() dto: ApproveTeacherDto,
+    @Body('reason') reason?: string,
   ) {
-    this.checkAdminRole(req);
-    return this.adminService.approveTeacher(id, dto);
+    return this.adminService.rejectTeacher(id, reason);
   }
 
   @Get('students')
-  async getAllStudents(@Request() req) {
-    this.checkAdminRole(req);
+  async getAllStudents() {
     return this.adminService.getAllStudents();
   }
 
   @Get('appointments')
-  async getAllAppointments(@Request() req) {
-    this.checkAdminRole(req);
+  async getAllAppointments() {
     return this.adminService.getAllAppointments();
+  }
+
+  @Get('payments')
+  async getAllPayments() {
+    return this.adminService.getAllPayments();
   }
 }
