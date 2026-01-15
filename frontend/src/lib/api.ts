@@ -30,6 +30,7 @@ class ApiClient {
     );
   }
 
+  // AUTH
   async login(email: string, password: string) {
     const r = await this.client.post('/auth/login', { email, password });
     return r.data;
@@ -45,12 +46,7 @@ class ApiClient {
     return r.data.data || r.data;
   }
 
-
-  async getStudentDashboard() {
-    const r = await this.client.get('/students/me/dashboard');
-    return r.data.data || r.data;
-  }
-
+  // ADMIN
   async getAdminDashboard() {
     const r = await this.client.get('/admin/dashboard');
     return r.data.data || r.data;
@@ -81,16 +77,13 @@ class ApiClient {
     return r.data.data || r.data;
   }
 
-  async getAllAppointments() {
-    const r = await this.client.get('/admin/appointments');
+  // STUDENT
+  async getStudentDashboard() {
+    const r = await this.client.get('/students/me/dashboard');
     return r.data.data || r.data;
   }
 
-  async getAllPayments() {
-    const r = await this.client.get('/admin/payments');
-    return r.data.data || r.data;
-  }
-
+  // TEACHER
   async getTeacherDashboard() {
     const r = await this.client.get('/teachers/me/dashboard');
     return r.data.data || r.data;
@@ -101,44 +94,7 @@ class ApiClient {
     return r.data.data || r.data;
   }
 
-  async updateTeacherProfile(data: any) {
-    const r = await this.client.put('/teachers/me/profile', data);
-    return r.data;
-  }
-
-  async updateTeacherAvailability(availability: any) {
-    const r = await this.client.put('/teachers/me/availability', { availability });
-    return r.data;
-  }
-
-  async approveAppointment(appointmentId: string) {
-    const r = await this.client.put(`/teachers/me/appointments/${appointmentId}/approve`);
-    return r.data;
-  }
-
-  async rejectAppointment(appointmentId: string) {
-    const r = await this.client.put(`/teachers/me/appointments/${appointmentId}/reject`);
-    return r.data;
-  }
-
-  async uploadTeacherPhoto(file: File) {
-    const formData = new FormData();
-    formData.append('photo', file);
-    const r = await this.client.post('/teachers/me/photo', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    return r.data;
-  }
-
-  async uploadTeacherVideo(file: File) {
-    const formData = new FormData();
-    formData.append('video', file);
-    const r = await this.client.post('/teachers/me/video', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    return r.data;
-  }
-
+  // COMMON
   async getBranches() {
     const r = await this.client.get('/branches');
     return r.data.data || r.data;

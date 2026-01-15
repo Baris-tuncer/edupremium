@@ -18,7 +18,6 @@ export default function TeacherAvailabilityPage() {
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
-    if (token) api.setAccessToken(token);
     fetchAvailability();
   }, []);
 
