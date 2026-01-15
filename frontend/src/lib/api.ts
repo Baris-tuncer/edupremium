@@ -36,6 +36,7 @@ class ApiClient {
     );
   }
 
+  // AUTH
   async login(email: string, password: string) {
     const r = await this.client.post('/auth/login', { email, password });
     return r.data;
@@ -55,13 +56,9 @@ class ApiClient {
     return this.getMe();
   }
 
+  // ADMIN
   async getAdminDashboard() {
     const r = await this.client.get('/admin/dashboard');
-    return r.data.data || r.data;
-  }
-
-  async getStudentDashboard() {
-    const r = await this.client.get('/students/me/dashboard');
     return r.data.data || r.data;
   }
 
@@ -85,6 +82,69 @@ class ApiClient {
     return r.data;
   }
 
+  // STUDENT
+  async getStudentDashboard() {
+    const r = await this.client.get('/students/me/dashboard');
+    return r.data.data || r.data;
+  }
+
+  async updateStudentProfile(data: any) {
+    const r = await this.client.put('/students/me/profile', data);
+    return r.data;
+  }
+
+  async getStudentLessons() {
+    const r = await this.client.get('/students/me/lessons');
+    return r.data.data || r.data;
+  }
+
+  async getStudentLessonReport(lessonId: string) {
+    const r = await this.client.get(`/students/me/lessons/${lessonId}/report`);
+    return r.data.data || r.data;
+  }
+
+  // TEACHER
+  async getTeacherDashboard() {
+    const r = await this.client.get('/teachers/me/dashboard');
+    return r.data.data || r.data;
+  }
+
+  async getMyAvailability() {
+    const r = await this.client.get('/teachers/me/availability');
+    return r.data.data || r.data;
+  }
+
+  async updateMyAvailability(data: any) {
+    const r = await this.client.put('/teachers/me/availability', data);
+    return r.data;
+  }
+
+  async getMyStudents() {
+    const r = await this.client.get('/teachers/me/students');
+    return r.data.data || r.data;
+  }
+
+  async getMyLessons() {
+    const r = await this.client.get('/teachers/me/lessons');
+    return r.data.data || r.data;
+  }
+
+  async updateTeacherProfile(data: any) {
+    const r = await this.client.put('/teachers/me/profile', data);
+    return r.data;
+  }
+
+  async approveAppointment(appointmentId: string) {
+    const r = await this.client.put(`/teachers/me/appointments/${appointmentId}/approve`);
+    return r.data;
+  }
+
+  async rejectAppointment(appointmentId: string) {
+    const r = await this.client.put(`/teachers/me/appointments/${appointmentId}/reject`);
+    return r.data;
+  }
+
+  // GENERAL
   async listBranches() {
     const r = await this.client.get('/branches');
     return r.data.data || r.data;
