@@ -13,6 +13,7 @@ async function bootstrap() {
     origin: [
       'https://edupremium-jet.vercel.app',
       'http://localhost:3000',
+      'http://localhost:3001',  // ADDED
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
