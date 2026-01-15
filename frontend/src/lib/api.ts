@@ -94,6 +94,26 @@ class ApiClient {
     return r.data.data || r.data;
   }
 
+  async getMyAvailability() {
+    const r = await this.client.get('/teachers/me/availability');
+    return r.data.data || r.data;
+  }
+
+  async updateAvailability(availability: any) {
+    const r = await this.client.put('/teachers/me/availability', { availability });
+    return r.data;
+  }
+
+  async getMyProfile() {
+    const r = await this.client.get('/teachers/me/profile');
+    return r.data.data || r.data;
+  }
+
+  async updateProfile(data: any) {
+    const r = await this.client.put('/teachers/me/profile', data);
+    return r.data;
+  }
+
   // COMMON
   async getBranches() {
     const r = await this.client.get('/branches');
