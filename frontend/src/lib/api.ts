@@ -8,21 +8,15 @@ class ApiClient {
   constructor() {
     this.client = axios.create({
       baseURL: API_URL,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
     });
 
-    // Request interceptor - token ekle
     this.client.interceptors.request.use((config) => {
       const token = localStorage.getItem('token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
+      if (token) config.headers.Authorization = `Bearer ${token}`;
       return config;
     });
 
-    // Response interceptor - hata yönetimi
     this.client.interceptors.response.use(
       (response) => response,
       (error) => {
@@ -36,129 +30,117 @@ class ApiClient {
     );
   }
 
-  // ==================== AUTH ====================
   async login(email: string, password: string) {
-    const response = await this.client.post('/auth/login', { email, password });
-    return response.data;
+    const r = await this.client.post('/auth/login', { email, password });
+    return r.data;
   }
 
   async register(data: any) {
-    const response = await this.client.post('/auth/register', data);
-    return response.data;
+    const r = await this.client.post('/auth/register', data);
+    return r.data;
   }
 
   async getMe() {
-    const response = await this.client.get('/auth/me');
-    return response.data.data || response.data;
+    const r = await this.client.get('/auth/me');
+    return r.data.data || r.data;
   }
 
-  // ==================== ADMIN ====================
   async getAdminDashboard() {
-    const response = await this.client.get('/admin/dashboard');
-    return response.data.data || response.data;
+    const r = await this.client.get('/admin/dashboard');
+    return r.data.data || r.data;
   }
 
   async getAllTeachers() {
-    const response = await this.client.get('/admin/teachers');
-    const data = response.data.data || response.data;
-    return Array.isArray(data) ? data : data?.data || [];
+    const r = await this.client.get('/admin/teachers');
+    return r.data.data || r.data;
   }
 
   async getPendingTeachers() {
-    const response = await this.client.get('/admin/teachers/pending');
-    const data = response.data.data || response.data;
-    return Array.isArray(data) ? data : data?.data || [];
+    const r = await this.client.get('/admin/teachers/pending');
+    return r.data.data || r.data;
   }
 
   async approveTeacher(teacherId: string) {
-    const response = await this.client.put(`/admin/teachers/${teacherId}/approve`);
-    return response.data;
+    const r = await this.client.put(`/admin/teachers/${teacherId}/approve`);
+    return r.data;
   }
 
   async rejectTeacher(teacherId: string, reason?: string) {
-    const response = await this.client.put(`/admin/teachers/${teacherId}/reject`, { reason });
-    return response.data;
+    const r = await this.client.put(`/admin/teachers/${teacherId}/reject`, { reason });
+    return r.data;
   }
 
   async getAllStudents() {
-    const response = await this.client.get('/admin/students');
-    const data = response.data.data || response.data;
-    return Array.isArray(data) ? data : data?.data || [];
+    const r = await this.client.get('/admin/students');
+    return r.data.data || r.data;
   }
 
   async getAllAppointments() {
-    const response = await this.client.get('/admin/appointments');
-    const data = response.data.data || response.data;
-    return Array.isArray(data) ? data : data?.data || [];
+    const r = await this.client.get('/admin/appointments');
+    return r.data.data || r.data;
   }
 
   async getAllPayments() {
-    const response = await this.client.get('/admin/payments');
-    const data = response.data.data || response.data;
-    return Array.isArray(data) ? data : data?.data || [];
+    const r = await this.client.get('/admin/payments');
+    return r.data.data || r.data;
   }
 
-  // ==================== TEACHER ====================
   async getTeacherDashboard() {
-    const response = await this.client.get('/teachers/me/dashboard');
-    return response.data.data || response.data;
+    const r = await this.client.get('/teachers/me/dashboard');
+    return r.data.data || r.data;
   }
 
   async getTeacherLessons() {
-    const response = await this.client.get('/teachers/me/lessons');
-    const data = response.data.data || response.data;
-    return Array.isArray(data) ? data : data?.data || [];
+    const r = await this.client.get('/teachers/me/lessons');
+    return r.data.data || r.data;
   }
 
   async updateTeacherProfile(data: any) {
-    const response = await this.client.put('/teachers/me/profile', data);
-    return response.data;
+    const r = await this.client.put('/teachers/me/profile', data);
+    return r.data;
   }
 
   async updateTeacherAvailability(availability: any) {
-    const response = await this.client.put('/teachers/me/availability', { availability });
-    return response.data;
+    const r = await this.client.put('/teachers/me/availability', { availability });
+    return r.data;
   }
 
   async approveAppointment(appointmentId: string) {
-    const response = await this.client.put(`/teachers/me/appointments/${appointmentId}/approve`);
-    return response.data;
+    const r = await this.client.put(`/teachers/me/appointments/${appointmentId}/approve`);
+    return r.data;
   }
 
   async rejectAppointment(appointmentId: string) {
-    const response = await this.client.put(`/teachers/me/appointments/${appointmentId}/reject`);
-    return response.data;
+    const r = await this.client.put(`/teachers/me/appointments/${appointmentId}/reject`);
+    return r.data;
   }
 
   async uploadTeacherPhoto(file: File) {
     const formData = new FormData();
     formData.append('photo', file);
-    const response = await this.client.post('/teachers/me/photo', formData, {
+    const r = await this.client.post('/teachers/me/photo', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return response.data;
+    return r.data;
   }
 
   async uploadTeacherVideo(file: File) {
     const formData = new FormData();
     formData.append('video', file);
-    const response = await this.client.post('/teachers/me/video', formData, {
+    const r = await this.client.post('/teachers/me/video', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return response.data;
+    return r.data;
   }
 
-  // ==================== COMMON ====================
   async getBranches() {
-    const response = await this.client.get('/branches');
-    const data = response.data.data || response.data;
-    return Array.isArray(data) ? data : data?.data || [];
+    const r = await this.client.get('/branches');
+    return r.data.data || r.data;
   }
 
   async getSubjects() {
-    const response = await this.client.get('/subjects');
-    const data = response.data.data || response.data;
-    return Array.isArray(data) ? data : data?.data || [];
+    const r = await this.client.get('/subjects');
+    return r.data.data || r.data;
   }
 }
 
