@@ -36,7 +36,7 @@ export default function TeacherLessonsPage() {
 
   const loadAppointments = async () => {
     try {
-      const data = await api.getTeacherLessons();
+      const data = await api.getMyLessons();
       setAppointments(Array.isArray(data) ? data : data?.data || []);
     } catch (error) {
       console.error('Error loading appointments:', error);
