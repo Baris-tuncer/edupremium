@@ -46,6 +46,11 @@ class ApiClient {
     return r.data.data || r.data;
   }
 
+
+  async getCurrentUser() {
+    return this.getMe();
+  }
+
   // ADMIN
   async getAdminDashboard() {
     const r = await this.client.get('/admin/dashboard');
