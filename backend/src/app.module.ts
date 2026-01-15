@@ -30,6 +30,7 @@ import { UploadsModule } from './modules/uploads/uploads.module';
 import { WalletModule } from './modules/wallet/wallet.module';
 import { InvitationModule } from './modules/invitation/invitation.module';
 import { ExamTypesModule } from './modules/exam-types/exam-types.module';
+import { EmailModule } from './modules/email/email.module';
 
 // Health Check
 import { HealthController } from './health.controller';
@@ -67,7 +68,7 @@ import { HealthController } from './health.controller';
       ],
     }),
 
-    // Job Queue (Redis)
+    // Queue System (BullMQ)
     BullModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -90,10 +91,8 @@ import { HealthController } from './health.controller';
       maxListeners: 20,
     }),
 
-    // Database
+    // Core Modules
     PrismaModule,
-
-    // Feature Modules
     AuthModule,
     UsersModule,
     TeachersModule,
@@ -108,6 +107,7 @@ import { HealthController } from './health.controller';
     UploadsModule,
     InvitationModule,
     ExamTypesModule,
+    EmailModule,
   ],
   controllers: [HealthController],
   providers: [
