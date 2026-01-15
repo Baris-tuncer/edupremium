@@ -129,13 +129,23 @@ class ApiClient {
     return r.data.data || r.data;
   }
 
-  // COMMON
+  // BRANCHES & SUBJECTS
   async getBranches() {
     const r = await this.client.get('/branches');
     return r.data.data || r.data;
   }
 
+  async listBranches() {
+    const r = await this.client.get('/branches');
+    return r.data.data || r.data;
+  }
+
   async getSubjects() {
+    const r = await this.client.get('/subjects');
+    return r.data.data || r.data;
+  }
+
+  async listSubjects() {
     const r = await this.client.get('/subjects');
     return r.data.data || r.data;
   }
