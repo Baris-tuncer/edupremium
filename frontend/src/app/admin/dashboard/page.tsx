@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -7,41 +8,23 @@ import { api } from '@/lib/api';
 // ============================================
 // TEACHER DETAIL MODAL
 // ============================================
-const TeacherDetailModal = ({ teacherId, onClose, onApprove }: { 
-  teacherId: string; 
+const TeacherDetailModal = ({ teacher: initialTeacher, onClose, onApprove }: { 
+  teacher: any; 
   onClose: () => void;
   onApprove: () => void;
 }) => {
-  const [teacher, setTeacher] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const [approving, setApproving] = useState(false);
-
-  useEffect(() => {
-    const fetchTeacher = async () => {
-      try {
-        const data = await api.getTeacherById(teacherId);
-        setTeacher(data);
-      } catch (error) {
-        console.error('Teacher fetch error:', error);
-        alert('Öğretmen bilgileri yüklenemedi!');
-        onClose();
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTeacher();
-  }, [teacherId]);
+  const teacher = initialTeacher;
 
   const handleApprove = async () => {
     if (!confirm('Bu öğretmeni onaylamak istediğinizden emin misiniz?')) return;
     
     try {
       setApproving(true);
-      const result = await api.approveTeacher(teacherId);
+      const result = await api.approveTeacher(teacher.id);
       console.log('Approve result:', result);
       alert('Öğretmen başarıyla onaylandı! Artık sistemde aktif.');
-      await new Promise(resolve => setTimeout(resolve, 500)); // 500ms bekle
+      await new Promise(resolve => setTimeout(resolve, 500));
       window.location.reload();
     } catch (error: any) {
       console.error('Approve error:', error);
@@ -50,23 +33,11 @@ const TeacherDetailModal = ({ teacherId, onClose, onApprove }: {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-2xl p-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-navy-500 mx-auto"></div>
-          <p className="mt-4 text-slate-600">Yükleniyor...</p>
-        </div>
-      </div>
-    );
-  }
-
   if (!teacher) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
         <div className="sticky top-0 bg-white border-b border-slate-200 p-6 flex items-center justify-between">
           <h2 className="text-2xl font-display font-bold text-navy-900">Öğretmen Detayları</h2>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
@@ -76,16 +47,13 @@ const TeacherDetailModal = ({ teacherId, onClose, onApprove }: {
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-6 grid md:grid-cols-2 gap-8">
-          {/* Left Side - Media */}
           <div className="space-y-6">
-            {/* Profile Photo */}
             <div>
               <h3 className="font-semibold text-navy-900 mb-3">Profil Fotoğrafı</h3>
-              {teacher.profilePhotoUrl ? (
+              {teacher.photoUrl ? (
                 <img 
-                  src={teacher.profilePhotoUrl} 
+                  src={teacher.photoUrl} 
                   alt={teacher.firstName}
                   className="w-full aspect-square object-cover rounded-xl border-2 border-slate-200"
                 />
@@ -98,12 +66,11 @@ const TeacherDetailModal = ({ teacherId, onClose, onApprove }: {
               )}
             </div>
 
-            {/* Intro Video */}
-            {teacher.introVideoUrl && (
+            {teacher.videoUrl && (
               <div>
                 <h3 className="font-semibold text-navy-900 mb-3">Tanıtım Videosu</h3>
                 <video 
-                  src={teacher.introVideoUrl} 
+                  src={teacher.videoUrl} 
                   controls 
                   className="w-full rounded-xl border-2 border-slate-200"
                 />
@@ -111,9 +78,7 @@ const TeacherDetailModal = ({ teacherId, onClose, onApprove }: {
             )}
           </div>
 
-          {/* Right Side - Info */}
           <div className="space-y-6">
-            {/* Basic Info */}
             <div>
               <h3 className="text-2xl font-display font-bold text-navy-900 mb-1">
                 {teacher.firstName} {teacher.lastName}
@@ -121,13 +86,11 @@ const TeacherDetailModal = ({ teacherId, onClose, onApprove }: {
               <p className="text-slate-600">{teacher.email}</p>
             </div>
 
-            {/* Branch */}
             <div>
               <h4 className="font-semibold text-navy-900 mb-2">Branş</h4>
-              <div className="badge badge-navy">{teacher.branch.name}</div>
+              <div className="badge badge-navy">{teacher.branch?.name || 'Bilinmiyor'}</div>
             </div>
 
-            {/* Hourly Rate */}
             <div>
               <h4 className="font-semibold text-navy-900 mb-2">Saatlik Ücret</h4>
               <p className="text-2xl font-display font-bold text-gold-600">
@@ -135,7 +98,6 @@ const TeacherDetailModal = ({ teacherId, onClose, onApprove }: {
               </p>
             </div>
 
-            {/* Bio */}
             {teacher.bio && (
               <div>
                 <h4 className="font-semibold text-navy-900 mb-2">Hakkında</h4>
@@ -143,21 +105,19 @@ const TeacherDetailModal = ({ teacherId, onClose, onApprove }: {
               </div>
             )}
 
-            {/* Subjects */}
             {teacher.subjects && teacher.subjects.length > 0 && (
               <div>
                 <h4 className="font-semibold text-navy-900 mb-2">Dersler</h4>
                 <div className="flex flex-wrap gap-2">
-                  {teacher.subjects.map((ts: any) => (
-                    <span key={ts.id} className="badge badge-emerald">
-                      {ts.subject?.name || 'Bilinmiyor'}
+                  {teacher.subjects.map((subject: any) => (
+                    <span key={subject.id} className="badge badge-emerald">
+                      {subject.name || 'Bilinmiyor'}
                     </span>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* IBAN */}
             {teacher.iban && (
               <div>
                 <h4 className="font-semibold text-navy-900 mb-2">IBAN</h4>
@@ -165,15 +125,6 @@ const TeacherDetailModal = ({ teacherId, onClose, onApprove }: {
               </div>
             )}
 
-            {/* Native */}
-            <div>
-              <h4 className="font-semibold text-navy-900 mb-2">Öğretmen Tipi</h4>
-              <span className={`badge ${teacher.isNative ? 'badge-violet' : 'badge-slate'}`}>
-                {teacher.isNative ? 'Native Speaker' : 'Türk Öğretmen'}
-              </span>
-            </div>
-
-            {/* Registration Date */}
             <div>
               <h4 className="font-semibold text-navy-900 mb-2">Kayıt Tarihi</h4>
               <p className="text-slate-600">
@@ -187,12 +138,8 @@ const TeacherDetailModal = ({ teacherId, onClose, onApprove }: {
           </div>
         </div>
 
-        {/* Footer - Action Buttons */}
         <div className="sticky bottom-0 bg-white border-t border-slate-200 p-6 flex gap-4">
-          <button
-            onClick={onClose}
-            className="flex-1 btn-secondary py-3"
-          >
+          <button onClick={onClose} className="flex-1 btn-secondary py-3">
             Kapat
           </button>
           <button
@@ -274,9 +221,6 @@ const AdminSidebar = ({ activeItem }: { activeItem: string }) => {
   );
 };
 
-// ============================================
-// STAT CARD
-// ============================================
 const StatCard = ({ icon, label, value, change, trend, color }: {
   icon: React.ReactNode;
   label: string;
@@ -311,11 +255,8 @@ const StatCard = ({ icon, label, value, change, trend, color }: {
   );
 };
 
-// ============================================
-// PENDING APPROVALS
-// ============================================
 const PendingApprovals = ({ teachers, onRefresh }: { teachers: any[]; onRefresh: () => void }) => {
-  const [selectedTeacherId, setSelectedTeacherId] = useState<string | null>(null);
+  const [selectedTeacher, setSelectedTeacher] = useState<any | null>(null);
 
   return (
     <>
@@ -341,11 +282,11 @@ const PendingApprovals = ({ teachers, onRefresh }: { teachers: any[]; onRefresh:
                   <div className="text-sm text-slate-500">{teacher.email}</div>
                 </div>
                 <div className="text-right">
-                  <div className="badge badge-navy">{teacher.branch.name}</div>
+                  <div className="badge badge-navy">{teacher.branch?.name || 'Bilinmiyor'}</div>
                   <div className="text-xs text-slate-400 mt-1">{new Date(teacher.createdAt).toLocaleDateString('tr-TR')}</div>
                 </div>
                 <button 
-                  onClick={() => setSelectedTeacherId(teacher.id)}
+                  onClick={() => setSelectedTeacher(teacher)}
                   className="px-4 py-2 bg-navy-500 text-white rounded-lg hover:bg-navy-600 transition-colors font-medium"
                 >
                   İncele
@@ -362,10 +303,10 @@ const PendingApprovals = ({ teachers, onRefresh }: { teachers: any[]; onRefresh:
         )}
       </div>
 
-      {selectedTeacherId && (
+      {selectedTeacher && (
         <TeacherDetailModal
-          teacherId={selectedTeacherId}
-          onClose={() => setSelectedTeacherId(null)}
+          teacher={selectedTeacher}
+          onClose={() => setSelectedTeacher(null)}
           onApprove={onRefresh}
         />
       )}
@@ -373,9 +314,6 @@ const PendingApprovals = ({ teachers, onRefresh }: { teachers: any[]; onRefresh:
   );
 };
 
-// ============================================
-// MAIN DASHBOARD
-// ============================================
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
