@@ -8,8 +8,8 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,39 +23,36 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const data = await api.login(email, password);
+      const response = await api.login(email, password);
+      const data = response.data || response;
       
-      if (!data.accessToken) {
-        throw new Error('Token alınamadı');
+      if (!data.user) {
+        throw new Error('Kullanıcı bilgisi alınamadı');
       }
 
-      // Token'dan role çıkar
-      const payload = JSON.parse(atob(data.accessToken.split('.')[1]));
+      // Cookie'de token var, sadece role'e göre yönlendir
+      const role = data.user.role;
       
-      // Role'e göre yönlendir
-      if (payload.role === 'ADMIN') {
+      if (role === 'ADMIN') {
         router.push('/admin/dashboard');
-      } else if (payload.role === 'TEACHER') {
+      } else if (role === 'TEACHER') {
         router.push('/teacher/dashboard');
-      } else if (payload.role === 'STUDENT') {
+      } else if (role === 'STUDENT') {
         router.push('/student/dashboard');
       } else {
         router.push('/');
       }
     } catch (err: any) {
       console.error('Login error:', err);
-      setError(err?.response?.data?.message || 'Giriş başarısız');
-    } finally {
+      setError(err.response?.data?.message || 'Giriş başarısız');
       setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 p-8">
-        <div>
-          <h2 className="text-center text-3xl font-bold">Giriş Yap</h2>
-        </div>
+      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow">
+        <h2 className="text-3xl font-bold text-center">Giriş Yap</h2>
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
@@ -87,9 +84,9 @@ export default function LoginPage() {
               id="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.password.target.value)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
-              placeholder="Şifre"
+              placeholder="Admin123!"
               disabled={loading}
             />
           </div>
@@ -97,7 +94,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+            className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
           >
             {loading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
           </button>

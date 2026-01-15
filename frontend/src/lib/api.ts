@@ -9,35 +9,27 @@ class ApiClient {
     this.client = axios.create({
       baseURL: API_URL,
       headers: { 'Content-Type': 'application/json' },
-    });
-
-    this.client.interceptors.request.use((config) => {
-      const token = localStorage.getItem('token');
-      if (token) config.headers.Authorization = `Bearer ${token}`;
-      return config;
+      withCredentials: true,
     });
 
     this.client.interceptors.response.use(
       (response) => response,
       (error) => {
         if (error.response?.status === 401) {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          window.location.href = '/giris';
+          window.location.href = '/login';
         }
         return Promise.reject(error);
       }
     );
   }
 
-  // AUTH
   async login(email: string, password: string) {
     const r = await this.client.post('/auth/login', { email, password });
     return r.data;
   }
 
-  async register(data: any) {
-    const r = await this.client.post('/auth/register', data);
+  async logout() {
+    const r = await this.client.post('/auth/logout');
     return r.data;
   }
 
@@ -46,12 +38,10 @@ class ApiClient {
     return r.data.data || r.data;
   }
 
-
   async getCurrentUser() {
     return this.getMe();
   }
 
-  // ADMIN
   async getAdminDashboard() {
     const r = await this.client.get('/admin/dashboard');
     return r.data.data || r.data;
@@ -82,13 +72,11 @@ class ApiClient {
     return r.data.data || r.data;
   }
 
-  // STUDENT
   async getStudentDashboard() {
     const r = await this.client.get('/students/me/dashboard');
     return r.data.data || r.data;
   }
 
-  // TEACHER
   async getTeacherDashboard() {
     const r = await this.client.get('/teachers/me/dashboard');
     return r.data.data || r.data;
@@ -119,7 +107,6 @@ class ApiClient {
     return r.data;
   }
 
-
   async updateTeacherProfile(data: any) {
     const r = await this.client.put('/teachers/me/profile', data);
     return r.data;
@@ -143,7 +130,6 @@ class ApiClient {
     return r.data;
   }
 
-
   async uploadIntroVideo(file: File) {
     const formData = new FormData();
     formData.append('video', file);
@@ -153,7 +139,6 @@ class ApiClient {
     return r.data;
   }
 
-  // APPOINTMENTS
   async approveAppointment(appointmentId: string) {
     const r = await this.client.put(`/appointments/${appointmentId}/approve`);
     return r.data;
@@ -169,7 +154,6 @@ class ApiClient {
     return r.data.data || r.data;
   }
 
-  // BRANCHES & SUBJECTS
   async getBranches() {
     const r = await this.client.get('/branches');
     return r.data.data || r.data;
