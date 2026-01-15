@@ -143,11 +143,11 @@ export class RolesGuard implements CanActivate {
 }
 
 // ============================================
-// TEACHER GUARD (Must be approved teacher)
+// TEACHER GUARD (Active teacher check)
 // ============================================
 
 @Injectable()
-export class ApprovedTeacherGuard implements CanActivate {
+export class TeacherGuard implements CanActivate {
   constructor(private prisma: PrismaService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -160,11 +160,11 @@ export class ApprovedTeacherGuard implements CanActivate {
 
     const teacher = await this.prisma.teacher.findUnique({
       where: { userId: user.id },
-      select: { isApproved: true },
+      select: { id: true },
     });
 
-    if (!teacher || !teacher.isApproved) {
-      throw new ForbiddenException('Teacher account not approved');
+    if (!teacher) {
+      throw new ForbiddenException('Teacher account not found');
     }
 
     return true;

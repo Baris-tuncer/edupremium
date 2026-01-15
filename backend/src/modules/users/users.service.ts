@@ -31,7 +31,6 @@ export class UsersService {
             firstName: true,
             lastName: true,
             profilePhotoUrl: true,
-            isApproved: true,
             branch: { select: { name: true } },
           },
         },

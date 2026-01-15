@@ -53,8 +53,8 @@ export class AppointmentsService {
       include: { branch: true },
     });
 
-    if (!teacher || !teacher.isApproved) {
-      throw new NotFoundException('Teacher not found or not approved');
+    if (!teacher) {
+      throw new NotFoundException('Teacher not found');
     }
 
     // Validate subject

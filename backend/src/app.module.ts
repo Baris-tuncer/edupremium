@@ -28,6 +28,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { BranchesModule } from './modules/branches/branches.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { WalletModule } from './modules/wallet/wallet.module';
+import { InvitationModule } from './modules/invitation/invitation.module';
 
 // Health Check
 import { HealthController } from './health.controller';
@@ -104,6 +105,7 @@ import { HealthController } from './health.controller';
     WalletModule,
     BranchesModule,
     UploadsModule,
+    InvitationModule,
   ],
   controllers: [HealthController],
   providers: [

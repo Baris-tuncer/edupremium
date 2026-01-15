@@ -124,6 +124,8 @@ model Teacher {
   profilePhotoUrl  String?
   introVideoUrl    String?
   branchId         String
+  isApproved       Boolean   @default(false)
+  approvedAt       DateTime?
   invitationCodeId String?
   iban             String?
   isNative         Boolean   @default(false)
@@ -271,7 +273,6 @@ model InvitationCode {
   code          String           @unique
   status        InvitationStatus @default(ACTIVE)
   assignedEmail String?
-  assignedPhone String?
   createdById   String?
   usedById      String?
   usedAt        DateTime?

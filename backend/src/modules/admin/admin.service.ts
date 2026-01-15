@@ -6,10 +6,8 @@ export class AdminService {
   constructor(private prisma: PrismaService) {}
 
   async getDashboardStats() {
-    const [totalTeachers, activeTeachers, pendingTeachers, totalStudents, activeStudents, totalAppointments, completedAppointments] = await Promise.all([
+    const [totalTeachers, totalStudents, activeStudents, totalAppointments, completedAppointments] = await Promise.all([
       this.prisma.teacher.count(),
-      this.prisma.teacher.count({ where: { isApproved: true } }),
-      this.prisma.teacher.count({ where: { isApproved: false } }),
       this.prisma.student.count(),
       this.prisma.student.count({ where: { user: { status: 'ACTIVE' } } }),
       this.prisma.appointment.count(),
@@ -29,7 +27,7 @@ export class AdminService {
     return {
       success: true,
       data: {
-        totalTeachers, activeTeachers, pendingTeachers, totalStudents, activeStudents,
+        totalTeachers, totalStudents, activeStudents,
         totalAppointments, completedAppointments,
         totalRevenue: payments._sum.paymentAmount?.toNumber() || 0,
         monthlyRevenue: monthlyPayments._sum.paymentAmount?.toNumber() || 0,
@@ -53,7 +51,7 @@ export class AdminService {
       data: teachers.map((t) => ({
         id: t.id, firstName: t.firstName, lastName: t.lastName, email: t.user.email,
         phone: t.user.phone, branch: t.branch, subjects: t.subjects.map(ts => ts.subject),
-        hourlyRate: t.hourlyRate.toNumber(), isApproved: t.isApproved,
+        hourlyRate: t.hourlyRate.toNumber(),
         isActive: t.user.status === 'ACTIVE', createdAt: t.createdAt,
       })),
       timestamp: new Date().toISOString(),
@@ -61,61 +59,28 @@ export class AdminService {
   }
 
   async getPendingTeachers() {
-    const teachers = await this.prisma.teacher.findMany({
-      where: { isApproved: false },
-      include: {
-        user: { select: { id: true, email: true, firstName: true, lastName: true, phone: true, createdAt: true } },
-        branch: true,
-        subjects: { include: { subject: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-
+    // Artık pending teacher yok - davet kodu sistemi var
     return {
       success: true,
-      data: teachers.map((t) => ({
-        id: t.id, firstName: t.firstName, lastName: t.lastName, email: t.user.email,
-        phone: t.user.phone, branch: t.branch, subjects: t.subjects.map(ts => ts.subject),
-        hourlyRate: t.hourlyRate.toNumber(), bio: t.bio,
-        photoUrl: t.profilePhotoUrl, videoUrl: t.introVideoUrl, createdAt: t.createdAt,
-      })),
+      data: [],
+      message: 'Pending teacher sistemi kaldırıldı. Davet kodu sistemi kullanılıyor.',
       timestamp: new Date().toISOString(),
     };
   }
 
   async approveTeacher(teacherId: string) {
-    const teacher = await this.prisma.teacher.findUnique({ where: { id: teacherId }, include: { user: true } });
-    if (!teacher) throw new NotFoundException('Öğretmen bulunamadı');
-    if (teacher.isApproved) throw new BadRequestException('Bu öğretmen zaten onaylanmış');
-
-    const updated = await this.prisma.teacher.update({
-      where: { id: teacherId },
-      data: { isApproved: true, approvedAt: new Date() },
-      include: {
-        user: { select: { id: true, email: true, firstName: true, lastName: true } },
-        branch: true,
-        subjects: { include: { subject: true } },
-      },
-    });
-
-    await this.prisma.user.update({ where: { id: teacher.userId }, data: { status: 'ACTIVE', isActive: true } });
-
-    return { success: true, message: 'Öğretmen başarıyla onaylandı', data: updated, timestamp: new Date().toISOString() };
+    // Artık manual approval yok
+    throw new BadRequestException('Manuel onaylama sistemi kaldırıldı. Öğretmenler davet kodu ile otomatik kayıt oluyor.');
   }
 
   async rejectTeacher(teacherId: string, reason?: string) {
+    // Artık manual rejection yok - sadece user status'unu değiştirebiliriz
     const teacher = await this.prisma.teacher.findUnique({ where: { id: teacherId }, include: { user: true } });
     if (!teacher) throw new NotFoundException('Öğretmen bulunamadı');
 
-    const updated = await this.prisma.teacher.update({
-      where: { id: teacherId },
-      data: { isApproved: false, approvedAt: null },
-      include: { user: { select: { id: true, email: true, firstName: true, lastName: true } } },
-    });
-
     await this.prisma.user.update({ where: { id: teacher.userId }, data: { status: 'INACTIVE', isActive: false } });
 
-    return { success: true, message: 'Öğretmen reddedildi', data: updated, timestamp: new Date().toISOString() };
+    return { success: true, message: 'Öğretmen devre dışı bırakıldı', timestamp: new Date().toISOString() };
   }
 
   async getAllStudents() {

@@ -1,49 +1,66 @@
-import { Controller, Post, Body, Get, Req, Res, UseGuards, HttpCode } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('login')
-  @HttpCode(200)
-  async login(
-    @Body() body: { email: string; password: string },
-    @Res({ passthrough: true }) response: Response,
+  async login(@Body() body: { email: string; password: string }) {
+    return this.authService.login(body.email, body.password);
+  }
+
+  // Öğrenci kaydı
+  @Post('register/student')
+  async registerStudent(
+    @Body()
+    body: {
+      email: string;
+      phone?: string;
+      password: string;
+      firstName: string;
+      lastName: string;
+      gradeLevel?: number;
+      schoolName?: string;
+      parentName?: string;
+      parentEmail?: string;
+      parentPhone?: string;
+    },
   ) {
-    const result = await this.authService.login(body.email, body.password);
-    
-    response.cookie('token', result.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
-      maxAge: 999 * 365 * 24 * 60 * 60 * 1000,
-    });
-
-    return {
-      success: true,
-      data: { user: result.user },
-    };
+    return this.authService.registerStudent(body);
   }
 
-  @Post('register')
-  async register(@Body() body: any) {
-    const user = await this.authService.register(body);
-    return { success: true, data: user };
+  // DAVET KODU İLE ÖĞRETMEN KAYDI
+  @Post('register/teacher')
+  async registerTeacher(
+    @Body()
+    body: {
+      invitationCode: string;
+      email: string;
+      phone?: string;
+      password: string;
+      firstName: string;
+      lastName: string;
+      branchId: string;
+      bio?: string;
+      hourlyRate: number;
+      iban?: string;
+      isNative?: boolean;
+    },
+  ) {
+    return this.authService.registerTeacher(body);
   }
 
-  @UseGuards(JwtAuthGuard)
+  // Davet kodunu doğrula (frontend için)
+  @Get('invitation/check')
+  async checkInvitationCode(@Body() body: { code: string }) {
+    return this.authService.checkInvitationCode(body.code);
+  }
+
   @Get('me')
-  async getMe(@Req() req: any) {
-    const user = await this.authService.getMe(req.user.sub);
-    return { success: true, data: user };
-  }
-
-  @Post('logout')
-  async logout(@Res({ passthrough: true }) response: Response) {
-    response.clearCookie('token');
-    return { success: true };
+  @UseGuards(JwtAuthGuard)
+  async getMe(@Request() req) {
+    return this.authService.getMe(req.user.userId);
   }
 }

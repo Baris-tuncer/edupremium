@@ -161,7 +161,7 @@ export class TeachersService {
       },
     });
 
-    if (!teacher || !teacher.isApproved) {
+    if (!teacher) {
       throw new NotFoundException('Teacher not found');
     }
 
@@ -208,7 +208,7 @@ export class TeachersService {
       where: { id: teacherId },
     });
 
-    if (!teacher || !teacher.isApproved) {
+    if (!teacher) {
       throw new NotFoundException('Teacher not found');
     }
 
@@ -423,7 +423,6 @@ export class TeachersService {
       profile: {
         firstName: teacher.firstName,
         lastName: teacher.lastName,
-        isApproved: teacher.isApproved,
         hourlyRate: teacher.hourlyRate,
       },
       wallet: teacher.wallet
