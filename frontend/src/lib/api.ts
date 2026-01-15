@@ -114,6 +114,25 @@ class ApiClient {
     return r.data;
   }
 
+  async uploadProfilePhoto(file: File) {
+    const formData = new FormData();
+    formData.append('photo', file);
+    const r = await this.client.post('/teachers/me/photo', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return r.data;
+  }
+
+  async uploadProfileVideo(file: File) {
+    const formData = new FormData();
+    formData.append('video', file);
+    const r = await this.client.post('/teachers/me/video', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return r.data;
+  }
+
+  // APPOINTMENTS
   async approveAppointment(appointmentId: string) {
     const r = await this.client.put(`/appointments/${appointmentId}/approve`);
     return r.data;
@@ -140,8 +159,9 @@ class ApiClient {
     return r.data.data || r.data;
   }
 
-  async getSubjects() {
-    const r = await this.client.get('/subjects');
+  async getSubjects(branchId?: string) {
+    const url = branchId ? `/subjects?branchId=${branchId}` : '/subjects';
+    const r = await this.client.get(url);
     return r.data.data || r.data;
   }
 
