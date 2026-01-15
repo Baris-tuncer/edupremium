@@ -45,6 +45,12 @@ class ApiClient {
     return r.data.data || r.data;
   }
 
+
+  async getStudentDashboard() {
+    const r = await this.client.get('/students/me/dashboard');
+    return r.data.data || r.data;
+  }
+
   async getAdminDashboard() {
     const r = await this.client.get('/admin/dashboard');
     return r.data.data || r.data;
