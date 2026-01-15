@@ -90,7 +90,7 @@ export default function TeacherAvailabilityPage() {
           });
         });
       });
-      await api.updateTeacherAvailability(slots);
+      await api.updateMyAvailability(slots);
       setIsEditing(false);
       alert('Müsaitlik kaydedildi!');
     } catch (err) {
