@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -6,169 +5,19 @@ import Link from 'next/link';
 import api from '@/lib/api';
 
 // ============================================
-// TEACHER DETAIL MODAL
-// ============================================
-const TeacherDetailModal = ({ teacher: initialTeacher, onClose, onApprove }: { 
-  teacher: any; 
-  onClose: () => void;
-  onApprove: () => void;
-}) => {
-  const [approving, setApproving] = useState(false);
-  const teacher = initialTeacher;
-
-  const handleApprove = async () => {
-    if (!confirm('Bu öğretmeni onaylamak istediğinizden emin misiniz?')) return;
-    
-    try {
-      setApproving(true);
-      const result = await api.approveTeacher(teacher.id);
-      console.log('Approve result:', result);
-      alert('Öğretmen başarıyla onaylandı! Artık sistemde aktif.');
-      await new Promise(resolve => setTimeout(resolve, 500));
-      window.location.reload();
-    } catch (error: any) {
-      console.error('Approve error:', error);
-      alert('Onaylama başarısız: ' + (error?.response?.data?.message || error?.message || 'Bilinmeyen hata'));
-      setApproving(false);
-    }
-  };
-
-  if (!teacher) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        <div className="sticky top-0 bg-white border-b border-slate-200 p-6 flex items-center justify-between">
-          <h2 className="text-2xl font-display font-bold text-navy-900">Öğretmen Detayları</h2>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        <div className="p-6 grid md:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <div>
-              <h3 className="font-semibold text-navy-900 mb-3">Profil Fotoğrafı</h3>
-              {teacher.photoUrl ? (
-                <img 
-                  src={teacher.photoUrl} 
-                  alt={teacher.firstName}
-                  className="w-full aspect-square object-cover rounded-xl border-2 border-slate-200"
-                />
-              ) : (
-                <div className="w-full aspect-square bg-slate-100 rounded-xl flex items-center justify-center">
-                  <span className="text-6xl font-display font-bold text-slate-400">
-                    {teacher.firstName[0]}{teacher.lastName[0]}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {teacher.videoUrl && (
-              <div>
-                <h3 className="font-semibold text-navy-900 mb-3">Tanıtım Videosu</h3>
-                <video 
-                  src={teacher.videoUrl} 
-                  controls 
-                  className="w-full rounded-xl border-2 border-slate-200"
-                />
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-2xl font-display font-bold text-navy-900 mb-1">
-                {teacher.firstName} {teacher.lastName}
-              </h3>
-              <p className="text-slate-600">{teacher.email}</p>
-            </div>
-
-            <div>
-              <h4 className="font-semibold text-navy-900 mb-2">Branş</h4>
-              <div className="badge badge-navy">{teacher.branch?.name || 'Bilinmiyor'}</div>
-            </div>
-
-            <div>
-              <h4 className="font-semibold text-navy-900 mb-2">Saatlik Ücret</h4>
-              <p className="text-2xl font-display font-bold text-gold-600">
-                ₺{Number(teacher.hourlyRate).toFixed(0)}
-              </p>
-            </div>
-
-            {teacher.bio && (
-              <div>
-                <h4 className="font-semibold text-navy-900 mb-2">Hakkında</h4>
-                <p className="text-slate-700 whitespace-pre-wrap">{teacher.bio}</p>
-              </div>
-            )}
-
-            {teacher.subjects && teacher.subjects.length > 0 && (
-              <div>
-                <h4 className="font-semibold text-navy-900 mb-2">Dersler</h4>
-                <div className="flex flex-wrap gap-2">
-                  {teacher.subjects.map((subject: any) => (
-                    <span key={subject.id} className="badge badge-emerald">
-                      {subject.name || 'Bilinmiyor'}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {teacher.iban && (
-              <div>
-                <h4 className="font-semibold text-navy-900 mb-2">IBAN</h4>
-                <p className="font-mono text-sm text-slate-600">{teacher.iban}</p>
-              </div>
-            )}
-
-            <div>
-              <h4 className="font-semibold text-navy-900 mb-2">Kayıt Tarihi</h4>
-              <p className="text-slate-600">
-                {new Date(teacher.createdAt).toLocaleDateString('tr-TR', { 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="sticky bottom-0 bg-white border-t border-slate-200 p-6 flex gap-4">
-          <button onClick={onClose} className="flex-1 btn-secondary py-3">
-            Kapat
-          </button>
-          <button
-            onClick={handleApprove}
-            disabled={approving}
-            className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors disabled:opacity-50"
-          >
-            {approving ? 'Onaylanıyor...' : '✓ Onayla'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ============================================
 // ADMIN SIDEBAR
 // ============================================
 const AdminSidebar = ({ activeItem }: { activeItem: string }) => {
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z' },
-    { id: 'teachers', label: 'Öğretmenler', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z' },
-    { id: 'students', label: 'Öğrenciler', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
-    { id: 'invitations', label: 'Davet Kodları', icon: 'M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z' },
-    { id: 'appointments', label: 'Randevular', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
-    { id: 'payments', label: 'Ödemeler', icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z' },
-    { id: 'hakedis', label: 'Hakediş', icon: 'M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z' },
-    { id: 'reports', label: 'Raporlar', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-    { id: 'settings', label: 'Sistem Ayarları', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' },
+    { id: 'dashboard', href: '/admin/dashboard', label: 'Dashboard', icon: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z' },
+    { id: 'teachers', href: '/admin/ogretmenler', label: 'Öğretmenler', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z' },
+    { id: 'students', href: '/admin/ogrenciler', label: 'Öğrenciler', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
+    { id: 'invitations', href: '/admin/invitations', label: 'Davet Kodları', icon: 'M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z' },
+    { id: 'appointments', href: '/admin/randevular', label: 'Randevular', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
+    { id: 'payments', href: '/admin/odemeler', label: 'Ödemeler', icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z' },
+    { id: 'hakedis', href: '/admin/hakedis', label: 'Hakediş', icon: 'M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z' },
+    { id: 'reports', href: '/admin/raporlar', label: 'Raporlar', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+    { id: 'settings', href: '/admin/ayarlar', label: 'Sistem Ayarları', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' },
   ];
 
   return (
@@ -191,7 +40,7 @@ const AdminSidebar = ({ activeItem }: { activeItem: string }) => {
         {menuItems.map((item) => (
           <Link
             key={item.id}
-            href={`/admin/${item.id}`}
+            href={item.href}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
               activeItem === item.id
                 ? 'bg-gold-500 text-slate-900'
@@ -255,80 +104,62 @@ const StatCard = ({ icon, label, value, change, trend, color }: {
   );
 };
 
-const PendingApprovals = ({ teachers, onRefresh }: { teachers: any[]; onRefresh: () => void }) => {
-  const [selectedTeacher, setSelectedTeacher] = useState<any | null>(null);
-
+// Son Aktiviteler Bileşeni
+const RecentActivity = () => {
   return (
-    <>
-      <div className="card p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="font-display font-semibold text-navy-900">Onay Bekleyen Öğretmenler</h3>
-          <span className="badge badge-warning">{teachers.length} adet</span>
+    <div className="card p-6">
+      <h3 className="font-display font-semibold text-navy-900 mb-4">Son Aktiviteler</h3>
+      <div className="space-y-4">
+        <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg">
+          <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+            <span className="text-emerald-600">👨‍🎓</span>
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-slate-900">Yeni öğrenci kaydı</p>
+            <p className="text-xs text-slate-500">2 dakika önce</p>
+          </div>
         </div>
-
-        {teachers.length === 0 ? (
-          <div className="text-center py-8 text-slate-500">
-            Onay bekleyen öğretmen bulunmuyor
+        <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg">
+          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+            <span className="text-blue-600">📅</span>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {teachers.slice(0, 3).map((teacher) => (
-              <div key={teacher.id} className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl">
-                <div className="w-12 h-12 bg-navy-100 rounded-xl flex items-center justify-center font-display font-semibold text-navy-700">
-                  {teacher.firstName[0]}{teacher.lastName[0]}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-navy-900">{teacher.firstName} {teacher.lastName}</div>
-                  <div className="text-sm text-slate-500">{teacher.email}</div>
-                </div>
-                <div className="text-right">
-                  <div className="badge badge-navy">{teacher.branch?.name || 'Bilinmiyor'}</div>
-                  <div className="text-xs text-slate-400 mt-1">{new Date(teacher.createdAt).toLocaleDateString('tr-TR')}</div>
-                </div>
-                <button 
-                  onClick={() => setSelectedTeacher(teacher)}
-                  className="px-4 py-2 bg-navy-500 text-white rounded-lg hover:bg-navy-600 transition-colors font-medium"
-                >
-                  İncele
-                </button>
-              </div>
-            ))}
+          <div className="flex-1">
+            <p className="text-sm font-medium text-slate-900">Yeni randevu oluşturuldu</p>
+            <p className="text-xs text-slate-500">15 dakika önce</p>
           </div>
-        )}
-
-        {teachers.length > 0 && (
-          <Link href="/admin/teachers?status=pending" className="btn-secondary w-full mt-6">
-            Tümünü Gör ({teachers.length})
-          </Link>
-        )}
+        </div>
+        <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg">
+          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+            <span className="text-green-600">💰</span>
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-slate-900">Ödeme alındı - ₺450</p>
+            <p className="text-xs text-slate-500">1 saat önce</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg">
+          <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+            <span className="text-purple-600">✅</span>
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-slate-900">Ders tamamlandı</p>
+            <p className="text-xs text-slate-500">2 saat önce</p>
+          </div>
+        </div>
       </div>
-
-      {selectedTeacher && (
-        <TeacherDetailModal
-          teacher={selectedTeacher}
-          onClose={() => setSelectedTeacher(null)}
-          onApprove={onRefresh}
-        />
-      )}
-    </>
+    </div>
   );
 };
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
-  const [teachers, setTeachers] = useState<any[]>([]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [dashboardData, teachersData] = await Promise.all([
-        api.getAdminDashboard(),
-        api.getAllTeachers()
-      ]);
-      
+      const dashboardData = await api.getAdminDashboard();
       setStats(dashboardData);
-      setTeachers(teachersData.filter((t: any) => !t.isApproved));
     } catch (error) {
       console.error('Dashboard data fetch error:', error);
     } finally {
@@ -361,7 +192,7 @@ export default function AdminDashboard() {
           <p className="text-sm text-slate-500">Hoş geldiniz, Admin</p>
         </div>
         <div className="flex items-center gap-4">
-          <Link href="/admin/invitations" className="btn-primary py-2 px-4 text-sm">
+          <Link href="/admin/invitations" className="btn-primary py-2 px-4 text-sm flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
@@ -405,23 +236,23 @@ export default function AdminDashboard() {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            <PendingApprovals teachers={teachers} onRefresh={fetchData} />
+          <div className="lg:col-span-2">
+            <RecentActivity />
           </div>
 
           <div className="space-y-8">
             <div className="card p-6">
               <h3 className="font-display font-semibold text-navy-900 mb-4">Hızlı İşlemler</h3>
               <div className="grid grid-cols-2 gap-3">
-                <Link href="/admin/teachers" className="p-4 bg-slate-50 rounded-xl text-center hover:bg-slate-100 transition-colors">
+                <Link href="/admin/ogretmenler" className="p-4 bg-slate-50 rounded-xl text-center hover:bg-slate-100 transition-colors">
                   <div className="text-2xl mb-2">👨‍🏫</div>
                   <div className="text-sm font-medium text-slate-700">Öğretmenler</div>
                 </Link>
-                <Link href="/admin/students" className="p-4 bg-slate-50 rounded-xl text-center hover:bg-slate-100 transition-colors">
+                <Link href="/admin/ogrenciler" className="p-4 bg-slate-50 rounded-xl text-center hover:bg-slate-100 transition-colors">
                   <div className="text-2xl mb-2">👨‍🎓</div>
                   <div className="text-sm font-medium text-slate-700">Öğrenciler</div>
                 </Link>
-                <Link href="/admin/appointments" className="p-4 bg-slate-50 rounded-xl text-center hover:bg-slate-100 transition-colors">
+                <Link href="/admin/randevular" className="p-4 bg-slate-50 rounded-xl text-center hover:bg-slate-100 transition-colors">
                   <div className="text-2xl mb-2">📅</div>
                   <div className="text-sm font-medium text-slate-700">Randevular</div>
                 </Link>
@@ -440,16 +271,16 @@ export default function AdminDashboard() {
                   <span className="font-semibold text-navy-900">{stats?.activeTeachers || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-slate-600">Onay Bekleyen</span>
-                  <span className="font-semibold text-amber-600">{stats?.pendingTeachers || 0}</span>
-                </div>
-                <div className="flex justify-between items-center">
                   <span className="text-sm text-slate-600">Aktif Öğrenci</span>
                   <span className="font-semibold text-navy-900">{stats?.activeStudents || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-slate-600">Tamamlanan Ders</span>
                   <span className="font-semibold text-emerald-600">{stats?.completedAppointments || 0}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Bekleyen Randevu</span>
+                  <span className="font-semibold text-amber-600">{stats?.pendingAppointments || 0}</span>
                 </div>
               </div>
             </div>
