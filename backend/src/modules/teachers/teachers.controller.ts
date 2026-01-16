@@ -38,7 +38,7 @@ export class TeachersController {
   // ========================================
   @Get(':id')
   async getTeacher(@Param('id') id: string) {
-    return this.teachersService.getTeacherById(id);
+    return this.teachersService.getTeacherProfile(id);
   }
 
   // ========================================
@@ -50,10 +50,8 @@ export class TeachersController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
-    const start = startDate ? new Date(startDate) : new Date();
-    const end = endDate
-      ? new Date(endDate)
-      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+    const start = startDate || new Date().toISOString().split('T')[0];
+    const end = endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
     return this.teachersService.getTeacherAvailability(id, start, end);
   }
