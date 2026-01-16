@@ -13,6 +13,11 @@ export class AdminController {
     return this.adminService.getDashboardStats();
   }
 
+  @Get('activities')
+  async getRecentActivities() {
+    return this.adminService.getRecentActivities();
+  }
+
   @Get('teachers')
   async getAllTeachers() {
     return this.adminService.getAllTeachers();
@@ -33,6 +38,11 @@ export class AdminController {
     return this.adminService.rejectTeacher(id, reason);
   }
 
+  @Put('teachers/:id/activate')
+  async activateTeacher(@Param('id') id: string) {
+    return this.adminService.activateTeacher(id);
+  }
+
   @Get('students')
   async getAllStudents() {
     return this.adminService.getAllStudents();
@@ -43,8 +53,21 @@ export class AdminController {
     return this.adminService.getAllAppointments();
   }
 
+  @Put('appointments/:id/status')
+  async updateAppointmentStatus(
+    @Param('id') id: string,
+    @Body('status') status: string,
+  ) {
+    return this.adminService.updateAppointmentStatus(id, status);
+  }
+
   @Get('payments')
   async getAllPayments() {
     return this.adminService.getAllPayments();
+  }
+
+  @Get('earnings')
+  async getTeacherEarnings() {
+    return this.adminService.getTeacherEarnings();
   }
 }

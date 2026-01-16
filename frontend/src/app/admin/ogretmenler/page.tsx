@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import api from '@/lib/api';
 import { toast } from 'react-hot-toast';
 
 interface Teacher {
@@ -10,27 +9,26 @@ interface Teacher {
   lastName: string;
   email: string;
   phone: string | null;
-  branch: {
-    id: string;
-    name: string;
-  };
-  subjects: Array<{
-    id: string;
-    name: string;
-  }>;
-  experience: number;
+  branches: Array<{ id: string; name: string }>;
+  subjects: Array<{ id: string; name: string }>;
   hourlyRate: number;
-  isApproved: boolean;
-  rating: number;
+  pricing?: {
+    teacherEarning: number;
+    platformFee: number;
+    tax: number;
+    totalPrice: number;
+  };
   totalLessons: number;
+  isActive: boolean;
+  status: string;
   createdAt: string;
   bio?: string;
-  photoUrl?: string;
-  videoUrl?: string;
+  profilePhotoUrl?: string;
+  introVideoUrl?: string;
 }
 
 export default function AdminTeachersPage() {
-  const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'approved'>('pending');
+  const [activeTab, setActiveTab] = useState<'all' | 'active' | 'inactive'>('all');
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
@@ -38,64 +36,95 @@ export default function AdminTeachersPage() {
 
   useEffect(() => {
     loadTeachers();
-  }, [activeTab]);
+  }, []);
 
   const loadTeachers = async () => {
     try {
       setLoading(true);
-      let data: Teacher[] = [];
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
 
-      if (activeTab === 'all') {
-        data = await api.getAllTeachers();
-      } else if (activeTab === 'pending') {
-        data = await api.getPendingTeachers();
-      } else if (activeTab === 'approved') {
-        const allTeachers = await api.getAllTeachers();
-        data = allTeachers.filter((t: Teacher) => t.isApproved);
+      const response = await fetch(`${baseUrl}/admin/teachers`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setTeachers(result.data || []);
       }
-
-      setTeachers(data);
     } catch (error: any) {
       console.error('Öğretmenler yüklenemedi:', error);
-      toast.error(error.response?.data?.message || 'Öğretmenler yüklenemedi');
+      toast.error('Öğretmenler yüklenemedi');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleApprove = async (teacherId: string) => {
-    if (!confirm('Bu öğretmeni onaylamak istediğinizden emin misiniz?')) {
+  const handleDeactivate = async (teacherId: string) => {
+    if (!confirm('Bu öğretmeni devre dışı bırakmak istediğinizden emin misiniz?')) {
       return;
     }
 
     try {
-      await api.approveTeacher(teacherId);
-      toast.success('Öğretmen başarıyla onaylandı! Artık sisteme giriş yapabilir.');
-      loadTeachers();
-      setIsModalOpen(false);
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
+
+      const response = await fetch(`${baseUrl}/admin/teachers/${teacherId}/reject`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        toast.success('Öğretmen devre dışı bırakıldı');
+        loadTeachers();
+        setIsModalOpen(false);
+      } else {
+        const data = await response.json();
+        toast.error(data.message || 'İşlem başarısız');
+      }
     } catch (error: any) {
-      console.error('Öğretmen onaylanamadı:', error);
-      toast.error(error.response?.data?.message || 'Öğretmen onaylanamadı');
+      toast.error('İşlem başarısız');
     }
   };
 
-  const handleReject = async (teacherId: string) => {
-    const reason = prompt('Red sebebini girin (opsiyonel):');
-    
-    if (!confirm('Bu öğretmeni reddetmek istediğinizden emin misiniz?')) {
+  const handleActivate = async (teacherId: string) => {
+    if (!confirm('Bu öğretmeni aktif etmek istediğinizden emin misiniz?')) {
       return;
     }
 
     try {
-      await api.rejectTeacher(teacherId, reason || undefined);
-      toast.success('Öğretmen reddedildi');
-      loadTeachers();
-      setIsModalOpen(false);
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
+
+      const response = await fetch(`${baseUrl}/admin/teachers/${teacherId}/activate`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        toast.success('Öğretmen aktif edildi');
+        loadTeachers();
+        setIsModalOpen(false);
+      } else {
+        const data = await response.json();
+        toast.error(data.message || 'İşlem başarısız');
+      }
     } catch (error: any) {
-      console.error('İşlem başarısız:', error);
-      toast.error(error.response?.data?.message || 'İşlem başarısız');
+      toast.error('İşlem başarısız');
     }
   };
+
+  const filteredTeachers = teachers.filter((t) => {
+    if (activeTab === 'active') return t.isActive;
+    if (activeTab === 'inactive') return !t.isActive;
+    return true;
+  });
 
   const openModal = (teacher: Teacher) => {
     setSelectedTeacher(teacher);
@@ -106,35 +135,13 @@ export default function AdminTeachersPage() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Öğretmen Yönetimi</h1>
+        <div className="text-sm text-gray-500">
+          Toplam: {teachers.length} öğretmen
+        </div>
       </div>
 
       {/* Tabs */}
       <div className="flex gap-4 mb-6 border-b border-gray-200">
-        <button
-          onClick={() => setActiveTab('pending')}
-          className={`pb-3 px-4 font-medium transition-colors ${
-            activeTab === 'pending'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          Onay Bekleyenler
-          {teachers.length > 0 && activeTab === 'pending' && (
-            <span className="ml-2 bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
-              {teachers.length}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab('approved')}
-          className={`pb-3 px-4 font-medium transition-colors ${
-            activeTab === 'approved'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          Onaylananlar
-        </button>
         <button
           onClick={() => setActiveTab('all')}
           className={`pb-3 px-4 font-medium transition-colors ${
@@ -144,6 +151,35 @@ export default function AdminTeachersPage() {
           }`}
         >
           Tümü
+          <span className="ml-2 bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">
+            {teachers.length}
+          </span>
+        </button>
+        <button
+          onClick={() => setActiveTab('active')}
+          className={`pb-3 px-4 font-medium transition-colors ${
+            activeTab === 'active'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Aktif
+          <span className="ml-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+            {teachers.filter((t) => t.isActive).length}
+          </span>
+        </button>
+        <button
+          onClick={() => setActiveTab('inactive')}
+          className={`pb-3 px-4 font-medium transition-colors ${
+            activeTab === 'inactive'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Pasif
+          <span className="ml-2 bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+            {teachers.filter((t) => !t.isActive).length}
+          </span>
         </button>
       </div>
 
@@ -153,13 +189,13 @@ export default function AdminTeachersPage() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Yükleniyor...</p>
         </div>
-      ) : teachers.length === 0 ? (
+      ) : filteredTeachers.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <p className="text-gray-600">Henüz öğretmen bulunmuyor</p>
+          <p className="text-gray-600">Öğretmen bulunmuyor</p>
         </div>
       ) : (
         <div className="grid gap-4">
-          {teachers.map((teacher) => (
+          {filteredTeachers.map((teacher) => (
             <div
               key={teacher.id}
               className="bg-white p-6 rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
@@ -167,8 +203,12 @@ export default function AdminTeachersPage() {
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4 flex-1">
                   {/* Avatar */}
-                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center text-2xl font-bold text-gray-600">
-                    {teacher.firstName[0]}{teacher.lastName[0]}
+                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center text-2xl font-bold text-gray-600 overflow-hidden">
+                    {teacher.profilePhotoUrl ? (
+                      <img src={teacher.profilePhotoUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      `${teacher.firstName[0]}${teacher.lastName[0]}`
+                    )}
                   </div>
 
                   {/* Info */}
@@ -177,13 +217,13 @@ export default function AdminTeachersPage() {
                       <h3 className="text-lg font-semibold text-gray-900">
                         {teacher.firstName} {teacher.lastName}
                       </h3>
-                      {teacher.isApproved ? (
+                      {teacher.isActive ? (
                         <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                          Onaylandı
+                          Aktif
                         </span>
                       ) : (
-                        <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
-                          Onay Bekliyor
+                        <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                          Pasif
                         </span>
                       )}
                     </div>
@@ -200,28 +240,26 @@ export default function AdminTeachersPage() {
                         </div>
                       )}
                       <div>
-                        <span className="text-gray-500">Dal:</span>
-                        <span className="ml-2 text-gray-900">{teacher.branch.name}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Deneyim:</span>
-                        <span className="ml-2 text-gray-900">{teacher.experience} yıl</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Ücret:</span>
-                        <span className="ml-2 text-gray-900">₺{teacher.hourlyRate}/saat</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Dersler:</span>
+                        <span className="text-gray-500">Branş:</span>
                         <span className="ml-2 text-gray-900">
-                          {teacher.subjects.map(s => s.name).join(', ')}
+                          {teacher.branches?.map((b) => b.name).join(', ') || '-'}
                         </span>
                       </div>
+                      <div>
+                        <span className="text-gray-500">Tamamlanan Ders:</span>
+                        <span className="ml-2 text-gray-900">{teacher.totalLessons || 0}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Öğretmen Ücreti:</span>
+                        <span className="ml-2 text-gray-900">₺{teacher.hourlyRate}/saat</span>
+                      </div>
+                      {teacher.pricing && (
+                        <div>
+                          <span className="text-gray-500">Veli Ödemesi:</span>
+                          <span className="ml-2 text-green-600 font-semibold">₺{teacher.pricing.totalPrice.toFixed(0)}/saat</span>
+                        </div>
+                      )}
                     </div>
-
-                    {teacher.bio && (
-                      <p className="mt-3 text-sm text-gray-600 line-clamp-2">{teacher.bio}</p>
-                    )}
                   </div>
                 </div>
 
@@ -260,45 +298,82 @@ export default function AdminTeachersPage() {
               </div>
 
               <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Email</label>
-                  <p className="text-gray-900">{selectedTeacher.email}</p>
-                </div>
-
-                {selectedTeacher.phone && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Email</label>
+                    <p className="text-gray-900">{selectedTeacher.email}</p>
+                  </div>
                   <div>
                     <label className="text-sm font-medium text-gray-500">Telefon</label>
-                    <p className="text-gray-900">{selectedTeacher.phone}</p>
+                    <p className="text-gray-900">{selectedTeacher.phone || '-'}</p>
                   </div>
-                )}
+                </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Dal</label>
-                  <p className="text-gray-900">{selectedTeacher.branch.name}</p>
+                  <label className="text-sm font-medium text-gray-500">Branşlar</label>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {selectedTeacher.branches?.map((branch) => (
+                      <span
+                        key={branch.id}
+                        className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full"
+                      >
+                        {branch.name}
+                      </span>
+                    )) || <span className="text-gray-500">-</span>}
+                  </div>
                 </div>
 
                 <div>
                   <label className="text-sm font-medium text-gray-500">Dersler</label>
                   <div className="flex flex-wrap gap-2 mt-1">
-                    {selectedTeacher.subjects.map((subject) => (
+                    {selectedTeacher.subjects?.map((subject) => (
                       <span
                         key={subject.id}
-                        className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full"
+                        className="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full"
                       >
                         {subject.name}
                       </span>
-                    ))}
+                    )) || <span className="text-gray-500">-</span>}
+                  </div>
+                </div>
+
+                {/* Fiyatlandırma Detayları */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-3">Fiyatlandırma Detayları</h4>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Öğretmen Ücreti:</span>
+                      <span className="font-medium">₺{selectedTeacher.hourlyRate}</span>
+                    </div>
+                    {selectedTeacher.pricing && (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Platform Komisyonu (%20):</span>
+                          <span className="font-medium">₺{selectedTeacher.pricing.platformFee.toFixed(0)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">KDV (%20):</span>
+                          <span className="font-medium">₺{selectedTeacher.pricing.tax.toFixed(0)}</span>
+                        </div>
+                        <div className="flex justify-between border-t pt-2">
+                          <span className="text-gray-700 font-semibold">Veli Ödemesi:</span>
+                          <span className="font-bold text-green-600">₺{selectedTeacher.pricing.totalPrice.toFixed(0)}</span>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Deneyim</label>
-                    <p className="text-gray-900">{selectedTeacher.experience} yıl</p>
+                    <label className="text-sm font-medium text-gray-500">Tamamlanan Ders</label>
+                    <p className="text-gray-900">{selectedTeacher.totalLessons || 0}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Saatlik Ücret</label>
-                    <p className="text-gray-900">₺{selectedTeacher.hourlyRate}</p>
+                    <label className="text-sm font-medium text-gray-500">Durum</label>
+                    <p className={selectedTeacher.isActive ? 'text-green-600' : 'text-red-600'}>
+                      {selectedTeacher.isActive ? 'Aktif' : 'Pasif'}
+                    </p>
                   </div>
                 </div>
 
@@ -309,28 +384,6 @@ export default function AdminTeachersPage() {
                   </div>
                 )}
 
-                {selectedTeacher.photoUrl && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Profil Fotoğrafı</label>
-                    <img
-                      src={selectedTeacher.photoUrl}
-                      alt="Profile"
-                      className="mt-2 w-32 h-32 object-cover rounded-lg"
-                    />
-                  </div>
-                )}
-
-                {selectedTeacher.videoUrl && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Tanıtım Videosu</label>
-                    <video
-                      src={selectedTeacher.videoUrl}
-                      controls
-                      className="mt-2 w-full max-w-md rounded-lg"
-                    />
-                  </div>
-                )}
-
                 <div>
                   <label className="text-sm font-medium text-gray-500">Kayıt Tarihi</label>
                   <p className="text-gray-900">
@@ -338,30 +391,35 @@ export default function AdminTeachersPage() {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
                     })}
                   </p>
                 </div>
               </div>
 
               {/* Actions */}
-              {!selectedTeacher.isApproved && (
-                <div className="flex gap-3 mt-6 pt-6 border-t border-gray-200">
+              <div className="flex gap-3 mt-6 pt-6 border-t border-gray-200">
+                {selectedTeacher.isActive ? (
                   <button
-                    onClick={() => handleApprove(selectedTeacher.id)}
-                    className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-                  >
-                    ✓ Onayla
-                  </button>
-                  <button
-                    onClick={() => handleReject(selectedTeacher.id)}
+                    onClick={() => handleDeactivate(selectedTeacher.id)}
                     className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
                   >
-                    ✗ Reddet
+                    Devre Dışı Bırak
                   </button>
-                </div>
-              )}
+                ) : (
+                  <button
+                    onClick={() => handleActivate(selectedTeacher.id)}
+                    className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                  >
+                    Aktif Et
+                  </button>
+                )}
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                >
+                  Kapat
+                </button>
+              </div>
             </div>
           </div>
         </div>

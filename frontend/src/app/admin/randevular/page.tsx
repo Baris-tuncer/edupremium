@@ -1,32 +1,41 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 
 interface Appointment {
   id: string;
   orderCode: string;
+  student: { id: string; firstName: string; lastName: string };
+  teacher: { id: string; firstName: string; lastName: string; hourlyRate: number };
+  subject: { id: string; name: string };
   scheduledAt: string;
   durationMinutes: number;
   status: string;
   paymentStatus: string;
-  paymentAmount?: number;
-  student: {
-    firstName: string;
-    lastName: string;
-  };
-  teacher: {
-    firstName: string;
-    lastName: string;
-  };
-  subject: {
-    name: string;
-  };
+  paymentAmount: number;
+  teacherEarning: number;
+  platformFee: number;
+  teamsJoinUrl?: string;
+  createdAt: string;
+  completedAt?: string;
+  cancelledAt?: string;
 }
+
+const STATUS_OPTIONS = [
+  { value: 'PENDING_PAYMENT', label: 'Ödeme Bekliyor', color: 'bg-yellow-100 text-yellow-800' },
+  { value: 'CONFIRMED', label: 'Onaylandı', color: 'bg-blue-100 text-blue-800' },
+  { value: 'IN_PROGRESS', label: 'Devam Ediyor', color: 'bg-purple-100 text-purple-800' },
+  { value: 'COMPLETED', label: 'Tamamlandı', color: 'bg-green-100 text-green-800' },
+  { value: 'CANCELLED', label: 'İptal Edildi', color: 'bg-red-100 text-red-800' },
+  { value: 'NO_SHOW', label: 'Katılmadı', color: 'bg-orange-100 text-orange-800' },
+];
 
 export default function AdminAppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState('ALL');
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
 
   useEffect(() => {
     fetchAppointments();
@@ -35,57 +44,78 @@ export default function AdminAppointmentsPage() {
   const fetchAppointments = async () => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app'}/admin/appointments`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
+
+      const response = await fetch(`${baseUrl}/admin/appointments`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (response.ok) {
         const data = await response.json();
-        setAppointments(data.data || data || []);
+        setAppointments(data.data || []);
       }
     } catch (error) {
       console.error('Error fetching appointments:', error);
+      toast.error('Randevular yüklenemedi');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const filteredAppointments = appointments.filter(apt => {
+  const updateStatus = async (appointmentId: string, newStatus: string) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
+
+      const response = await fetch(`${baseUrl}/admin/appointments/${appointmentId}/status`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (response.ok) {
+        toast.success('Durum güncellendi');
+        fetchAppointments();
+        setSelectedAppointment(null);
+      } else {
+        const data = await response.json();
+        toast.error(data.message || 'Güncelleme başarısız');
+      }
+    } catch (error) {
+      toast.error('Güncelleme başarısız');
+    }
+  };
+
+  const filteredAppointments = appointments.filter((apt) => {
     if (filter === 'ALL') return true;
     return apt.status === filter;
   });
 
   const getStatusBadge = (status: string) => {
-    const styles: Record<string, string> = {
-      PENDING_PAYMENT: 'bg-yellow-100 text-yellow-800',
-      CONFIRMED: 'bg-green-100 text-green-800',
-      IN_PROGRESS: 'bg-blue-100 text-blue-800',
-      COMPLETED: 'bg-gray-100 text-gray-800',
-      CANCELLED: 'bg-red-100 text-red-800',
-      NO_SHOW: 'bg-orange-100 text-orange-800',
-    };
-    const labels: Record<string, string> = {
-      PENDING_PAYMENT: 'Ödeme Bekliyor',
-      CONFIRMED: 'Onaylandı',
-      IN_PROGRESS: 'Devam Ediyor',
-      COMPLETED: 'Tamamlandı',
-      CANCELLED: 'İptal Edildi',
-      NO_SHOW: 'Katılmadı',
-    };
+    const option = STATUS_OPTIONS.find((o) => o.value === status);
     return (
-      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${styles[status] || 'bg-gray-100 text-gray-800'}`}>
-        {labels[status] || status}
+      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${option?.color || 'bg-gray-100 text-gray-800'}`}>
+        {option?.label || status}
       </span>
     );
+  };
+
+  // İstatistikler
+  const stats = {
+    total: appointments.length,
+    confirmed: appointments.filter((a) => a.status === 'CONFIRMED').length,
+    completed: appointments.filter((a) => a.status === 'COMPLETED').length,
+    pending: appointments.filter((a) => a.status === 'PENDING_PAYMENT').length,
+    cancelled: appointments.filter((a) => a.status === 'CANCELLED').length,
   };
 
   if (isLoading) {
     return (
       <div className="p-8 flex items-center justify-center min-h-screen">
-        <div className="w-8 h-8 border-4 border-navy-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -94,53 +124,50 @@ export default function AdminAppointmentsPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-navy-900">Randevular</h1>
-          <p className="text-slate-600 mt-1">Tüm ders randevularını görüntüleyin</p>
+          <h1 className="text-3xl font-bold text-gray-900">Randevular</h1>
+          <p className="text-gray-600 mt-1">Tüm ders randevularını yönetin</p>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
-          <div className="text-3xl font-bold text-navy-900">{appointments.length}</div>
-          <div className="text-slate-600">Toplam Randevu</div>
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
+          <div className="text-gray-600">Toplam</div>
         </div>
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
-          <div className="text-3xl font-bold text-green-600">
-            {appointments.filter(a => a.status === 'CONFIRMED').length}
-          </div>
-          <div className="text-slate-600">Onaylanan</div>
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="text-3xl font-bold text-yellow-600">{stats.pending}</div>
+          <div className="text-gray-600">Ödeme Bekliyor</div>
         </div>
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
-          <div className="text-3xl font-bold text-blue-600">
-            {appointments.filter(a => a.status === 'COMPLETED').length}
-          </div>
-          <div className="text-slate-600">Tamamlanan</div>
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="text-3xl font-bold text-blue-600">{stats.confirmed}</div>
+          <div className="text-gray-600">Onaylandı</div>
         </div>
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
-          <div className="text-3xl font-bold text-yellow-600">
-            {appointments.filter(a => a.status === 'PENDING_PAYMENT').length}
-          </div>
-          <div className="text-slate-600">Ödeme Bekleyen</div>
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="text-3xl font-bold text-green-600">{stats.completed}</div>
+          <div className="text-gray-600">Tamamlandı</div>
+        </div>
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="text-3xl font-bold text-red-600">{stats.cancelled}</div>
+          <div className="text-gray-600">İptal</div>
         </div>
       </div>
 
       {/* Filters */}
       <div className="flex gap-2 mb-6 flex-wrap">
-        {['ALL', 'PENDING_PAYMENT', 'CONFIRMED', 'COMPLETED', 'CANCELLED'].map((f) => (
+        {['ALL', 'PENDING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               filter === f
-                ? 'bg-navy-900 text-white'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
             }`}
           >
-            {f === 'ALL' ? 'Tümü' : 
-             f === 'PENDING_PAYMENT' ? 'Ödeme Bekleyen' :
-             f === 'CONFIRMED' ? 'Onaylanan' :
-             f === 'COMPLETED' ? 'Tamamlanan' : 'İptal'}
+            {f === 'ALL'
+              ? 'Tümü'
+              : STATUS_OPTIONS.find((o) => o.value === f)?.label || f}
           </button>
         ))}
       </div>
@@ -148,32 +175,35 @@ export default function AdminAppointmentsPage() {
       {/* Table */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <table className="w-full">
-          <thead className="bg-slate-50 border-b">
+          <thead className="bg-gray-50 border-b">
             <tr>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Sipariş No</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Öğrenci</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Öğretmen</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Ders</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Tarih</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Tutar</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Durum</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Sipariş No</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Öğrenci</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Öğretmen</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Ders</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Tarih</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Tutar</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Durum</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">İşlem</th>
             </tr>
           </thead>
           <tbody className="divide-y">
             {filteredAppointments.length > 0 ? (
               filteredAppointments.map((apt) => (
-                <tr key={apt.id} className="hover:bg-slate-50">
+                <tr key={apt.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
-                    <span className="font-mono text-sm text-navy-600">{apt.orderCode?.slice(0, 8)}...</span>
+                    <span className="font-mono text-sm text-gray-600">
+                      {apt.orderCode?.slice(0, 8)}...
+                    </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-900">
+                  <td className="px-6 py-4 text-sm text-gray-900">
                     {apt.student?.firstName} {apt.student?.lastName}
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-900">
+                  <td className="px-6 py-4 text-sm text-gray-900">
                     {apt.teacher?.firstName} {apt.teacher?.lastName}
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-600">{apt.subject?.name}</td>
-                  <td className="px-6 py-4 text-sm text-slate-600">
+                  <td className="px-6 py-4 text-sm text-gray-600">{apt.subject?.name}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
                     {new Date(apt.scheduledAt).toLocaleDateString('tr-TR', {
                       day: 'numeric',
                       month: 'short',
@@ -182,15 +212,23 @@ export default function AdminAppointmentsPage() {
                       minute: '2-digit',
                     })}
                   </td>
-                  <td className="px-6 py-4 text-sm font-medium text-slate-900">
-                    {apt.paymentAmount ? `₺${apt.paymentAmount}` : '-'}
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                    ₺{apt.paymentAmount || 0}
                   </td>
                   <td className="px-6 py-4">{getStatusBadge(apt.status)}</td>
+                  <td className="px-6 py-4">
+                    <button
+                      onClick={() => setSelectedAppointment(apt)}
+                      className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                    >
+                      Detay
+                    </button>
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
+                <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                   Randevu bulunamadı
                 </td>
               </tr>
@@ -198,6 +236,143 @@ export default function AdminAppointmentsPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Detail Modal */}
+      {selectedAppointment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Randevu Detayı</h2>
+                <button
+                  onClick={() => setSelectedAppointment(null)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Sipariş No</label>
+                    <p className="text-gray-900 font-mono">{selectedAppointment.orderCode}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Mevcut Durum</label>
+                    <div className="mt-1">{getStatusBadge(selectedAppointment.status)}</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Öğrenci</label>
+                    <p className="text-gray-900">
+                      {selectedAppointment.student?.firstName} {selectedAppointment.student?.lastName}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Öğretmen</label>
+                    <p className="text-gray-900">
+                      {selectedAppointment.teacher?.firstName} {selectedAppointment.teacher?.lastName}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Ders</label>
+                    <p className="text-gray-900">{selectedAppointment.subject?.name}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Süre</label>
+                    <p className="text-gray-900">{selectedAppointment.durationMinutes} dakika</p>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Tarih & Saat</label>
+                  <p className="text-gray-900">
+                    {new Date(selectedAppointment.scheduledAt).toLocaleDateString('tr-TR', {
+                      weekday: 'long',
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                </div>
+
+                {/* Fiyat Detayları */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-3">Fiyat Detayları</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Öğretmen Kazancı:</span>
+                      <span className="font-medium">₺{selectedAppointment.teacherEarning || 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Platform Komisyonu:</span>
+                      <span className="font-medium">₺{selectedAppointment.platformFee || 0}</span>
+                    </div>
+                    <div className="flex justify-between border-t pt-2">
+                      <span className="text-gray-700 font-semibold">Toplam Ödeme:</span>
+                      <span className="font-bold text-green-600">₺{selectedAppointment.paymentAmount || 0}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {selectedAppointment.teamsJoinUrl && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Teams Link</label>
+                    <a
+                      href={selectedAppointment.teamsJoinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline block truncate"
+                    >
+                      {selectedAppointment.teamsJoinUrl}
+                    </a>
+                  </div>
+                )}
+
+                {/* Durum Değiştirme */}
+                <div className="border-t pt-4">
+                  <label className="text-sm font-medium text-gray-500 block mb-2">Durum Değiştir</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {STATUS_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => updateStatus(selectedAppointment.id, option.value)}
+                        disabled={selectedAppointment.status === option.value}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          selectedAppointment.status === option.value
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-6 border-t">
+                <button
+                  onClick={() => setSelectedAppointment(null)}
+                  className="w-full px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                >
+                  Kapat
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
