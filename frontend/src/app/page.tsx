@@ -35,7 +35,7 @@ const HeroSection = () => (
           
           <p className="text-lg md:text-xl text-slate-600 mb-8 leading-relaxed animate-fade-up delay-200">
             Alanında uzman, titizlikle seçilmiş öğretmenlerle birebir online ders deneyimi. 
-            Çocuğunuzun akademik başarısı için en doğru adım.
+            Çocuğunuzun akademik başarısı için en doğru adım. Bütçenize uygun öğretmen seçenekleriyle.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-12 animate-fade-up delay-300">
