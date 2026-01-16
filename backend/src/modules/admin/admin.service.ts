@@ -1,21 +1,27 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.module';
 
-// Fiyatlandırma sabitleri
-const PLATFORM_COMMISSION_RATE = 0.20; // %20 platform komisyonu
-const TAX_RATE = 0.20; // %20 KDV
-
 @Injectable()
 export class AdminService {
   constructor(private prisma: PrismaService) {}
 
-  // Fiyat hesaplama yardımcı fonksiyonu
-  calculatePricing(teacherHourlyRate: number) {
-    const teacherEarning = teacherHourlyRate; // Öğretmenin alacağı
-    const platformFee = teacherHourlyRate * PLATFORM_COMMISSION_RATE; // Platform komisyonu
-    const subtotal = teacherEarning + platformFee; // Ara toplam
-    const tax = subtotal * TAX_RATE; // KDV
-    const totalPrice = subtotal + tax; // Velinin ödeyeceği toplam
+  // Dinamik fiyat hesaplama - veritabanından okuyor
+  async calculatePricing(teacherHourlyRate: number) {
+    const commissionConfig = await this.prisma.systemConfig.findUnique({
+      where: { key: 'PLATFORM_COMMISSION_RATE' },
+    });
+    const taxConfig = await this.prisma.systemConfig.findUnique({
+      where: { key: 'TAX_RATE' },
+    });
+
+    const commissionRate = commissionConfig ? parseFloat(commissionConfig.value) / 100 : 0.20;
+    const taxRate = taxConfig ? parseFloat(taxConfig.value) / 100 : 0.20;
+
+    const teacherEarning = teacherHourlyRate;
+    const platformFee = teacherHourlyRate * commissionRate;
+    const subtotal = teacherEarning + platformFee;
+    const tax = subtotal * taxRate;
+    const totalPrice = subtotal + tax;
 
     return {
       teacherEarning,
@@ -23,6 +29,10 @@ export class AdminService {
       subtotal,
       tax,
       totalPrice,
+      rates: {
+        commission: commissionRate * 100,
+        tax: taxRate * 100,
+      },
     };
   }
 
@@ -82,16 +92,13 @@ export class AdminService {
     };
   }
 
-  // Son aktiviteler - gerçek veriler
   async getRecentActivities() {
     const [recentStudents, recentAppointments, recentPayments, recentTeachers] = await Promise.all([
-      // Son kayıt olan öğrenciler
       this.prisma.student.findMany({
         take: 5,
         orderBy: { createdAt: 'desc' },
         include: { user: { select: { firstName: true, lastName: true, createdAt: true } } },
       }),
-      // Son randevular
       this.prisma.appointment.findMany({
         take: 5,
         orderBy: { createdAt: 'desc' },
@@ -101,7 +108,6 @@ export class AdminService {
           subject: { select: { name: true } },
         },
       }),
-      // Son ödemeler
       this.prisma.appointment.findMany({
         where: { paymentStatus: { in: ['COMPLETED', 'PAID'] } },
         take: 5,
@@ -113,7 +119,6 @@ export class AdminService {
           student: { select: { firstName: true, lastName: true } },
         },
       }),
-      // Son kayıt olan öğretmenler
       this.prisma.teacher.findMany({
         take: 5,
         orderBy: { createdAt: 'desc' },
@@ -121,7 +126,6 @@ export class AdminService {
       }),
     ]);
 
-    // Tüm aktiviteleri birleştir ve sırala
     const activities: any[] = [];
 
     recentStudents.forEach((s) => {
@@ -160,7 +164,6 @@ export class AdminService {
       });
     });
 
-    // Tarihe göre sırala ve son 10 tanesini al
     activities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     return {
@@ -191,10 +194,10 @@ export class AdminService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return {
-      success: true,
-      data: teachers.map((t) => {
-        const pricing = this.calculatePricing(t.hourlyRate.toNumber());
+    // Her öğretmen için dinamik fiyat hesapla
+    const teachersWithPricing = await Promise.all(
+      teachers.map(async (t) => {
+        const pricing = await this.calculatePricing(t.hourlyRate.toNumber());
         return {
           id: t.id,
           firstName: t.firstName,
@@ -209,6 +212,7 @@ export class AdminService {
             platformFee: pricing.platformFee,
             tax: pricing.tax,
             totalPrice: pricing.totalPrice,
+            rates: pricing.rates,
           },
           commissionRate: t.commissionRate.toNumber(),
           totalLessons: t._count.appointments,
@@ -220,6 +224,11 @@ export class AdminService {
           introVideoUrl: t.introVideoUrl,
         };
       }),
+    );
+
+    return {
+      success: true,
+      data: teachersWithPricing,
       timestamp: new Date().toISOString(),
     };
   }
@@ -363,7 +372,6 @@ export class AdminService {
       orderBy: { createdAt: 'desc' },
     });
 
-    // Toplam hesaplamaları
     const totals = appointments.reduce(
       (acc, a) => {
         if (a.paymentStatus === 'COMPLETED' || a.paymentStatus === 'PAID') {
@@ -376,7 +384,6 @@ export class AdminService {
       { totalRevenue: 0, totalPlatformFee: 0, totalTeacherEarnings: 0 },
     );
 
-    // KDV hesaplama (platform komisyonu + öğretmen kazancı üzerinden)
     const totalTax = totals.totalRevenue - totals.totalPlatformFee - totals.totalTeacherEarnings;
 
     return {
@@ -413,7 +420,6 @@ export class AdminService {
       orderBy: { createdAt: 'desc' },
     });
 
-    // Toplam hakediş hesaplamaları
     const totals = teachers.reduce(
       (acc, t) => {
         acc.totalPending += t.wallet?.pendingBalance?.toNumber() || 0;
@@ -450,7 +456,6 @@ export class AdminService {
     };
   }
 
-  // Randevu durumu güncelleme
   async updateAppointmentStatus(appointmentId: string, status: string) {
     const appointment = await this.prisma.appointment.findUnique({
       where: { id: appointmentId },
