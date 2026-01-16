@@ -1,194 +1,149 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import api from '@/lib/api';
-
-const tabs = [
-  { id: 'upcoming', label: 'Yaklaşan Dersler' },
-  { id: 'completed', label: 'Tamamlanan Dersler' },
-  { id: 'cancelled', label: 'İptal Edilen' },
-];
-
-const statusColors: Record<string, string> = {
-  CONFIRMED: 'bg-green-100 text-green-700 border border-green-200',
-  PENDING_PAYMENT: 'bg-yellow-100 text-yellow-700 border border-yellow-200',
-  COMPLETED: 'bg-blue-100 text-blue-700 border border-blue-200',
-  CANCELLED: 'bg-red-100 text-red-700 border border-red-200',
-};
-
-const statusLabels: Record<string, string> = {
-  CONFIRMED: 'Onaylandı',
-  PENDING_PAYMENT: 'Bekliyor',
-  COMPLETED: 'Tamamlandı',
-  CANCELLED: 'İptal',
-};
+import { toast } from 'react-hot-toast';
 
 export default function TeacherLessonsPage() {
-  const [activeTab, setActiveTab] = useState('upcoming');
-  const [appointments, setAppointments] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [lessons, setLessons] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    loadAppointments();
+    fetchLessons();
   }, []);
 
-  const loadAppointments = async () => {
+  const fetchLessons = async () => {
     try {
       const data = await api.getMyLessons();
-      setAppointments(Array.isArray(data) ? data : data?.data || []);
+      setLessons(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error('Error loading appointments:', error);
+      console.error('Failed to fetch lessons:', error);
+      toast.error('Dersler yüklenemedi');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleApprove = async (id: string) => {
-    setActionLoading(id);
-    try {
-      await api.approveAppointment(id);
-      await loadAppointments();
-    } catch (error) {
-      console.error('Error approving:', error);
-      alert('Onaylama başarısız oldu');
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleReject = async (id: string) => {
-    const reason = prompt('Reddetme sebebi (opsiyonel):');
-    setActionLoading(id);
-    try {
-      await api.rejectAppointment(id, reason || undefined);
-      await loadAppointments();
-    } catch (error) {
-      console.error('Error rejecting:', error);
-      alert('Reddetme başarısız oldu');
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const filteredAppointments = appointments.filter((apt) => {
-    if (activeTab === 'upcoming') return apt.status === 'PENDING_PAYMENT' || apt.status === 'CONFIRMED';
-    if (activeTab === 'completed') return apt.status === 'COMPLETED';
-    if (activeTab === 'cancelled') return apt.status === 'CANCELLED';
-    return true;
+  const filteredLessons = lessons.filter((lesson) => {
+    if (filter === 'all') return true;
+    return lesson.status === filter;
   });
 
+  const getStatusBadge = (status: string) => {
+    const styles = {
+      PENDING_PAYMENT: 'bg-yellow-100 text-yellow-800',
+      CONFIRMED: 'bg-green-100 text-green-800',
+      IN_PROGRESS: 'bg-blue-100 text-blue-800',
+      COMPLETED: 'bg-gray-100 text-gray-800',
+      CANCELLED: 'bg-red-100 text-red-800',
+    };
+
+    const labels = {
+      PENDING_PAYMENT: 'Ödeme Bekliyor',
+      CONFIRMED: 'Onaylandı',
+      IN_PROGRESS: 'Devam Ediyor',
+      COMPLETED: 'Tamamlandı',
+      CANCELLED: 'İptal Edildi',
+    };
+
+    return (
+      <span className={`px-3 py-1 rounded-full text-xs font-medium ${styles[status] || styles.PENDING_PAYMENT}`}>
+        {labels[status] || status}
+      </span>
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-4 border-navy-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/teacher" className="flex items-center gap-2 text-slate-600 hover:text-slate-900">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              <span>Dashboard</span>
-            </Link>
-            <h1 className="font-semibold text-xl text-slate-900">Derslerim</h1>
-            <div className="w-24"></div>
-          </div>
-        </div>
-      </header>
+    <div className="p-8">
+      <div className="mb-8">
+        <h1 className="font-display text-3xl font-bold text-navy-900 mb-2">Derslerim</h1>
+        <p className="text-slate-600">Tüm derslerinizi ve randevularınızı görüntüleyin</p>
+      </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex gap-2 mb-6">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeTab === tab.id
-                  ? 'bg-slate-900 text-white'
-                  : 'bg-white text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+      {/* Filters */}
+      <div className="flex gap-4 mb-6">
+        {['all', 'CONFIRMED', 'COMPLETED', 'CANCELLED'].map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              filter === f
+                ? 'bg-navy-600 text-white'
+                : 'bg-white text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            {f === 'all' ? 'Tümü' : f === 'CONFIRMED' ? 'Onaylı' : f === 'COMPLETED' ? 'Tamamlanan' : 'İptal'}
+          </button>
+        ))}
+      </div>
 
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          {loading ? (
-            <div className="p-8 text-center text-slate-500">Yükleniyor...</div>
-          ) : filteredAppointments.length === 0 ? (
-            <div className="p-8 text-center text-slate-500">Bu kategoride ders bulunmuyor.</div>
-          ) : (
-            <div className="divide-y divide-slate-100">
-              {filteredAppointments.map((apt) => (
-                <div key={apt.id} className="p-5 hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4 min-w-[200px]">
-                      <div className="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-slate-600 font-semibold text-sm">
-                          {apt.student?.firstName?.[0] || '?'}{apt.student?.lastName?.[0] || '?'}
-                        </span>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-slate-900">
-                          {apt.student?.firstName} {apt.student?.lastName}
-                        </h3>
-                        <p className="text-slate-500 text-sm">{apt.subject?.name || 'Ders'}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="text-right min-w-[160px]">
-                      <div className="font-medium text-slate-900">
-                        {new Date(apt.scheduledAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' })}
-                      </div>
-                      <div className="text-slate-500 text-sm">
-                        {new Date(apt.scheduledAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3 min-w-[240px] justify-end">
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[apt.status] || 'bg-gray-100'}`}>
-                        {statusLabels[apt.status] || apt.status}
-                      </span>
-
-                      {apt.status === 'CONFIRMED' && (
-                        <button className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800">
-                          Derse Başla
-                        </button>
-                      )}
-
-                      {apt.status === 'PENDING_PAYMENT' && (
-                        <>
-                          <button 
-                            onClick={() => handleApprove(apt.id)}
-                            disabled={actionLoading === apt.id}
-                            className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 disabled:opacity-50"
-                          >
-                            {actionLoading === apt.id ? '...' : 'Onayla'}
-                          </button>
-                          <button 
-                            onClick={() => handleReject(apt.id)}
-                            disabled={actionLoading === apt.id}
-                            className="text-red-600 text-sm font-medium hover:text-red-700 disabled:opacity-50"
-                          >
-                            Reddet
-                          </button>
-                        </>
-                      )}
-                    </div>
+      {/* Lessons List */}
+      <div className="space-y-4">
+        {filteredLessons.length > 0 ? (
+          filteredLessons.map((lesson) => (
+            <div key={lesson.id} className="card p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-navy-100 rounded-full flex items-center justify-center font-semibold text-navy-600">
+                    {lesson.student?.firstName?.charAt(0)}
                   </div>
-                  
-                  {apt.notes && apt.status === 'CANCELLED' && (
-                    <div className="mt-3 text-sm text-slate-500 bg-slate-100 rounded-lg px-4 py-2">
-                      İptal sebebi: {apt.notes}
-                    </div>
-                  )}
+                  <div>
+                    <h3 className="font-display font-semibold text-navy-900">
+                      {lesson.student?.firstName} {lesson.student?.lastName}
+                    </h3>
+                    <p className="text-sm text-slate-600">{lesson.subject?.name}</p>
+                  </div>
                 </div>
-              ))}
+
+                <div className="text-right flex items-center gap-4">
+                  <div>
+                    <p className="font-medium text-navy-900">
+                      {new Date(lesson.scheduledAt).toLocaleDateString('tr-TR', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })}
+                    </p>
+                    <p className="text-sm text-slate-600">
+                      {new Date(lesson.scheduledAt).toLocaleTimeString('tr-TR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </p>
+                  </div>
+                  {getStatusBadge(lesson.status)}
+                </div>
+              </div>
             </div>
-          )}
-        </div>
-      </main>
+          ))
+        ) : (
+          <div className="card p-12 text-center">
+            <svg
+              className="w-16 h-16 mx-auto mb-4 text-slate-300"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1}
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            <p className="text-slate-500">Henüz ders bulunmuyor</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

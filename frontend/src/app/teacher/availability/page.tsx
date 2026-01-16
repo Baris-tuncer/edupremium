@@ -1,199 +1,155 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import api from '@/lib/api';
+import { toast } from 'react-hot-toast';
 
-const daysOfWeek = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
-const timeSlots = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
+const DAYS = [
+  { id: 0, name: 'Pazartesi' },
+  { id: 1, name: 'Salı' },
+  { id: 2, name: 'Çarşamba' },
+  { id: 3, name: 'Perşembe' },
+  { id: 4, name: 'Cuma' },
+  { id: 5, name: 'Cumartesi' },
+  { id: 6, name: 'Pazar' },
+];
 
 export default function TeacherAvailabilityPage() {
-  const [currentWeek, setCurrentWeek] = useState(0);
-  const [availability, setAvailability] = useState<Record<string, string[]>>({});
-  const [reservedSlots, setReservedSlots] = useState<Record<string, string[]>>({});
-  const [isEditing, setIsEditing] = useState(false);
+  const [availability, setAvailability] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
     fetchAvailability();
   }, []);
 
   const fetchAvailability = async () => {
     try {
-      setIsLoading(true);
-      setError(null);
-      const result = await api.getMyAvailability(); const data = result.data || result;
-      
-      // Convert API response to UI format
-      const availMap: Record<string, string[]> = {};
-      daysOfWeek.forEach(d => availMap[d] = []);
-      
-      if (Array.isArray(data)) {
-        data.forEach((slot: any) => {
-          const dayName = daysOfWeek[slot.dayOfWeek];
-          if (dayName && slot.startTime) {
-            availMap[dayName].push(slot.startTime.substring(0, 5));
-          }
-        });
-      }
-      setAvailability(availMap);
-    } catch (err: any) {
-      console.error('Error:', err);
-      setError('Müsaitlik bilgileri yüklenirken hata oluştu.');
+      const data = await api.getMyAvailability();
+      setAvailability(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Failed to fetch availability:', error);
+      toast.error('Müsaitlik bilgileri yüklenemedi');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getWeekDates = (weekOffset: number) => {
-    const today = new Date();
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - today.getDay() + 1 + weekOffset * 7);
-    return daysOfWeek.map((day, index) => {
-      const date = new Date(monday);
-      date.setDate(monday.getDate() + index);
-      return { day, date: date.getDate(), month: date.toLocaleString('tr-TR', { month: 'short' }) };
-    });
+  const addTimeSlot = (dayOfWeek: number) => {
+    setAvailability([
+      ...availability,
+      {
+        dayOfWeek,
+        startTime: '09:00',
+        endTime: '17:00',
+        isRecurring: true,
+      },
+    ]);
   };
 
-  const weekDates = getWeekDates(currentWeek);
-  const weekStart = weekDates[0];
-  const weekEnd = weekDates[6];
-
-  const toggleSlot = (day: string, time: string) => {
-    if (!isEditing) return;
-    setAvailability(prev => {
-      const daySlots = prev[day] || [];
-      if (daySlots.includes(time)) {
-        return { ...prev, [day]: daySlots.filter(t => t !== time) };
-      } else {
-        return { ...prev, [day]: [...daySlots, time].sort() };
-      }
-    });
+  const removeTimeSlot = (index: number) => {
+    setAvailability(availability.filter((_, i) => i !== index));
   };
 
-  const saveAvailability = async () => {
+  const updateTimeSlot = (index: number, field: string, value: any) => {
+    const updated = [...availability];
+    updated[index] = { ...updated[index], [field]: value };
+    setAvailability(updated);
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
     try {
-      setIsSaving(true);
-      const slots: any[] = [];
-      daysOfWeek.forEach((day, dayIndex) => {
-        (availability[day] || []).forEach(time => {
-          const endHour = parseInt(time.split(':')[0]) + 1;
-          slots.push({
-            dayOfWeek: dayIndex,
-            startTime: time + ':00',
-            endTime: endHour.toString().padStart(2, '0') + ':00:00',
-            isRecurring: true
-          });
-        });
-      });
-      await api.updateMyAvailability(slots);
-      setIsEditing(false);
-      alert('Müsaitlik kaydedildi!');
-    } catch (err) {
-      console.error('Error saving:', err);
-      alert('Kaydetme hatası!');
+      await api.updateMyAvailability({ slots: availability });
+      toast.success('Müsaitlik bilgileriniz güncellendi!');
+      fetchAvailability();
+    } catch (error) {
+      console.error('Failed to update availability:', error);
+      toast.error('Güncelleme başarısız oldu');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const getSlotStatus = (day: string, time: string) => {
-    if (reservedSlots[day]?.includes(time)) return 'reserved';
-    if (availability[day]?.includes(time)) return 'available';
-    return 'unavailable';
-  };
-
-  const stats = {
-    total: Object.values(availability).flat().length,
-    reserved: Object.values(reservedSlots).flat().length,
-    free: Object.values(availability).flat().length - Object.values(reservedSlots).flat().length
-  };
+  if (isLoading) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-4 border-navy-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <Link href="/teacher" className="text-gray-600 hover:text-gray-800">← Dashboard</Link>
-          <h1 className="text-2xl font-bold">Müsaitlik Takvimi</h1>
-          <div></div>
+    <div className="p-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <h1 className="font-display text-3xl font-bold text-navy-900 mb-2">Müsaitlik Takviminiz</h1>
+          <p className="text-slate-600">Hangi günlerde ve saatlerde ders vermek istediğinizi belirleyin</p>
         </div>
 
-        {error && <div className="bg-red-100 text-red-700 p-4 rounded mb-4">{error}</div>}
+        <div className="space-y-6">
+          {DAYS.map((day) => {
+            const daySlots = availability.filter((slot) => slot.dayOfWeek === day.id);
+            
+            return (
+              <div key={day.id} className="card p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-display text-lg font-semibold text-navy-900">{day.name}</h3>
+                  <button
+                    onClick={() => addTimeSlot(day.id)}
+                    className="text-sm text-navy-600 hover:text-navy-700 font-medium"
+                  >
+                    + Saat Ekle
+                  </button>
+                </div>
 
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-lg shadow"><span className="text-2xl font-bold">{stats.total}</span><p className="text-gray-500">Haftalık Müsait Saat</p></div>
-          <div className="bg-white p-4 rounded-lg shadow"><span className="text-2xl font-bold text-orange-500">{stats.reserved}</span><p className="text-gray-500">Rezerve Edilmiş</p></div>
-          <div className="bg-white p-4 rounded-lg shadow"><span className="text-2xl font-bold text-green-500">{stats.free}</span><p className="text-gray-500">Boş Slot</p></div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
-              <button onClick={() => setCurrentWeek(w => w - 1)} className="p-2 hover:bg-gray-100 rounded">&lt;</button>
-              <span className="font-medium">{weekStart.date} {weekStart.month} - {weekEnd.date} {weekEnd.month}</span>
-              <button onClick={() => setCurrentWeek(w => w + 1)} className="p-2 hover:bg-gray-100 rounded">&gt;</button>
-            </div>
-            {isEditing ? (
-              <div className="flex gap-2">
-                <button onClick={() => setIsEditing(false)} className="px-4 py-2 border rounded">İptal</button>
-                <button onClick={saveAvailability} disabled={isSaving} className="px-4 py-2 bg-blue-600 text-white rounded">{isSaving ? 'Kaydediliyor...' : 'Kaydet'}</button>
+                {daySlots.length > 0 ? (
+                  <div className="space-y-3">
+                    {daySlots.map((slot, index) => {
+                      const globalIndex = availability.indexOf(slot);
+                      return (
+                        <div key={index} className="flex items-center gap-4">
+                          <input
+                            type="time"
+                            value={slot.startTime}
+                            onChange={(e) => updateTimeSlot(globalIndex, 'startTime', e.target.value)}
+                            className="px-4 py-2 border border-slate-200 rounded-lg"
+                          />
+                          <span className="text-slate-500">-</span>
+                          <input
+                            type="time"
+                            value={slot.endTime}
+                            onChange={(e) => updateTimeSlot(globalIndex, 'endTime', e.target.value)}
+                            className="px-4 py-2 border border-slate-200 rounded-lg"
+                          />
+                          <button
+                            onClick={() => removeTimeSlot(globalIndex)}
+                            className="ml-auto p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-slate-500 text-center py-4">Bu gün için müsaitlik belirtilmemiş</p>
+                )}
               </div>
-            ) : (
-              <button onClick={() => setIsEditing(true)} className="px-4 py-2 bg-blue-600 text-white rounded">Düzenle</button>
-            )}
-          </div>
+            );
+          })}
+        </div>
 
-          <div className="flex gap-4 mb-4">
-            <div className="flex items-center gap-2"><div className="w-4 h-4 bg-green-500 rounded"></div><span>Müsait</span></div>
-            <div className="flex items-center gap-2"><div className="w-4 h-4 bg-orange-500 rounded"></div><span>Rezerve</span></div>
-            <div className="flex items-center gap-2"><div className="w-4 h-4 bg-gray-200 rounded"></div><span>Kapalı</span></div>
-          </div>
-
-          {isLoading ? (
-            <div className="text-center py-8">Yükleniyor...</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr>
-                    <th className="p-2 text-left">Saat</th>
-                    {weekDates.map(d => (
-                      <th key={d.day} className="p-2 text-center">
-                        <div>{d.day}</div>
-                        <div className="text-sm text-gray-500">{d.date} {d.month}</div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {timeSlots.map(time => (
-                    <tr key={time}>
-                      <td className="p-2 font-medium">{time}</td>
-                      {daysOfWeek.map(day => {
-                        const status = getSlotStatus(day, time);
-                        return (
-                          <td key={day} className="p-1">
-                            <button
-                              onClick={() => toggleSlot(day, time)}
-                              disabled={!isEditing || status === 'reserved'}
-                              className={`w-full h-10 rounded transition-colors ${
-                                status === 'reserved' ? 'bg-orange-500' :
-                                status === 'available' ? 'bg-green-500' : 'bg-gray-200'
-                              } ${isEditing && status !== 'reserved' ? 'hover:opacity-80 cursor-pointer' : ''}`}
-                            />
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+        <div className="flex justify-end mt-8">
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="px-8 py-3 bg-navy-600 text-white rounded-xl hover:bg-navy-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSaving ? 'Kaydediliyor...' : 'Kaydet'}
+          </button>
         </div>
       </div>
     </div>
