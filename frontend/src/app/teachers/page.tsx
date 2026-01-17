@@ -164,6 +164,7 @@ export default function TeachersPage() {
         } else if (sortBy === 'rating') {
           teacherList.sort((a: Teacher, b: Teacher) => (b.averageRating || 0) - (a.averageRating || 0));
       }
+    }
     } catch (error) {
       console.error('Error fetching teachers:', error);
     } finally {
