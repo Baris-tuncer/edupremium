@@ -64,6 +64,7 @@ const BookingModal = ({
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<string>('');
+  const [studentNote, setStudentNote] = useState<string>('');
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -114,6 +115,7 @@ const BookingModal = ({
           teacherId: teacher.id,
           scheduledAt,
           subjectId: selectedSubject || undefined,
+          studentNote: studentNote || undefined,
         }),
       });
 
@@ -218,6 +220,19 @@ const BookingModal = ({
                   <option key={i} value={subject}>{subject}</option>
                 ))}
               </select>
+            </div>
+          )}
+
+          {/* Not */}
+          <div className="mb-8">
+            <h3 className="font-display font-semibold text-navy-900 mb-4">Öğretmene Not (Opsiyonel)</h3>
+            <textarea
+              className="input w-full"
+              rows={3}
+              placeholder="Hangi konularda destek almak istiyorsunuz? Varsa diğer notlarınız..."
+              value={studentNote}
+              onChange={(e) => setStudentNote(e.target.value)}
+            />
             </div>
           )}
 
