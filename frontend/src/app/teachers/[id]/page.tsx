@@ -233,8 +233,7 @@ const BookingModal = ({
               value={studentNote}
               onChange={(e) => setStudentNote(e.target.value)}
             />
-            </div>
-          )}
+          </div>
 
           {/* Özet */}
           <div className="bg-slate-50 rounded-2xl p-6 mb-6">
