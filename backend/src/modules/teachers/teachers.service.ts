@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.module';
 import { Prisma } from '@prisma/client';
 
@@ -8,7 +8,6 @@ export class TeachersService {
 
   // Fiyat hesaplama helper fonksiyonu
   private async calculateParentPrice(teacherHourlyRate: number): Promise<number> {
-    // SystemConfig'den komisyon ve KDV oranlarını al
     const commissionConfig = await this.prisma.systemConfig.findUnique({
       where: { key: 'PLATFORM_COMMISSION_RATE' },
     });
@@ -19,11 +18,8 @@ export class TeachersService {
     const commissionRate = commissionConfig ? parseFloat(commissionConfig.value) : 23;
     const taxRate = taxConfig ? parseFloat(taxConfig.value) : 12;
 
-    // Hesaplama: Öğretmen ücreti + Komisyon + KDV
     const withCommission = teacherHourlyRate * (1 + commissionRate / 100);
     const withTax = withCommission * (1 + taxRate / 100);
-
-    // En yakın 100 TL'ye yuvarla
     const rounded = Math.round(withTax / 100) * 100;
 
     return rounded;
@@ -66,21 +62,21 @@ export class TeachersService {
     // Filter by branch
     if (branchId) {
       where.branches = {
-        some: { id: branchId },
+        some: { branchId },
       };
     }
 
     // Filter by subject
     if (subjectId) {
       where.subjects = {
-        some: { id: subjectId },
+        some: { subjectId },
       };
     }
 
     // Filter by exam type
     if (examTypeId) {
       where.examTypes = {
-        some: { id: examTypeId },
+        some: { examTypeId },
       };
     }
 
@@ -95,7 +91,7 @@ export class TeachersService {
       }
     }
 
-    // Search by name - FIX: OR at root level
+    // Search by name
     if (search) {
       where.OR = [
         {
@@ -136,34 +132,76 @@ export class TeachersService {
           },
         },
         branches: {
-          select: {
-            id: true,
-            name: true,
+          include: {
+            branch: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
         subjects: {
-          select: {
-            id: true,
-            name: true,
+          include: {
+            subject: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
         examTypes: {
+          include: {
+            examType: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        _count: {
           select: {
-            id: true,
-            name: true,
+            appointments: {
+              where: { status: 'COMPLETED' },
+            },
           },
         },
       },
     });
 
-    // Transform response with parentPrice and unique subjects
+    // Get teacher IDs for ratings
+    const teacherIds = teachers.map((t) => t.id);
+
+    // Get average ratings
+    const ratings = await this.prisma.feedback.groupBy({
+      by: ['teacherId'],
+      where: { teacherId: { in: teacherIds } },
+      _avg: {
+        comprehensionLevel: true,
+        engagementLevel: true,
+        participationLevel: true,
+      },
+    });
+
+    const ratingsMap = new Map(
+      ratings.map((r) => [
+        r.teacherId,
+        ((r._avg.comprehensionLevel || 0) +
+          (r._avg.engagementLevel || 0) +
+          (r._avg.participationLevel || 0)) / 3,
+      ]),
+    );
+
+    // Transform response
     const transformedTeachers = await Promise.all(
       teachers.map(async (teacher) => {
-        const parentPrice = await this.calculateParentPrice(teacher.hourlyRate);
+        const parentPrice = await this.calculateParentPrice(teacher.hourlyRate.toNumber());
         
         // Get unique subjects
         const uniqueSubjects = Array.from(
-          new Set(teacher.subjects.map(s => s.name))
+          new Set(teacher.subjects.map(ts => ts.subject.name))
         );
 
         return {
@@ -173,13 +211,13 @@ export class TeachersService {
           profilePhotoUrl: teacher.profilePhotoUrl,
           introVideoUrl: teacher.introVideoUrl,
           bio: teacher.bio,
-          hourlyRate: teacher.hourlyRate,
+          hourlyRate: teacher.hourlyRate.toNumber(),
           parentPrice,
-          branches: teacher.branches.map(b => b.name),
+          branches: teacher.branches.map(tb => tb.branch.name),
           subjects: uniqueSubjects,
-          examTypes: teacher.examTypes.map(e => e.name),
-          completedLessons: teacher.completedLessons,
-          averageRating: teacher.averageRating,
+          examTypes: teacher.examTypes.map(te => te.examType.name),
+          completedLessons: teacher._count.appointments,
+          averageRating: ratingsMap.get(teacher.id) || null,
         };
       })
     );
@@ -208,21 +246,40 @@ export class TeachersService {
           },
         },
         branches: {
-          select: {
-            id: true,
-            name: true,
+          include: {
+            branch: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
         subjects: {
-          select: {
-            id: true,
-            name: true,
+          include: {
+            subject: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
         examTypes: {
+          include: {
+            examType: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        _count: {
           select: {
-            id: true,
-            name: true,
+            appointments: {
+              where: { status: 'COMPLETED' },
+            },
           },
         },
       },
@@ -232,11 +289,28 @@ export class TeachersService {
       throw new NotFoundException('Öğretmen bulunamadı');
     }
 
-    const parentPrice = await this.calculateParentPrice(teacher.hourlyRate);
+    // Get average rating
+    const rating = await this.prisma.feedback.aggregate({
+      where: { teacherId: id },
+      _avg: {
+        comprehensionLevel: true,
+        engagementLevel: true,
+        participationLevel: true,
+      },
+    });
+
+    const avgRating =
+      rating._avg.comprehensionLevel !== null
+        ? ((rating._avg.comprehensionLevel || 0) +
+            (rating._avg.engagementLevel || 0) +
+            (rating._avg.participationLevel || 0)) / 3
+        : null;
+
+    const parentPrice = await this.calculateParentPrice(teacher.hourlyRate.toNumber());
     
     // Get unique subjects
     const uniqueSubjects = Array.from(
-      new Set(teacher.subjects.map(s => s.name))
+      new Set(teacher.subjects.map(ts => ts.subject.name))
     );
 
     return {
@@ -246,16 +320,14 @@ export class TeachersService {
       profilePhotoUrl: teacher.profilePhotoUrl,
       introVideoUrl: teacher.introVideoUrl,
       bio: teacher.bio,
-      hourlyRate: teacher.hourlyRate,
+      hourlyRate: teacher.hourlyRate.toNumber(),
       parentPrice,
-      branches: teacher.branches.map(b => b.name),
+      branches: teacher.branches.map(tb => tb.branch.name),
       subjects: uniqueSubjects,
-      subjectIds: teacher.subjects.map(s => s.id),
-      examTypes: teacher.examTypes.map(e => e.name),
-      completedLessons: teacher.completedLessons,
-      averageRating: teacher.averageRating,
-      yearsOfExperience: teacher.yearsOfExperience,
-      education: teacher.education,
+      subjectIds: teacher.subjects.map(ts => ts.subject.id),
+      examTypes: teacher.examTypes.map(te => te.examType.name),
+      completedLessons: teacher._count.appointments,
+      averageRating: avgRating,
     };
   }
 
@@ -275,22 +347,31 @@ export class TeachersService {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    const availability = await this.prisma.availability.findMany({
+    const availability = await this.prisma.teacherAvailability.findMany({
       where: {
         teacherId,
-        date: {
-          gte: start,
-          lte: end,
-        },
+        OR: [
+          {
+            isRecurring: true,
+          },
+          {
+            isRecurring: false,
+            specificDate: {
+              gte: start,
+              lte: end,
+            },
+          },
+        ],
       },
-      orderBy: [{ date: 'asc' }, { startTime: 'asc' }],
+      orderBy: [{ specificDate: 'asc' }, { startTime: 'asc' }],
     });
 
     return availability.map((slot) => ({
-      date: slot.date.toISOString().split('T')[0],
+      date: slot.specificDate ? slot.specificDate.toISOString().split('T')[0] : null,
+      dayOfWeek: slot.dayOfWeek,
       startTime: slot.startTime,
       endTime: slot.endTime,
-      isBooked: slot.isBooked,
+      isRecurring: slot.isRecurring,
     }));
   }
 }
