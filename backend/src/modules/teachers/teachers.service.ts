@@ -56,7 +56,7 @@ export class TeachersService {
     };
 
     if (branchId) {
-      where.branchId = branchId;
+      where.branches = { some: { branchId } };
     }
 
     if (subjectId) {
