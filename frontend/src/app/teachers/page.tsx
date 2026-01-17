@@ -1,264 +1,197 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 
-// ============================================
-// FILTER SIDEBAR
-// ============================================
-const FilterSidebar = () => {
-  const [priceRange, setPriceRange] = useState([500, 5000]);
+interface Branch {
+  id: string;
+  name: string;
+}
 
-  const branches = [
-    { id: 'matematik', name: 'Matematik', count: 85 },
-    { id: 'fizik', name: 'Fizik', count: 42 },
-    { id: 'kimya', name: 'Kimya', count: 38 },
-    { id: 'biyoloji', name: 'Biyoloji', count: 35 },
-    { id: 'turkce', name: 'Türkçe', count: 56 },
-    { id: 'ingilizce', name: 'İngilizce', count: 78 },
-  ];
+interface Subject {
+  id: string;
+  name: string;
+  branchId: string;
+}
 
-  const grades = [
-    { id: '5', name: '5. Sınıf' },
-    { id: '6', name: '6. Sınıf' },
-    { id: '7', name: '7. Sınıf' },
-    { id: '8', name: '8. Sınıf' },
-    { id: '9', name: '9. Sınıf' },
-    { id: '10', name: '10. Sınıf' },
-    { id: '11', name: '11. Sınıf' },
-    { id: '12', name: '12. Sınıf' },
-  ];
+interface ExamType {
+  id: string;
+  name: string;
+  code: string;
+}
 
-  return (
-    <aside className="w-72 shrink-0 space-y-6">
-      {/* Search */}
-      <div className="card p-5">
-        <h3 className="font-display font-semibold text-navy-900 mb-4">Ara</h3>
-        <div className="relative">
-          <svg className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Öğretmen adı..."
-            className="input pl-10"
-          />
-        </div>
-      </div>
+interface Teacher {
+  id: string;
+  firstName: string;
+  lastName: string;
+  profilePhotoUrl?: string;
+  bio?: string;
+  hourlyRate: number;
+  experience?: number;
+  rating?: number;
+  reviewCount?: number;
+  completedLessons?: number;
+  branches: { branch: Branch }[];
+  subjects: { subject: Subject }[];
+  examTypes?: { examType: ExamType }[];
+}
 
-      {/* Branch Filter */}
-      <div className="card p-5">
-        <h3 className="font-display font-semibold text-navy-900 mb-4">Branş</h3>
-        <div className="space-y-3">
-          {branches.map((branch) => (
-            <label key={branch.id} className="flex items-center justify-between cursor-pointer group">
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 rounded border-slate-300 text-navy-600 focus:ring-navy-500"
-                />
-                <span className="text-slate-700 group-hover:text-navy-900">{branch.name}</span>
-              </div>
-              <span className="text-sm text-slate-400">{branch.count}</span>
-            </label>
-          ))}
-        </div>
-      </div>
+interface PricingConfig {
+  commissionRate: number;
+  taxRate: number;
+}
 
-      {/* Grade Filter */}
-      <div className="card p-5">
-        <h3 className="font-display font-semibold text-navy-900 mb-4">Sınıf Seviyesi</h3>
-        <div className="grid grid-cols-2 gap-2">
-          {grades.map((grade) => (
-            <label key={grade.id} className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                className="w-4 h-4 rounded border-slate-300 text-navy-600 focus:ring-navy-500"
-              />
-              <span className="text-sm text-slate-700">{grade.name}</span>
-            </label>
-          ))}
-        </div>
-      </div>
+// En yakın 100'e yuvarlama
+const roundToNearest100 = (value: number) => Math.round(value / 100) * 100;
 
-      {/* Price Range */}
-      <div className="card p-5">
-        <h3 className="font-display font-semibold text-navy-900 mb-4">Ücret Aralığı</h3>
-        <div className="flex items-center justify-between text-sm text-slate-600 mb-3">
-          <span>₺{priceRange[0]}</span>
-          <span>₺{priceRange[1]}</span>
-        </div>
-        <input
-          type="range"
-          min="100"
-          max="1000"
-          step="50"
-          value={priceRange[1]}
-          onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-          className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-navy-600"
-        />
-      </div>
-
-      {/* Rating Filter */}
-      <div className="card p-5">
-        <h3 className="font-display font-semibold text-navy-900 mb-4">Minimum Puan</h3>
-        <div className="flex gap-2">
-          {[4, 4.5, 5].map((rating) => (
-            <button
-              key={rating}
-              className="flex-1 py-2 px-3 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:border-navy-300 hover:text-navy-900 transition-colors"
-            >
-              {rating}+
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Clear Filters */}
-      <button className="btn-secondary w-full">
-        Filtreleri Temizle
-      </button>
-    </aside>
-  );
+// Veli fiyatı hesaplama
+const calculateParentPrice = (teacherRate: number, config: PricingConfig) => {
+  const commission = teacherRate * (config.commissionRate / 100);
+  const subtotal = teacherRate + commission;
+  const tax = subtotal * (config.taxRate / 100);
+  return roundToNearest100(subtotal + tax);
 };
 
-// ============================================
-// TEACHER CARD
-// ============================================
-const TeacherCard = ({ teacher }: { teacher: any }) => (
-  <Link href={`/teachers/${teacher.id}`} className="card-interactive p-6 flex gap-6">
-    {/* Avatar */}
-    <div className="shrink-0">
-      {teacher.profilePhotoUrl ? (
-        <img src={teacher.profilePhotoUrl} alt={teacher.name} className="w-24 h-24 rounded-2xl object-cover shadow-elegant" />
-      ) : (
-        <div className="w-24 h-24 bg-gradient-navy rounded-2xl flex items-center justify-center text-white font-display text-3xl font-semibold shadow-elegant">
-          {teacher.initials}
-        </div>
-      )}
-    </div>
-
-    {/* Content */}
-    <div className="flex-1 min-w-0">
-      <div className="flex items-start justify-between mb-2">
-        <div>
-          <h3 className="font-display text-xl font-semibold text-navy-900 mb-1 flex items-center gap-2">
-            {teacher.name}{teacher.isNative && <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-medium">Native</span>}
-          </h3>
-          <p className="text-slate-500">{teacher.branch}</p>
-        </div>
-        <div className="flex items-center gap-1 bg-gold-50 px-3 py-1 rounded-full">
-          <svg className="w-4 h-4 text-gold-500 fill-current" viewBox="0 0 20 20">
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-          </svg>
-          <span className="font-semibold text-gold-700">{teacher.rating}</span>
-          <span className="text-gold-600 text-sm">({teacher.reviewCount})</span>
-        </div>
-      </div>
-
-      <p className="text-slate-600 text-sm line-clamp-2 mb-4">{teacher.bio}</p>
-
-      <div className="flex items-center gap-6 text-sm">
-        <div className="flex items-center gap-1.5 text-slate-500">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          {teacher.experience} yıl deneyim
-        </div>
-        <div className="flex items-center gap-1.5 text-slate-500">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          {teacher.completedLessons} ders
-        </div>
-        <div className="flex items-center gap-1.5">
-          {teacher.subjects.slice(0, 3).map((subject: string, i: number) => (
-            <span key={i} className="badge badge-navy">{subject}</span>
-          ))}
-          {teacher.subjects.length > 3 && (
-            <span className="text-slate-400">+{teacher.subjects.length - 3}</span>
-          )}
-        </div>
-      </div>
-    </div>
-
-    {/* Price & Action */}
-    <div className="shrink-0 text-right flex flex-col justify-between">
-      <div>
-        <div className="font-display text-2xl font-bold text-navy-900">
-          ₺{teacher.hourlyRate}
-        </div>
-        <div className="text-sm text-slate-500">/saat</div>
-      </div>
-      <button className="btn-primary py-2 px-4 text-sm">
-        Profili Gör
-      </button>
-    </div>
-  </Link>
-);
-
-// ============================================
-// MAIN PAGE
-// ============================================
 export default function TeachersPage() {
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [examTypes, setExamTypes] = useState<ExamType[]>([]);
+  const [pricingConfig, setPricingConfig] = useState<PricingConfig>({ commissionRate: 20, taxRate: 20 });
+  const [loading, setLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+
+  // Filters
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedBranch, setSelectedBranch] = useState('');
+  const [selectedSubject, setSelectedSubject] = useState('');
+  const [selectedExamType, setSelectedExamType] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
   const [sortBy, setSortBy] = useState('recommended');
 
-  const teachers = [
-    {
-      id: '1',
-      name: 'Mehmet Öztürk',
-      initials: 'MÖ',
-      branch: 'Matematik Öğretmeni',
-      bio: '12 yıllık deneyimle LGS ve YKS sınavlarına hazırlık. İstanbul Üniversitesi Matematik Bölümü mezunu. Öğrenci odaklı, sonuç garantili eğitim.',
-      rating: 4.9,
-      reviewCount: 128,
-      experience: 12,
-      completedLessons: 1240,
-      hourlyRate: 450,
-      subjects: ['Matematik', 'Geometri', 'Analitik Geometri'],
-    },
-    {
-      id: '2',
-      name: 'Ayşe Kaya',
-      initials: 'AK',
-      branch: 'Fizik Öğretmeni',
-      bio: 'Boğaziçi Üniversitesi Fizik Bölümü mezunu. Karmaşık konuları anlaşılır hale getirme konusunda uzman. TÜBİTAK proje danışmanlığı.',
-      rating: 4.8,
-      reviewCount: 95,
-      experience: 8,
-      completedLessons: 890,
-      hourlyRate: 400,
-      subjects: ['Fizik', 'Mekanik', 'Elektrik'],
-    },
-    {
-      id: '3',
-      name: 'Can Demir',
-      initials: 'CD',
-      branch: 'İngilizce Öğretmeni',
-      bio: 'CELTA sertifikalı, 10 yıl yurt dışı deneyimi. Speaking ve Writing odaklı dersler. YDS, YÖKDİL, TOEFL, IELTS hazırlık.',
-      rating: 5.0,
-      reviewCount: 156,
-      experience: 15,
-      completedLessons: 2100,
-      hourlyRate: 500,
-      subjects: ['İngilizce', 'YDS', 'IELTS'],
-    },
-    {
-      id: '4',
-      name: 'Zeynep Yıldız',
-      initials: 'ZY',
-      branch: 'Kimya Öğretmeni',
-      bio: 'ODTÜ Kimya mezunu, yüksek lisans. Organik kimya ve biyokimya uzmanı. Deney odaklı, görsel anlatım teknikleri.',
-      rating: 4.7,
-      reviewCount: 73,
-      experience: 6,
-      completedLessons: 520,
-      hourlyRate: 380,
-      subjects: ['Kimya', 'Organik Kimya', 'Biyokimya'],
-    },
-  ];
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
+
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
+
+  useEffect(() => {
+    fetchTeachers();
+  }, [selectedBranch, selectedSubject, selectedExamType, minPrice, maxPrice, searchTerm, sortBy]);
+
+  useEffect(() => {
+    // Branch değişince subject'leri filtrele
+    if (selectedBranch) {
+      fetchSubjects(selectedBranch);
+      setSelectedSubject('');
+    } else {
+      fetchSubjects();
+    }
+  }, [selectedBranch]);
+
+  const fetchInitialData = async () => {
+    try {
+      const [branchesRes, subjectsRes, examTypesRes, pricingRes] = await Promise.all([
+        fetch(`${baseUrl}/branches`),
+        fetch(`${baseUrl}/subjects`),
+        fetch(`${baseUrl}/exam-types`),
+        fetch(`${baseUrl}/pricing/config`),
+      ]);
+
+      if (branchesRes.ok) {
+        const data = await branchesRes.json();
+        setBranches(data.data || []);
+      }
+      if (subjectsRes.ok) {
+        const data = await subjectsRes.json();
+        setSubjects(data.data || []);
+      }
+      if (examTypesRes.ok) {
+        const data = await examTypesRes.json();
+        setExamTypes(data.data || []);
+      }
+      if (pricingRes.ok) {
+        const data = await pricingRes.json();
+        if (data.data) {
+          setPricingConfig({
+            commissionRate: data.data.commissionRate || 20,
+            taxRate: data.data.taxRate || 20,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching initial data:', error);
+    }
+  };
+
+  const fetchSubjects = async (branchId?: string) => {
+    try {
+      const url = branchId ? `${baseUrl}/subjects?branchId=${branchId}` : `${baseUrl}/subjects`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        setSubjects(data.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching subjects:', error);
+    }
+  };
+
+  const fetchTeachers = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      
+      if (selectedBranch) params.append('branchId', selectedBranch);
+      if (selectedSubject) params.append('subjectId', selectedSubject);
+      if (minPrice) params.append('minPrice', minPrice);
+      if (maxPrice) params.append('maxPrice', maxPrice);
+      if (searchTerm) params.append('search', searchTerm);
+
+      const url = `${baseUrl}/teachers?${params.toString()}`;
+      const res = await fetch(url);
+      
+      if (res.ok) {
+        const data = await res.json();
+        let teacherList = data.data || [];
+        
+        // Sorting
+        if (sortBy === 'price-low') {
+          teacherList.sort((a: Teacher, b: Teacher) => a.hourlyRate - b.hourlyRate);
+        } else if (sortBy === 'price-high') {
+          teacherList.sort((a: Teacher, b: Teacher) => b.hourlyRate - a.hourlyRate);
+        } else if (sortBy === 'rating') {
+          teacherList.sort((a: Teacher, b: Teacher) => (b.rating || 0) - (a.rating || 0));
+        } else if (sortBy === 'experience') {
+          teacherList.sort((a: Teacher, b: Teacher) => (b.experience || 0) - (a.experience || 0));
+        }
+
+        setTeachers(teacherList);
+        setTotalCount(data.total || teacherList.length);
+      }
+    } catch (error) {
+      console.error('Error fetching teachers:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setSelectedBranch('');
+    setSelectedSubject('');
+    setSelectedExamType('');
+    setMinPrice('');
+    setMaxPrice('');
+    setSortBy('recommended');
+  };
+
+  const filteredSubjects = selectedBranch 
+    ? subjects.filter(s => s.branchId === selectedBranch)
+    : subjects;
 
   return (
     <>
@@ -274,15 +207,107 @@ export default function TeachersPage() {
           </div>
 
           <div className="flex gap-8">
-            {/* Filters */}
-            <FilterSidebar />
+            {/* Filters Sidebar */}
+            <aside className="w-72 shrink-0 space-y-6">
+              {/* Search */}
+              <div className="card p-5">
+                <h3 className="font-display font-semibold text-navy-900 mb-4">Öğretmen Ara</h3>
+                <div className="relative">
+                  <svg className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="İsim ile ara..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="input pl-10"
+                  />
+                </div>
+              </div>
+
+              {/* Branch Filter */}
+              <div className="card p-5">
+                <h3 className="font-display font-semibold text-navy-900 mb-4">Eğitim Seviyesi</h3>
+                <select
+                  value={selectedBranch}
+                  onChange={(e) => setSelectedBranch(e.target.value)}
+                  className="input w-full"
+                >
+                  <option value="">Tümü</option>
+                  {branches.map((branch) => (
+                    <option key={branch.id} value={branch.id}>{branch.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Subject Filter */}
+              <div className="card p-5">
+                <h3 className="font-display font-semibold text-navy-900 mb-4">Ders</h3>
+                <select
+                  value={selectedSubject}
+                  onChange={(e) => setSelectedSubject(e.target.value)}
+                  className="input w-full"
+                  disabled={filteredSubjects.length === 0}
+                >
+                  <option value="">Tümü</option>
+                  {filteredSubjects.map((subject) => (
+                    <option key={subject.id} value={subject.id}>{subject.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Exam Type Filter */}
+              {examTypes.length > 0 && (
+                <div className="card p-5">
+                  <h3 className="font-display font-semibold text-navy-900 mb-4">Sınav Türü</h3>
+                  <select
+                    value={selectedExamType}
+                    onChange={(e) => setSelectedExamType(e.target.value)}
+                    className="input w-full"
+                  >
+                    <option value="">Tümü</option>
+                    {examTypes.map((exam) => (
+                      <option key={exam.id} value={exam.id}>{exam.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Price Range */}
+              <div className="card p-5">
+                <h3 className="font-display font-semibold text-navy-900 mb-4">Fiyat Aralığı</h3>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    placeholder="Min ₺"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                    className="input w-full text-sm"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Max ₺"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                    className="input w-full text-sm"
+                  />
+                </div>
+                <p className="text-xs text-slate-500 mt-2">* Veliye gösterilecek fiyat</p>
+              </div>
+
+              {/* Clear Filters */}
+              <button onClick={clearFilters} className="btn-secondary w-full">
+                Filtreleri Temizle
+              </button>
+            </aside>
 
             {/* Results */}
             <div className="flex-1">
               {/* Sort & Count */}
               <div className="flex items-center justify-between mb-6">
                 <p className="text-slate-600">
-                  <span className="font-semibold text-navy-900">248</span> öğretmen bulundu
+                  <span className="font-semibold text-navy-900">{totalCount}</span> öğretmen bulundu
                 </p>
                 <select
                   value={sortBy}
@@ -297,42 +322,119 @@ export default function TeachersPage() {
                 </select>
               </div>
 
-              {/* Teacher List */}
-              <div className="space-y-4">
-                {teachers.map((teacher) => (
-                  <TeacherCard key={teacher.id} teacher={teacher} />
-                ))}
-              </div>
+              {/* Loading */}
+              {loading ? (
+                <div className="flex items-center justify-center py-20">
+                  <div className="w-8 h-8 border-4 border-navy-600 border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : teachers.length === 0 ? (
+                <div className="card p-12 text-center">
+                  <svg className="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  <h3 className="text-xl font-semibold text-navy-900 mb-2">Öğretmen bulunamadı</h3>
+                  <p className="text-slate-500">Filtreleri değiştirerek tekrar deneyin.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {teachers.map((teacher) => {
+                    const parentPrice = calculateParentPrice(teacher.hourlyRate, pricingConfig);
+                    const initials = `${teacher.firstName?.charAt(0) || ''}${teacher.lastName?.charAt(0) || ''}`;
+                    const branchNames = teacher.branches?.map(b => b.branch?.name).filter(Boolean).join(', ') || '';
+                    const subjectNames = teacher.subjects?.map(s => s.subject?.name).filter(Boolean) || [];
 
-              {/* Pagination */}
-              <div className="flex items-center justify-center gap-2 mt-8">
-                <button className="w-10 h-10 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 hover:border-navy-300 hover:text-navy-900 transition-colors">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                {[1, 2, 3, 4, 5].map((page) => (
-                  <button
-                    key={page}
-                    className={`w-10 h-10 rounded-lg font-medium transition-colors ${
-                      page === 1
-                        ? 'bg-navy-900 text-white'
-                        : 'border border-slate-200 text-slate-600 hover:border-navy-300 hover:text-navy-900'
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
-                <span className="px-2 text-slate-400">...</span>
-                <button className="w-10 h-10 rounded-lg border border-slate-200 font-medium text-slate-600 hover:border-navy-300 hover:text-navy-900 transition-colors">
-                  25
-                </button>
-                <button className="w-10 h-10 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:border-navy-300 hover:text-navy-900 transition-colors">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
+                    return (
+                      <Link 
+                        href={`/teachers/${teacher.id}`} 
+                        key={teacher.id} 
+                        className="card-interactive p-6 flex gap-6"
+                      >
+                        {/* Avatar */}
+                        <div className="shrink-0">
+                          {teacher.profilePhotoUrl ? (
+                            <img 
+                              src={teacher.profilePhotoUrl} 
+                              alt={`${teacher.firstName} ${teacher.lastName}`} 
+                              className="w-24 h-24 rounded-2xl object-cover shadow-elegant" 
+                            />
+                          ) : (
+                            <div className="w-24 h-24 bg-gradient-navy rounded-2xl flex items-center justify-center text-white font-display text-3xl font-semibold shadow-elegant">
+                              {initials}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <h3 className="font-display text-xl font-semibold text-navy-900 mb-1">
+                                {teacher.firstName} {teacher.lastName}
+                              </h3>
+                              <p className="text-slate-500">{branchNames || 'Öğretmen'}</p>
+                            </div>
+                            {teacher.rating && (
+                              <div className="flex items-center gap-1 bg-gold-50 px-3 py-1 rounded-full">
+                                <svg className="w-4 h-4 text-gold-500 fill-current" viewBox="0 0 20 20">
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                                <span className="font-semibold text-gold-700">{teacher.rating}</span>
+                                {teacher.reviewCount && (
+                                  <span className="text-gold-600 text-sm">({teacher.reviewCount})</span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          {teacher.bio && (
+                            <p className="text-slate-600 text-sm line-clamp-2 mb-4">{teacher.bio}</p>
+                          )}
+
+                          <div className="flex items-center gap-6 text-sm flex-wrap">
+                            {teacher.experience && (
+                              <div className="flex items-center gap-1.5 text-slate-500">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {teacher.experience} yıl deneyim
+                              </div>
+                            )}
+                            {teacher.completedLessons && teacher.completedLessons > 0 && (
+                              <div className="flex items-center gap-1.5 text-slate-500">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {teacher.completedLessons} ders
+                              </div>
+                            )}
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {subjectNames.slice(0, 3).map((subject, i) => (
+                                <span key={i} className="badge badge-navy">{subject}</span>
+                              ))}
+                              {subjectNames.length > 3 && (
+                                <span className="text-slate-400">+{subjectNames.length - 3}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Price & Action */}
+                        <div className="shrink-0 text-right flex flex-col justify-between">
+                          <div>
+                            <div className="font-display text-2xl font-bold text-navy-900">
+                              ₺{parentPrice.toLocaleString('tr-TR')}
+                            </div>
+                            <div className="text-sm text-slate-500">/saat</div>
+                          </div>
+                          <button className="btn-primary py-2 px-4 text-sm">
+                            Profili Gör
+                          </button>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>
