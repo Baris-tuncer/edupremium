@@ -106,14 +106,10 @@ export class TeachersService {
       }
     }
 
-    // Build orderBy
+    // Build orderBy - FIX: Remove invalid fields
     let orderBy: Prisma.TeacherOrderByWithRelationInput = {};
-    if (sortBy === 'rating') {
-      orderBy = { averageRating: sortOrder };
-    } else if (sortBy === 'price') {
+    if (sortBy === 'price') {
       orderBy = { hourlyRate: sortOrder };
-    } else if (sortBy === 'experience') {
-      orderBy = { yearsOfExperience: sortOrder };
     } else {
       orderBy = { createdAt: 'desc' };
     }
@@ -247,10 +243,10 @@ export class TeachersService {
       bio: teacher.bio,
       hourlyRate: teacher.hourlyRate,
       parentPrice, // Veliye gösterilecek fiyat
-      branches: teacher.branches.map(b => ({ id: b.id, name: b.name })),
+      branches: teacher.branches.map(b => b.name),
       subjects: uniqueSubjects,
       subjectIds: teacher.subjects.map(s => s.id), // Booking için ID'ler
-      examTypes: teacher.examTypes.map(e => ({ id: e.id, name: e.name })),
+      examTypes: teacher.examTypes.map(e => e.name),
       completedLessons: teacher.completedLessons,
       averageRating: teacher.averageRating,
       yearsOfExperience: teacher.yearsOfExperience,
