@@ -169,9 +169,25 @@ export class TeachersService {
     const teacher = await this.prisma.teacher.findUnique({
       where: { id },
       include: {
-        branches: { include: { branch: { select: { name: true } } } },
+        branches: { 
+          include: { 
+            branch: { 
+              select: { 
+                id: true, 
+                name: true 
+              } 
+            } 
+          } 
+        },
         subjects: {
-          include: { subject: { select: { name: true } } },
+          include: { 
+            subject: { 
+              select: { 
+                id: true, 
+                name: true 
+              } 
+            } 
+          },
         },
         _count: {
           select: {
@@ -203,6 +219,13 @@ export class TeachersService {
         (rating._avg.participationLevel || 0)) /
       3;
 
+    // Get unique subjects with id and name
+    const uniqueSubjects = Array.from(
+      new Map(
+        teacher.subjects.map(s => [s.subject.id, s.subject])
+      ).values()
+    );
+
     return {
       id: teacher.id,
       firstName: teacher.firstName,
@@ -212,13 +235,12 @@ export class TeachersService {
       bio: teacher.bio,
       hourlyRate: teacher.hourlyRate.toNumber(),
       parentPrice: await this.calculateParentPrice(teacher.hourlyRate.toNumber()),
-      branches: teacher.branches.map(tb => tb.branch.name),
-      subjects: teacher.subjects.map((s) => s.subject.name),
+      branches: teacher.branches.map(tb => tb.branch),
+      subjects: uniqueSubjects,
       completedLessons: teacher._count.appointments,
       averageRating: avgRating || null,
     };
   }
-
   // ========================================
   // GET TEACHER AVAILABILITY
   // ========================================
