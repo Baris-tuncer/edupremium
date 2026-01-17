@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.module';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -63,17 +63,6 @@ export class TeachersService {
       },
     };
 
-    // Search by name
-    if (search) {
-      where.user = {
-        ...where.user,
-        OR: [
-          { firstName: { contains: search, mode: 'insensitive' } },
-          { lastName: { contains: search, mode: 'insensitive' } },
-        ],
-      };
-    }
-
     // Filter by branch
     if (branchId) {
       where.branches = {
@@ -106,7 +95,23 @@ export class TeachersService {
       }
     }
 
-    // Build orderBy - FIX: Remove invalid fields
+    // Search by name - FIX: OR at root level
+    if (search) {
+      where.OR = [
+        {
+          user: {
+            firstName: { contains: search, mode: 'insensitive' },
+          },
+        },
+        {
+          user: {
+            lastName: { contains: search, mode: 'insensitive' },
+          },
+        },
+      ];
+    }
+
+    // Build orderBy
     let orderBy: Prisma.TeacherOrderByWithRelationInput = {};
     if (sortBy === 'price') {
       orderBy = { hourlyRate: sortOrder };
@@ -169,7 +174,7 @@ export class TeachersService {
           introVideoUrl: teacher.introVideoUrl,
           bio: teacher.bio,
           hourlyRate: teacher.hourlyRate,
-          parentPrice, // Veliye gösterilecek fiyat
+          parentPrice,
           branches: teacher.branches.map(b => b.name),
           subjects: uniqueSubjects,
           examTypes: teacher.examTypes.map(e => e.name),
@@ -192,7 +197,7 @@ export class TeachersService {
     };
   }
 
-  async getTeacherById(id: string) {
+  async getTeacherProfile(id: string) {
     const teacher = await this.prisma.teacher.findUnique({
       where: { id },
       include: {
@@ -242,10 +247,10 @@ export class TeachersService {
       introVideoUrl: teacher.introVideoUrl,
       bio: teacher.bio,
       hourlyRate: teacher.hourlyRate,
-      parentPrice, // Veliye gösterilecek fiyat
+      parentPrice,
       branches: teacher.branches.map(b => b.name),
       subjects: uniqueSubjects,
-      subjectIds: teacher.subjects.map(s => s.id), // Booking için ID'ler
+      subjectIds: teacher.subjects.map(s => s.id),
       examTypes: teacher.examTypes.map(e => e.name),
       completedLessons: teacher.completedLessons,
       averageRating: teacher.averageRating,
@@ -254,7 +259,11 @@ export class TeachersService {
     };
   }
 
-  async getTeacherAvailability(teacherId: string) {
+  async getTeacherAvailability(
+    teacherId: string,
+    startDate: string,
+    endDate: string,
+  ) {
     const teacher = await this.prisma.teacher.findUnique({
       where: { id: teacherId },
     });
@@ -263,11 +272,15 @@ export class TeachersService {
       throw new NotFoundException('Öğretmen bulunamadı');
     }
 
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
     const availability = await this.prisma.availability.findMany({
       where: {
         teacherId,
         date: {
-          gte: new Date(),
+          gte: start,
+          lte: end,
         },
       },
       orderBy: [{ date: 'asc' }, { startTime: 'asc' }],
