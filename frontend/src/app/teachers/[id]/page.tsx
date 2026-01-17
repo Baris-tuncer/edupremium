@@ -186,7 +186,7 @@ const BookingModal = ({
                 <div className="grid grid-cols-4 gap-3">
                   {availableTimes.map((time) => (
                     <button
-                      key={time}
+                      key={time.substring(0, 5)}
                       onClick={() => setSelectedTime(time)}
                       className={`py-3 px-4 rounded-xl border-2 font-medium transition-all ${
                         selectedTime === time
@@ -194,7 +194,7 @@ const BookingModal = ({
                           : 'border-slate-200 text-slate-600 hover:border-slate-300'
                       }`}
                     >
-                      {time}
+                      {time.substring(0, 5)}
                     </button>
                   ))}
                 </div>
@@ -214,7 +214,7 @@ const BookingModal = ({
                 onChange={(e) => setSelectedSubject(e.target.value)}
               >
                 <option value="">Ders seçin...</option>
-                {teacher.subjects.map((subject, i) => (
+                {[...new Set(teacher.subjects)].map((subject, i) => (
                   <option key={i} value={subject}>{subject}</option>
                 ))}
               </select>
@@ -427,7 +427,7 @@ export default function TeacherProfilePage() {
                 <div className="card p-8">
                   <h2 className="font-display text-xl font-semibold text-navy-900 mb-4">Verdiği Dersler</h2>
                   <div className="flex flex-wrap gap-2">
-                    {teacher.subjects.map((subject, i) => (
+                    {[...new Set(teacher.subjects)].map((subject, i) => (
                       <span key={i} className="badge badge-navy text-sm px-4 py-2">{subject}</span>
                     ))}
                   </div>
