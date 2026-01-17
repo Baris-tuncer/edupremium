@@ -48,12 +48,16 @@ export default function AdminSettingsPage() {
     supportPhone: '+90 850 123 4567',
   });
 
+  // En yakın 100'e yuvarlama
+  const roundToNearest100 = (value: number) => Math.round(value / 100) * 100;
+
   // Örnek fiyat hesaplama
   const exampleTeacherRate = 1000;
   const commission = exampleTeacherRate * (pricing.platformCommissionRate / 100);
   const subtotal = exampleTeacherRate + commission;
   const tax = subtotal * (pricing.taxRate / 100);
-  const totalPrice = subtotal + tax;
+  const totalPriceRaw = subtotal + tax;
+  const totalPrice = roundToNearest100(totalPriceRaw);
 
   useEffect(() => {
     fetchSettings();
@@ -231,25 +235,26 @@ export default function AdminSettingsPage() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex justify-between">
                     <span className="text-blue-700">Öğretmen Ücreti:</span>
-                    <span className="font-medium">₺{exampleTeacherRate}</span>
+                    <span className="font-medium">₺{exampleTeacherRate.toLocaleString('tr-TR')}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-blue-700">Platform Komisyonu (%{pricing.platformCommissionRate}):</span>
-                    <span className="font-medium">₺{commission.toFixed(0)}</span>
+                    <span className="font-medium">₺{Math.round(commission).toLocaleString('tr-TR')}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-blue-700">Ara Toplam:</span>
-                    <span className="font-medium">₺{subtotal.toFixed(0)}</span>
+                    <span className="font-medium">₺{Math.round(subtotal).toLocaleString('tr-TR')}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-blue-700">KDV (%{pricing.taxRate}):</span>
-                    <span className="font-medium">₺{tax.toFixed(0)}</span>
+                    <span className="font-medium">₺{Math.round(tax).toLocaleString('tr-TR')}</span>
                   </div>
                   <div className="flex justify-between col-span-2 border-t border-blue-200 pt-2">
-                    <span className="text-blue-900 font-semibold">Veli Ödemesi:</span>
-                    <span className="font-bold text-green-600 text-lg">₺{totalPrice.toFixed(0)}</span>
+                    <span className="text-blue-900 font-semibold">Veli Ödemesi (Yuvarlanmış):</span>
+                    <span className="font-bold text-green-600 text-lg">₺{totalPrice.toLocaleString('tr-TR')}</span>
                   </div>
                 </div>
+                <p className="text-xs text-blue-600 mt-3">* Son fiyat en yakın 100 TL'ye yuvarlanır</p>
               </div>
 
               <div className="space-y-6">
