@@ -157,7 +157,7 @@ export class TeachersService {
       subjects: t.subjects.map((s) => s.subject.name),
       completedLessons: t._count.appointments,
       averageRating: ratingsMap.get(t.id) || null,
-    }));
+    })));
 
     return new PaginatedResponseDto(data, total, page, limit);
   }
