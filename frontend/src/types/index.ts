@@ -28,6 +28,7 @@ export interface Teacher {
   profilePhotoUrl?: string;
   introVideoUrl: string;
   hourlyRate: number;
+  parentPrice: number;
   isApproved: boolean;
   approvedAt?: string;
   iban?: string;
