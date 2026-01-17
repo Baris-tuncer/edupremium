@@ -241,7 +241,7 @@ const BookingModal = ({
             <div className="flex justify-between items-center">
               <span className="text-slate-600">1 Saatlik Ders</span>
               <span className="font-display text-2xl font-bold text-navy-900">
-                ₺{teacher.parentPrice.toLocaleString('tr-TR')}
+                ₺{parentPrice.toLocaleString('tr-TR')}
               </span>
             </div>
           </div>
@@ -466,7 +466,7 @@ export default function TeacherProfilePage() {
               <div className="card p-6 sticky top-24">
                 <div className="text-center mb-6">
                   <div className="font-display text-4xl font-bold text-navy-900 mb-1">
-                    ₺{teacher.parentPrice.toLocaleString('tr-TR')}
+                    ₺{parentPrice.toLocaleString('tr-TR')}
                   </div>
                   <div className="text-slate-500">/saat</div>
                 </div>
