@@ -337,7 +337,7 @@ export default function TeachersPage() {
               ) : (
                 <div className="space-y-4">
                   {teachers.map((teacher) => {
-                    const parentPrice = calculateParentPrice(teacher.hourlyRate, pricingConfig);
+                    const parentPrice = teacher.parentPrice;
                     const initials = `${teacher.firstName?.charAt(0) || ''}${teacher.lastName?.charAt(0) || ''}`;
                     const branchNames = teacher.branches?.map(b => b.branch?.name).filter(Boolean).join(', ') || '';
                     const subjectNames = teacher.subjects?.map(s => s.subject?.name).filter(Boolean) || [];
