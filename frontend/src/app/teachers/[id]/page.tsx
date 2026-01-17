@@ -70,7 +70,7 @@ const BookingModal = ({
   if (!isOpen) return null;
 
   // Benzersiz tarihleri al
-  const uniqueDates = [...new Set(availability.map(a => a.date))].slice(0, 7);
+  const uniqueDates = Array.from(new Set(availability.map(a => a.date))).slice(0, 7);
   
   // Seçili tarihteki saatler
   const availableTimes = availability
