@@ -162,13 +162,7 @@ export default function TeachersPage() {
         } else if (sortBy === 'price-high') {
           teacherList.sort((a: Teacher, b: Teacher) => b.hourlyRate - a.hourlyRate);
         } else if (sortBy === 'rating') {
-          teacherList.sort((a: Teacher, b: Teacher) => (b.rating || 0) - (a.rating || 0));
-        } else if (sortBy === 'experience') {
-          teacherList.sort((a: Teacher, b: Teacher) => (b.experience || 0) - (a.experience || 0));
-        }
-
-        setTeachers(teacherList);
-        setTotalCount(data.total || teacherList.length);
+          teacherList.sort((a: Teacher, b: Teacher) => (b.averageRating || 0) - (a.averageRating || 0));
       }
     } catch (error) {
       console.error('Error fetching teachers:', error);
