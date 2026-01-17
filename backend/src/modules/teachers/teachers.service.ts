@@ -144,7 +144,7 @@ export class TeachersService {
       ]),
     );
 
-    const data: TeacherPublicProfile[] = teachers.map((t) => ({
+    const data: TeacherPublicProfile[] = await Promise.all(teachers.map(async (t) => ({
       id: t.id,
       firstName: t.firstName,
       lastNameInitial: t.lastName.charAt(0) + '.',
