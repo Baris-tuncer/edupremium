@@ -25,17 +25,15 @@ interface ExamType {
 interface Teacher {
   id: string;
   firstName: string;
-  lastName: string;
+  lastNameInitial: string;
   profilePhotoUrl?: string;
   bio?: string;
   hourlyRate: number;
-  experience?: number;
-  rating?: number;
-  reviewCount?: number;
+  parentPrice: number;
+  branches: string[];
+  subjects: string[];
   completedLessons?: number;
-  branches: { branch: Branch }[];
-  subjects: { subject: Subject }[];
-  examTypes?: { examType: ExamType }[];
+  averageRating?: number;
 }
 
 interface PricingConfig {
@@ -338,9 +336,9 @@ export default function TeachersPage() {
                 <div className="space-y-4">
                   {teachers.map((teacher) => {
                     const parentPrice = teacher.parentPrice;
-                    const initials = `${teacher.firstName?.charAt(0) || ''}${teacher.lastName?.charAt(0) || ''}`;
-                    const branchNames = teacher.branches?.map(b => b.branch?.name).filter(Boolean).join(', ') || '';
-                    const subjectNames = teacher.subjects?.map(s => s.subject?.name).filter(Boolean) || [];
+                    const initials = `${teacher.firstName?.charAt(0) || ''}${teacher.lastNameInitial?.charAt(0) || ''}`;
+                    const branchNames = teacher.branches?.join(", ") || "";
+                    const subjectNames = teacher.subjects || [];
 
                     return (
                       <Link 
@@ -353,7 +351,7 @@ export default function TeachersPage() {
                           {teacher.profilePhotoUrl ? (
                             <img 
                               src={teacher.profilePhotoUrl} 
-                              alt={`${teacher.firstName} ${teacher.lastName}`} 
+                              alt={`${teacher.firstName} ${teacher.lastNameInitial}`} 
                               className="w-24 h-24 rounded-2xl object-cover shadow-elegant" 
                             />
                           ) : (
@@ -368,7 +366,7 @@ export default function TeachersPage() {
                           <div className="flex items-start justify-between mb-2">
                             <div>
                               <h3 className="font-display text-xl font-semibold text-navy-900 mb-1">
-                                {teacher.firstName} {teacher.lastName}
+                                {teacher.firstName} {teacher.lastNameInitial}
                               </h3>
                               <p className="text-slate-500">{branchNames || 'Öğretmen'}</p>
                             </div>
