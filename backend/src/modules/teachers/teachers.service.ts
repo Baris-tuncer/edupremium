@@ -152,6 +152,7 @@ export class TeachersService {
       introVideoUrl: t.introVideoUrl,
       bio: t.bio,
       hourlyRate: t.hourlyRate.toNumber(),
+      parentPrice: await this.calculateParentPrice(t.hourlyRate.toNumber()),
       branches: t.branches.map(tb => tb.branch.name),
       subjects: t.subjects.map((s) => s.subject.name),
       completedLessons: t._count.appointments,
@@ -445,8 +446,8 @@ export class TeachersService {
       profile: {
         firstName: teacher.firstName,
         lastName: teacher.lastName,
-        hourlyRate: teacher.hourlyRate,
-        parentPrice: await this.calculateParentPrice(teacher.hourlyRate),
+        hourlyRate: teacher.hourlyRate.toNumber(),
+        parentPrice: await this.calculateParentPrice(teacher.hourlyRate.toNumber()),
       },
       wallet: teacher.wallet
         ? {
