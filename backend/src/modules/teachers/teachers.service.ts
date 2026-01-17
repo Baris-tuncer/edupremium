@@ -454,4 +454,3 @@ export class TeachersService {
   }
 }
 
-export { TeacherPublicProfile, AvailabilitySlot } from './teachers.types';
