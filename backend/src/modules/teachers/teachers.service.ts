@@ -51,7 +51,7 @@ export class TeachersService {
     const skip = (page - 1) * limit;
 
     const where: any = {
-      isApproved: true,
+      
       user: { status: 'ACTIVE', deletedAt: null },
     };
 
