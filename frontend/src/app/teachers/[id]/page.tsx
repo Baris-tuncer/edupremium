@@ -214,7 +214,7 @@ const BookingModal = ({
                 onChange={(e) => setSelectedSubject(e.target.value)}
               >
                 <option value="">Ders seçin...</option>
-                {[...new Set(teacher.subjects)].map((subject, i) => (
+                {Array.from(new Set(teacher.subjects)).map((subject, i) => (
                   <option key={i} value={subject}>{subject}</option>
                 ))}
               </select>
@@ -427,7 +427,7 @@ export default function TeacherProfilePage() {
                 <div className="card p-8">
                   <h2 className="font-display text-xl font-semibold text-navy-900 mb-4">Verdiği Dersler</h2>
                   <div className="flex flex-wrap gap-2">
-                    {[...new Set(teacher.subjects)].map((subject, i) => (
+                    {Array.from(new Set(teacher.subjects)).map((subject, i) => (
                       <span key={i} className="badge badge-navy text-sm px-4 py-2">{subject}</span>
                     ))}
                   </div>
