@@ -1,11 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function RegisterPage() {
   const [step, setStep] = useState(1);
   const [userType, setUserType] = useState<'student' | 'teacher' | null>(null);
+  const [branches, setBranches] = useState<any[]>([]);
+  const [subjects, setSubjects] = useState<any[]>([]);
+  const [examTypes, setExamTypes] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -19,16 +22,56 @@ export default function RegisterPage() {
     parentEmail: '',
     parentPhone: '',
     invitationCode: '',
-    branchId: '',
+    branchIds: [] as string[],
+    subjectIds: [] as string[],
+    examTypeIds: [] as string[],
     iban: '',
     introVideoUrl: '',
     hourlyRate: '',
+    profilePhotoUrl: '',
     profilePhoto: null as File | null,
     acceptTerms: false,
     acceptKvkk: false,
   });
-    const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
+  // Fetch branches, subjects, exam types
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
+        
+        // Fetch branches
+        const branchesRes = await fetch(`${API_URL}/branches`);
+        if (branchesRes.ok) {
+          const branchesData = await branchesRes.json();
+          setBranches(branchesData.data || branchesData);
+        }
+
+        // Fetch subjects
+        const subjectsRes = await fetch(`${API_URL}/subjects`);
+        if (subjectsRes.ok) {
+          const subjectsData = await subjectsRes.json();
+          setSubjects(subjectsData.data || subjectsData);
+        }
+
+        // Fetch exam types
+        const examTypesRes = await fetch(`${API_URL}/exam-types`);
+        if (examTypesRes.ok) {
+          const examTypesData = await examTypesRes.json();
+          setExamTypes(examTypesData.data || examTypesData);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    if (userType === 'teacher') {
+      fetchData();
+    }
+  }, [userType]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -37,84 +80,161 @@ export default function RegisterPage() {
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
     }));
   };
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) {
-        setFormData(prev => ({ ...prev, profilePhoto: file }));
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setPhotoPreview(reader.result as string);
-        };
-        reader.readAsDataURL(file);
-      }
-    };
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
 
-        try {
-          const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
-          
-          let endpoint = '';
-          let body: any = {};
-
-          if (userType === 'student') {
-            endpoint = '/auth/register/student';
-            body = {
-              email: formData.email,
-              password: formData.password,
-              firstName: formData.firstName,
-              lastName: formData.lastName,
-              phone: formData.phone || undefined,
-              gradeLevel: formData.gradeLevel ? parseInt(formData.gradeLevel) : undefined,
-              schoolName: formData.schoolName || undefined,
-              parentName: formData.parentName || undefined,
-              parentEmail: formData.parentEmail || undefined,
-              parentPhone: formData.parentPhone || undefined,
-            };
-          } else {
-            endpoint = '/auth/register/teacher';
-            body = {
-              email: formData.email,
-              password: formData.password,
-              firstName: formData.firstName,
-              lastName: formData.lastName,
-              phone: formData.phone || undefined,
-              invitationCode: formData.invitationCode,
-              branchId: formData.branchId,
-              introVideoUrl: formData.introVideoUrl,
-              hourlyRate: parseFloat(formData.hourlyRate),
-              iban: formData.iban || undefined,
-            };
-          }
-
-          const response = await fetch(`${API_URL}${endpoint}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body),
-          });
-
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.message || 'Kayıt başarısız');
-          }
-
-          // Başarılı - token'ları kaydet ve yönlendir
-          const tokens = data.data || data; localStorage.setItem('accessToken', tokens.accessToken);
-          localStorage.setItem('refreshToken', tokens.refreshToken);
-          
-          alert('Kayıt başarılı!');
-          window.location.href = userType === 'student' ? '/student/dashboard' : '/teacher/dashboard';
-          
-        } catch (error: any) {
-          alert(error.message || 'Bir hata oluştu');
-        } finally {
-          setIsLoading(false);
-        }
+  const handleMultiSelect = (name: string, value: string) => {
+    setFormData(prev => {
+      const currentValues = prev[name as keyof typeof prev] as string[];
+      const isSelected = currentValues.includes(value);
+      
+      return {
+        ...prev,
+        [name]: isSelected
+          ? currentValues.filter(v => v !== value)
+          : [...currentValues, value]
       };
+    });
+  };
+
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Dosya boyutu 2MB\'dan küçük olmalıdır');
+      return;
+    }
+
+    // Preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhotoPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload to Cloudinary
+    setUploadingPhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'edupremium_photos'); // Cloudinary upload preset
+      formData.append('folder', 'edupremium/photos');
+
+      const response = await fetch(
+        'https://api.cloudinary.com/v1_1/dkteewpks/image/upload',
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+      
+      if (data.secure_url) {
+        setFormData(prev => ({ ...prev, profilePhotoUrl: data.secure_url }));
+      } else {
+        throw new Error('Upload failed');
+      }
+    } catch (error) {
+      console.error('Photo upload error:', error);
+      alert('Fotoğraf yüklenirken hata oluştu. Lütfen tekrar deneyin.');
+      setPhotoPreview(null);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      alert('Şifreler eşleşmiyor!');
+      return;
+    }
+
+    // Validate teacher fields
+    if (userType === 'teacher') {
+      if (formData.branchIds.length === 0) {
+        alert('En az bir branş seçmelisiniz!');
+        return;
+      }
+      if (formData.subjectIds.length === 0) {
+        alert('En az bir ders seçmelisiniz!');
+        return;
+      }
+    }
+
+    setIsLoading(true);
+
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
+      
+      let endpoint = '';
+      let body: any = {};
+
+      if (userType === 'student') {
+        endpoint = '/auth/register/student';
+        body = {
+          email: formData.email,
+          password: formData.password,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone || undefined,
+          gradeLevel: formData.gradeLevel ? parseInt(formData.gradeLevel) : undefined,
+          schoolName: formData.schoolName || undefined,
+          parentName: formData.parentName || undefined,
+          parentEmail: formData.parentEmail || undefined,
+          parentPhone: formData.parentPhone || undefined,
+        };
+      } else {
+        endpoint = '/auth/register/teacher';
+        body = {
+          email: formData.email,
+          password: formData.password,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone || undefined,
+          invitationCode: formData.invitationCode,
+          branchIds: formData.branchIds,
+          subjectIds: formData.subjectIds,
+          examTypeIds: formData.examTypeIds.length > 0 ? formData.examTypeIds : undefined,
+          introVideoUrl: formData.introVideoUrl || undefined,
+          profilePhotoUrl: formData.profilePhotoUrl || undefined,
+          hourlyRate: parseFloat(formData.hourlyRate),
+          iban: formData.iban || undefined,
+        };
+      }
+
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Kayıt başarısız');
+      }
+
+      // Başarılı - token'ları kaydet ve yönlendir
+      const tokens = data.data || data;
+      localStorage.setItem('accessToken', tokens.accessToken);
+      localStorage.setItem('refreshToken', tokens.refreshToken);
+      
+      alert('Kayıt başarılı!');
+      window.location.href = userType === 'student' ? '/student/dashboard' : '/teacher/dashboard';
+      
+    } catch (error: any) {
+      alert(error.message || 'Bir hata oluştu');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4">
       <div className="max-w-2xl mx-auto">
@@ -318,111 +438,166 @@ export default function RegisterPage() {
               )}
 
               {userType === 'teacher' && (
-                <div className="mb-4">
-                  <label htmlFor="branchId" className="input-label">Branş *</label>
-                  <select
-                    id="branchId"
-                    name="branchId"
-                    value={formData.branchId}
-                    onChange={handleChange}
-                    className="input"
-                    required
-                  >
-                    <option value="">Seçin</option>
-        <option value="2bb543f0-cca9-4c03-8af1-eb616db3ff4d">Matematik</option>
-                    <option value="fizik">Fizik</option>
-                    <option value="kimya">Kimya</option>
-                    <option value="biyoloji">Biyoloji</option>
-                    <option value="turkce">Türkçe-Edebiyat</option>
-                    <option value="ingilizce">İngilizce</option>
-                  </select>
-                </div>
+                <>
+                  {/* Branşlar - Multi Select */}
+                  <div className="mb-4">
+                    <label className="input-label">Branşlar * (Birden fazla seçebilirsiniz)</label>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      {branches.length > 0 ? (
+                        branches.map(branch => (
+                          <label key={branch.id} className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50">
+                            <input
+                              type="checkbox"
+                              checked={formData.branchIds.includes(branch.id)}
+                              onChange={() => handleMultiSelect('branchIds', branch.id)}
+                              className="w-4 h-4 text-navy-600 rounded"
+                            />
+                            <span className="text-sm">{branch.name}</span>
+                          </label>
+                        ))
+                      ) : (
+                        <p className="text-sm text-slate-500 col-span-2">Yükleniyor...</p>
+                      )}
+                    </div>
+                    {formData.branchIds.length === 0 && (
+                      <p className="text-xs text-red-500 mt-1">En az bir branş seçmelisiniz</p>
+                    )}
+                  </div>
+
+                  {/* Dersler - Multi Select */}
+                  <div className="mb-4">
+                    <label className="input-label">Verdiğiniz Dersler * (Birden fazla seçebilirsiniz)</label>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      {subjects.length > 0 ? (
+                        subjects.map(subject => (
+                          <label key={subject.id} className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50">
+                            <input
+                              type="checkbox"
+                              checked={formData.subjectIds.includes(subject.id)}
+                              onChange={() => handleMultiSelect('subjectIds', subject.id)}
+                              className="w-4 h-4 text-navy-600 rounded"
+                            />
+                            <span className="text-sm">{subject.name}</span>
+                          </label>
+                        ))
+                      ) : (
+                        <p className="text-sm text-slate-500 col-span-2">Yükleniyor...</p>
+                      )}
+                    </div>
+                    {formData.subjectIds.length === 0 && (
+                      <p className="text-xs text-red-500 mt-1">En az bir ders seçmelisiniz</p>
+                    )}
+                  </div>
+
+                  {/* Sınav Tipleri - Multi Select (Opsiyonel) */}
+                  <div className="mb-4">
+                    <label className="input-label">Sınav Tipleri (Opsiyonel)</label>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      {examTypes.length > 0 ? (
+                        examTypes.map(examType => (
+                          <label key={examType.id} className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50">
+                            <input
+                              type="checkbox"
+                              checked={formData.examTypeIds.includes(examType.id)}
+                              onChange={() => handleMultiSelect('examTypeIds', examType.id)}
+                              className="w-4 h-4 text-navy-600 rounded"
+                            />
+                            <span className="text-sm">{examType.name}</span>
+                          </label>
+                        ))
+                      ) : (
+                        <p className="text-sm text-slate-500 col-span-2">Yükleniyor...</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Profil Fotoğrafı */}
+                  <div className="mb-4">
+                    <label className="input-label">Profil Fotoğrafı (Opsiyonel)</label>
+                    <div className="flex items-center gap-4">
+                      <div className="w-24 h-24 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50">
+                        {uploadingPhoto ? (
+                          <svg className="w-6 h-6 animate-spin text-navy-600" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                        ) : photoPreview ? (
+                          <img src={photoPreview} alt="Önizleme" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-gray-400 text-xs text-center">Vesikalık<br/>Fotoğraf</span>
+                        )}
+                      </div>
+                      <div>
+                        <input
+                          type="file"
+                          id="profilePhoto"
+                          accept="image/*"
+                          onChange={handlePhotoChange}
+                          className="hidden"
+                          disabled={uploadingPhoto}
+                        />
+                        <label
+                          htmlFor="profilePhoto"
+                          className={`inline-block bg-navy-600 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-navy-700 text-sm ${uploadingPhoto ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          {uploadingPhoto ? 'Yükleniyor...' : 'Fotoğraf Seç'}
+                        </label>
+                        <p className="text-xs text-slate-500 mt-1">JPG, PNG (Max 2MB)</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tanıtım Videosu */}
+                  <div className="mb-4">
+                    <label htmlFor="introVideoUrl" className="input-label">Tanıtım Video URL (Opsiyonel)</label>
+                    <input
+                      type="url"
+                      id="introVideoUrl"
+                      name="introVideoUrl"
+                      value={formData.introVideoUrl}
+                      onChange={handleChange}
+                      className="input"
+                      placeholder="https://youtube.com/watch?v=..."
+                    />
+                    <p className="text-xs text-slate-500 mt-1">YouTube veya Vimeo linki</p>
+                  </div>
+
+                  {/* Saat Ücreti */}
+                  <div className="mb-4">
+                    <label htmlFor="hourlyRate" className="input-label">Saat Ücreti (₺) *</label>
+                    <input
+                      type="number"
+                      id="hourlyRate"
+                      name="hourlyRate"
+                      value={formData.hourlyRate}
+                      onChange={handleChange}
+                      className="input"
+                      placeholder="450"
+                      min="100"
+                      required
+                    />
+                    <p className="text-xs text-slate-500 mt-1">Minimum 100₺</p>
+                  </div>
+
+                  {/* IBAN */}
+                  <div className="mb-4">
+                    <label htmlFor="iban" className="input-label">IBAN *</label>
+                    <input
+                      type="text"
+                      id="iban"
+                      name="iban"
+                      value={formData.iban}
+                      onChange={handleChange}
+                      className="input"
+                      placeholder="TR00 0000 0000 0000 0000 0000 00"
+                      required
+                    />
+                    <p className="text-xs text-slate-500 mt-1">Ders ücretleriniz bu hesaba aktarılacaktır</p>
+                  </div>
+                </>
               )}
 
-              {userType === 'teacher' && (
-                <div className="mb-4">
-                  <label htmlFor="iban" className="input-label">IBAN *</label>
-                  <input
-                    type="text"
-                    id="iban"
-                    name="iban"
-                    value={formData.iban}
-                    onChange={handleChange}
-                    className="input"
-                    placeholder="TR00 0000 0000 0000 0000 0000 00"
-                    required
-                  />
-                  <p className="text-xs text-slate-500 mt-1">Ders ucretleriniz bu hesaba aktarilacaktir</p>
-                </div>
-              )}
-                    {/* Tanıtım Videosu */}
-                                        {userType === 'teacher' && (
-                                          <div className="mb-4">
-                                            <label htmlFor="introVideoUrl" className="input-label">Tanıtım Video URL *</label>
-                                            <input
-                                              type="url"
-                                              id="introVideoUrl"
-                                              name="introVideoUrl"
-                                              value={formData.introVideoUrl}
-                                              onChange={handleChange}
-                                              className="input"
-                                              placeholder="https://youtube.com/watch?v=..."
-                                              required
-                                            />
-                                            <p className="text-xs text-slate-500 mt-1">YouTube veya Vimeo linki</p>
-                                          </div>
-                                        )}
-
-                                        {/* Saat Ücreti */}
-                                        {userType === 'teacher' && (
-                                          <div className="mb-4">
-                                            <label htmlFor="hourlyRate" className="input-label">Saat Ücreti (₺) *</label>
-                                            <input
-                                              type="number"
-                                              id="hourlyRate"
-                                              name="hourlyRate"
-                                              value={formData.hourlyRate}
-                                              onChange={handleChange}
-                                              className="input"
-                                              placeholder="450"
-                                              min="100"
-                                              required
-                                            />
-                                            <p className="text-xs text-slate-500 mt-1">Minimum 100₺</p>
-                                          </div>
-                                        )}
-                          {/* Profil Fotoğrafı - Opsiyonel */}
-                                        {userType === 'teacher' && (
-                                          <div className="mb-4">
-                                            <label className="input-label">Profil Fotoğrafı (Opsiyonel)</label>
-                                            <div className="flex items-center gap-4">
-                                              <div className="w-24 h-24 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50">
-                                                {photoPreview ? (
-                                                  <img src={photoPreview} alt="Önizleme" className="w-full h-full object-cover" />
-                                                ) : (
-                                                  <span className="text-gray-400 text-xs text-center">Vesikalık<br/>Fotoğraf</span>
-                                                )}
-                                              </div>
-                                              <div>
-                                                <input
-                                                  type="file"
-                                                  id="profilePhoto"
-                                                  accept="image/*"
-                                                  onChange={handlePhotoChange}
-                                                  className="hidden"
-                                                />
-                                                <label
-                                                  htmlFor="profilePhoto"
-                                                  className="inline-block bg-navy-600 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-navy-700 text-sm"
-                                                >
-                                                  Fotoğraf Seç
-                                                </label>
-                                                <p className="text-xs text-slate-500 mt-1">JPG, PNG (Max 2MB)</p>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        )}
-                          <div className="grid md:grid-cols-2 gap-4 mb-6">
+              <div className="grid md:grid-cols-2 gap-4 mb-6">
                 <div>
                   <label htmlFor="password" className="input-label">Şifre *</label>
                   <input
@@ -433,6 +608,7 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     className="input"
                     placeholder="En az 8 karakter"
+                    minLength={8}
                     required
                   />
                 </div>
@@ -445,6 +621,7 @@ export default function RegisterPage() {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     className="input"
+                    minLength={8}
                     required
                   />
                 </div>
@@ -527,9 +704,19 @@ export default function RegisterPage() {
                       <span className="font-medium text-navy-900">{formData.phone}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Davet Kodu</span>
-                      <span className="font-medium text-navy-900">{formData.invitationCode}</span>
+                      <span className="text-slate-500">Branşlar</span>
+                      <span className="font-medium text-navy-900">{formData.branchIds.length} seçildi</span>
                     </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Dersler</span>
+                      <span className="font-medium text-navy-900">{formData.subjectIds.length} seçildi</span>
+                    </div>
+                    {formData.profilePhotoUrl && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500">Profil Fotoğrafı</span>
+                        <span className="text-green-600 text-sm">✓ Yüklendi</span>
+                      </div>
+                    )}
                   </div>
                 </>
               )}

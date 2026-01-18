@@ -42,13 +42,16 @@ export class AuthController {
       password: string;
       firstName: string;
       lastName: string;
-      branchIds: string[];  // CHANGED: array of branch IDs
-      subjectIds?: string[]; // NEW: array of subject IDs
-      examTypeIds?: string[]; // NEW: array of exam type IDs
+      branchIds: string[];
+      subjectIds?: string[];
+      examTypeIds?: string[];
       bio?: string;
       hourlyRate: number;
       iban?: string;
       isNative?: boolean;
+      profilePhotoUrl?: string;
+      introVideoUrl?: string;
+      diplomaUrl?: string;
     },
   ) {
     return this.authService.registerTeacher(body);
