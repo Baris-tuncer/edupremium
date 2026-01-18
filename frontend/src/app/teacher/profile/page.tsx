@@ -9,6 +9,21 @@ interface PricingConfig {
   taxRate: number;
 }
 
+interface Subject {
+  id: string;
+  name: string;
+}
+
+interface Branch {
+  id: string;
+  name: string;
+}
+
+interface ExamType {
+  id: string;
+  name: string;
+}
+
 export default function TeacherProfilePage() {
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,25 +38,54 @@ export default function TeacherProfilePage() {
     iban: '',
   });
 
+  // YENİ: Subject/Branch/ExamType için state'ler
+  const [allSubjects, setAllSubjects] = useState<Subject[]>([]);
+  const [allBranches, setAllBranches] = useState<Branch[]>([]);
+  const [allExamTypes, setAllExamTypes] = useState<ExamType[]>([]);
+  const [selectedSubjectIds, setSelectedSubjectIds] = useState<string[]>([]);
+  const [selectedBranchIds, setSelectedBranchIds] = useState<string[]>([]);
+  const [selectedExamTypeIds, setSelectedExamTypeIds] = useState<string[]>([]);
+
   useEffect(() => {
     fetchProfile();
     fetchPricingConfig();
+    fetchOptions();
   }, []);
 
   const fetchProfile = async () => {
     try {
-      const data = await api.getTeacherDashboard();
+      const data = await api.getMyProfile(); // YENİ: getMyProfile kullan
       setProfile(data);
       setFormData({
-        bio: data.teacher?.bio || '',
-        hourlyRate: data.teacher?.hourlyRate || '',
-        iban: data.teacher?.iban || '',
+        bio: data.bio || '',
+        hourlyRate: data.hourlyRate || '',
+        iban: data.iban || '',
       });
+
+      // Mevcut seçimleri set et
+      setSelectedSubjectIds(data.subjects?.map((s: any) => s.id) || []);
+      setSelectedBranchIds(data.branches?.map((b: any) => b.id) || []);
+      setSelectedExamTypeIds(data.examTypes?.map((e: any) => e.id) || []);
     } catch (error) {
       console.error('Failed to fetch profile:', error);
       toast.error('Profil yüklenemedi');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchOptions = async () => {
+    try {
+      const [subjects, branches, examTypes] = await Promise.all([
+        api.listSubjects(),
+        api.listBranches(),
+        api.listExamTypes(),
+      ]);
+      setAllSubjects(subjects);
+      setAllBranches(branches);
+      setAllExamTypes(examTypes);
+    } catch (error) {
+      console.error('Failed to fetch options:', error);
     }
   };
 
@@ -65,14 +109,11 @@ export default function TeacherProfilePage() {
       }
     } catch (error) {
       console.error('Failed to fetch pricing config:', error);
-      // Varsayılan değerler kullanılacak
     }
   };
 
-  // En yakın 100'e yuvarlama
   const roundToNearest100 = (value: number) => Math.round(value / 100) * 100;
 
-  // Dinamik fiyat hesaplama
   const calculatePricing = (teacherRate: number) => {
     const commission = teacherRate * (pricingConfig.commissionRate / 100);
     const subtotal = teacherRate + commission;
@@ -90,12 +131,21 @@ export default function TeacherProfilePage() {
     setIsSaving(true);
 
     try {
-      await api.updateTeacherProfile({
+      // Profil bilgilerini güncelle
+      await api.updateMyProfile({
         bio: formData.bio,
         hourlyRate: parseFloat(formData.hourlyRate),
         iban: formData.iban,
       });
-      toast.success('Profil güncellendi!');
+
+      // Subject/Branch/ExamType güncelle
+      await Promise.all([
+        api.updateMySubjects(selectedSubjectIds),
+        api.updateMyBranches(selectedBranchIds),
+        api.updateMyExamTypes(selectedExamTypeIds),
+      ]);
+
+      toast.success('Profil başarıyla güncellendi!');
       fetchProfile();
     } catch (error) {
       console.error('Failed to update profile:', error);
@@ -103,6 +153,30 @@ export default function TeacherProfilePage() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const toggleSubject = (subjectId: string) => {
+    setSelectedSubjectIds(prev =>
+      prev.includes(subjectId)
+        ? prev.filter(id => id !== subjectId)
+        : [...prev, subjectId]
+    );
+  };
+
+  const toggleBranch = (branchId: string) => {
+    setSelectedBranchIds(prev =>
+      prev.includes(branchId)
+        ? prev.filter(id => id !== branchId)
+        : [...prev, branchId]
+    );
+  };
+
+  const toggleExamType = (examTypeId: string) => {
+    setSelectedExamTypeIds(prev =>
+      prev.includes(examTypeId)
+        ? prev.filter(id => id !== examTypeId)
+        : [...prev, examTypeId]
+    );
   };
 
   if (isLoading) {
@@ -159,7 +233,6 @@ export default function TeacherProfilePage() {
               Bu, tamamlanan dersler için size ödenecek saatlik ücrettir.
             </p>
 
-            {/* Fiyat Hesaplama Detayları */}
             {hourlyRateNum > 0 && (
               <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-100">
                 <h4 className="font-semibold text-blue-900 mb-3">Fiyat Detayları</h4>
@@ -188,6 +261,84 @@ export default function TeacherProfilePage() {
             )}
           </div>
 
+          {/* YENİ: Subject Selection */}
+          <div className="card p-6">
+            <label className="block font-medium text-navy-900 mb-4">
+              Dersler
+              <span className="text-sm font-normal text-slate-500 ml-2">
+                ({selectedSubjectIds.length} seçili)
+              </span>
+            </label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {allSubjects.map((subject) => (
+                <label
+                  key={subject.id}
+                  className="flex items-center gap-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedSubjectIds.includes(subject.id)}
+                    onChange={() => toggleSubject(subject.id)}
+                    className="w-4 h-4 text-navy-600 border-slate-300 rounded focus:ring-navy-500"
+                  />
+                  <span className="text-sm text-slate-700">{subject.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* YENİ: Branch Selection */}
+          <div className="card p-6">
+            <label className="block font-medium text-navy-900 mb-4">
+              Kademeler
+              <span className="text-sm font-normal text-slate-500 ml-2">
+                ({selectedBranchIds.length} seçili)
+              </span>
+            </label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {allBranches.map((branch) => (
+                <label
+                  key={branch.id}
+                  className="flex items-center gap-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedBranchIds.includes(branch.id)}
+                    onChange={() => toggleBranch(branch.id)}
+                    className="w-4 h-4 text-navy-600 border-slate-300 rounded focus:ring-navy-500"
+                  />
+                  <span className="text-sm text-slate-700">{branch.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* YENİ: ExamType Selection */}
+          <div className="card p-6">
+            <label className="block font-medium text-navy-900 mb-4">
+              Sınav Türleri
+              <span className="text-sm font-normal text-slate-500 ml-2">
+                ({selectedExamTypeIds.length} seçili)
+              </span>
+            </label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {allExamTypes.map((examType) => (
+                <label
+                  key={examType.id}
+                  className="flex items-center gap-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedExamTypeIds.includes(examType.id)}
+                    onChange={() => toggleExamType(examType.id)}
+                    className="w-4 h-4 text-navy-600 border-slate-300 rounded focus:ring-navy-500"
+                  />
+                  <span className="text-sm text-slate-700">{examType.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
           {/* IBAN */}
           <div className="card p-6">
             <label className="block font-medium text-navy-900 mb-2">
@@ -214,10 +365,10 @@ export default function TeacherProfilePage() {
               </label>
               <div className="flex items-center gap-4">
                 <div className="w-20 h-20 bg-navy-100 rounded-full flex items-center justify-center text-2xl font-display font-semibold text-navy-600 overflow-hidden">
-                  {profile?.teacher?.profilePhotoUrl ? (
-                    <img src={profile.teacher.profilePhotoUrl} alt="" className="w-full h-full object-cover" />
+                  {profile?.profilePhotoUrl ? (
+                    <img src={profile.profilePhotoUrl} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    profile?.teacher?.firstName?.charAt(0)
+                    profile?.firstName?.charAt(0)
                   )}
                 </div>
                 <button

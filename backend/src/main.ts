@@ -5,16 +5,10 @@ import cookieParser from 'cookie-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-  // Cookie parser
   app.use(cookieParser());
   
-  // CORS - Frontend'e izin ver
   app.enableCors({
-    origin: [
-      'https://edupremium-jet.vercel.app',
-      'http://localhost:3000',
-      'http://localhost:3001',  // ADDED
-    ],
+    origin: true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],

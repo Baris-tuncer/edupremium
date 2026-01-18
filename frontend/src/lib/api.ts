@@ -144,6 +144,38 @@ class ApiClient {
     return r.data;
   }
 
+  // ========== YENİ: TEACHER SELF-SERVICE ==========
+  
+  // Öğretmenin kendi profilini getir (subject/branch/examType dahil)
+  async getMyProfile() {
+    const r = await this.client.get('/teachers/me');
+    return r.data.data || r.data;
+  }
+
+  // Profil bilgilerini güncelle (bio, hourlyRate, iban)
+  async updateMyProfile(data: { bio?: string; hourlyRate?: number; iban?: string }) {
+    const r = await this.client.put('/teachers/me', data);
+    return r.data.data || r.data;
+  }
+
+  // Subject'leri güncelle
+  async updateMySubjects(subjectIds: string[]) {
+    const r = await this.client.put('/teachers/me/subjects', { subjectIds });
+    return r.data.data || r.data;
+  }
+
+  // Branch'leri güncelle
+  async updateMyBranches(branchIds: string[]) {
+    const r = await this.client.put('/teachers/me/branches', { branchIds });
+    return r.data.data || r.data;
+  }
+
+  // ExamType'ları güncelle
+  async updateMyExamTypes(examTypeIds: string[]) {
+    const r = await this.client.put('/teachers/me/exam-types', { examTypeIds });
+    return r.data.data || r.data;
+  }
+
   // UPLOADS
   async uploadProfilePhoto(file: File) {
     const formData = new FormData();
@@ -181,6 +213,11 @@ class ApiClient {
   async listSubjects(branchId?: string) {
     const url = branchId ? `/subjects?branchId=${branchId}` : '/subjects';
     const r = await this.client.get(url);
+    return r.data.data || r.data;
+  }
+
+  async listExamTypes() {
+    const r = await this.client.get('/exam-types');
     return r.data.data || r.data;
   }
 }

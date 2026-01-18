@@ -25,6 +25,189 @@ export class TeachersService {
     return rounded;
   }
 
+  // ========== YENİ: TEACHER SELF-SERVICE FONKSİYONLARI ==========
+  
+  // userId'den teacher'ı bul (helper)
+  private async findTeacherByUserId(userId: string) {
+    const teacher = await this.prisma.teacher.findUnique({
+      where: { userId },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+        branches: {
+          include: {
+            branch: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        subjects: {
+          include: {
+            subject: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        examTypes: {
+          include: {
+            examType: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!teacher) {
+      throw new NotFoundException('Öğretmen profili bulunamadı');
+    }
+
+    return teacher;
+  }
+
+  // Öğretmenin kendi profilini getir
+  async getMyProfile(userId: string) {
+    const teacher = await this.findTeacherByUserId(userId);
+    
+    // Get unique subjects
+    const uniqueSubjects = Array.from(
+      new Set(teacher.subjects.map(ts => ts.subject.name))
+    );
+
+    const parentPrice = await this.calculateParentPrice(teacher.hourlyRate.toNumber());
+
+    return {
+      id: teacher.id,
+      userId: teacher.userId,
+      firstName: teacher.user.firstName,
+      lastName: teacher.user.lastName,
+      email: teacher.user.email,
+      profilePhotoUrl: teacher.profilePhotoUrl,
+      introVideoUrl: teacher.introVideoUrl,
+      bio: teacher.bio,
+      hourlyRate: teacher.hourlyRate.toNumber(),
+      parentPrice,
+      iban: teacher.iban,
+      branches: teacher.branches.map(tb => ({
+        id: tb.branch.id,
+        name: tb.branch.name,
+      })),
+      subjects: teacher.subjects.map(ts => ({
+        id: ts.subject.id,
+        name: ts.subject.name,
+      })),
+      examTypes: teacher.examTypes.map(te => ({
+        id: te.examType.id,
+        name: te.examType.name,
+      })),
+    };
+  }
+
+  // Profil bilgilerini güncelle (bio, hourlyRate, iban)
+  async updateMyProfile(userId: string, updateData: {
+    bio?: string;
+    hourlyRate?: number;
+    iban?: string;
+  }) {
+    const teacher = await this.findTeacherByUserId(userId);
+
+    const updated = await this.prisma.teacher.update({
+      where: { id: teacher.id },
+      data: {
+        bio: updateData.bio !== undefined ? updateData.bio : teacher.bio,
+        hourlyRate: updateData.hourlyRate !== undefined ? updateData.hourlyRate : teacher.hourlyRate,
+        iban: updateData.iban !== undefined ? updateData.iban : teacher.iban,
+      },
+    });
+
+    return this.getMyProfile(userId);
+  }
+
+  // Subject'leri güncelle
+  async updateMySubjects(userId: string, subjectIds: string[]) {
+    const teacher = await this.findTeacherByUserId(userId);
+
+    // Önce mevcut subject'leri sil
+    await this.prisma.teacherSubject.deleteMany({
+      where: { teacherId: teacher.id },
+    });
+
+    // Yeni subject'leri ekle
+    if (subjectIds.length > 0) {
+      await this.prisma.teacherSubject.createMany({
+        data: subjectIds.map(subjectId => ({
+          teacherId: teacher.id,
+          subjectId,
+        })),
+        skipDuplicates: true,
+      });
+    }
+
+    return this.getMyProfile(userId);
+  }
+
+  // Branch'leri güncelle
+  async updateMyBranches(userId: string, branchIds: string[]) {
+    const teacher = await this.findTeacherByUserId(userId);
+
+    // Önce mevcut branch'leri sil
+    await this.prisma.teacherBranch.deleteMany({
+      where: { teacherId: teacher.id },
+    });
+
+    // Yeni branch'leri ekle
+    if (branchIds.length > 0) {
+      await this.prisma.teacherBranch.createMany({
+        data: branchIds.map(branchId => ({
+          teacherId: teacher.id,
+          branchId,
+        })),
+        skipDuplicates: true,
+      });
+    }
+
+    return this.getMyProfile(userId);
+  }
+
+  // ExamType'ları güncelle
+  async updateMyExamTypes(userId: string, examTypeIds: string[]) {
+    const teacher = await this.findTeacherByUserId(userId);
+
+    // Önce mevcut exam type'ları sil
+    await this.prisma.teacherExamType.deleteMany({
+      where: { teacherId: teacher.id },
+    });
+
+    // Yeni exam type'ları ekle
+    if (examTypeIds.length > 0) {
+      await this.prisma.teacherExamType.createMany({
+        data: examTypeIds.map(examTypeId => ({
+          teacherId: teacher.id,
+          examTypeId,
+        })),
+        skipDuplicates: true,
+      });
+    }
+
+    return this.getMyProfile(userId);
+  }
+
+  // ========== MEVCUT FONKSİYONLAR ==========
+
   async listTeachers(params: {
     page?: number;
     limit?: number;
