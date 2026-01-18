@@ -34,11 +34,8 @@ export default function RegisterPage() {
     acceptKvkk: false,
   });
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [uploadingVideo, setUploadingVideo] = useState(false);
-  const [videoUploadProgress, setVideoUploadProgress] = useState(0);
 
   // Fetch branches, subjects, exam types
   useEffect(() => {
@@ -46,18 +43,21 @@ export default function RegisterPage() {
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
         
+        // Fetch branches
         const branchesRes = await fetch(`${API_URL}/branches`);
         if (branchesRes.ok) {
           const branchesData = await branchesRes.json();
           setBranches(branchesData.data || branchesData);
         }
 
+        // Fetch subjects
         const subjectsRes = await fetch(`${API_URL}/subjects`);
         if (subjectsRes.ok) {
           const subjectsData = await subjectsRes.json();
           setSubjects(subjectsData.data || subjectsData);
         }
 
+        // Fetch exam types
         const examTypesRes = await fetch(`${API_URL}/exam-types`);
         if (examTypesRes.ok) {
           const examTypesData = await examTypesRes.json();
@@ -99,22 +99,25 @@ export default function RegisterPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
       alert('Dosya boyutu 2MB\'dan küçük olmalıdır');
       return;
     }
 
+    // Preview
     const reader = new FileReader();
     reader.onloadend = () => {
       setPhotoPreview(reader.result as string);
     };
     reader.readAsDataURL(file);
 
+    // Upload to Cloudinary
     setUploadingPhoto(true);
     try {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('upload_preset', 'edupremium_photos');
+      formData.append('upload_preset', 'edupremium_photos'); // Cloudinary upload preset
       formData.append('folder', 'edupremium/photos');
 
       const response = await fetch(
@@ -141,89 +144,16 @@ export default function RegisterPage() {
     }
   };
 
-  const handleVideoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file size (max 50MB)
-    if (file.size > 50 * 1024 * 1024) {
-      alert('Video boyutu 50MB\'dan küçük olmalıdır');
-      return;
-    }
-
-    // Validate file type
-    const validTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm'];
-    if (!validTypes.includes(file.type)) {
-      alert('Geçerli video formatları: MP4, MOV, AVI, WEBM');
-      return;
-    }
-
-    // Preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setVideoPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-
-    // Upload to Cloudinary
-    setUploadingVideo(true);
-    setVideoUploadProgress(0);
-
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', 'edupremium_videos'); // Cloudinary upload preset for videos
-      formData.append('folder', 'edupremium/videos');
-      formData.append('resource_type', 'video');
-
-      // Create XMLHttpRequest to track progress
-      const xhr = new XMLHttpRequest();
-
-      xhr.upload.addEventListener('progress', (e) => {
-        if (e.lengthComputable) {
-          const percentComplete = Math.round((e.loaded / e.total) * 100);
-          setVideoUploadProgress(percentComplete);
-        }
-      });
-
-      xhr.addEventListener('load', () => {
-        if (xhr.status === 200) {
-          const data = JSON.parse(xhr.responseText);
-          if (data.secure_url) {
-            setFormData(prev => ({ ...prev, introVideoUrl: data.secure_url }));
-          } else {
-            throw new Error('Upload failed');
-          }
-          setUploadingVideo(false);
-        } else {
-          throw new Error('Upload failed');
-        }
-      });
-
-      xhr.addEventListener('error', () => {
-        throw new Error('Upload failed');
-      });
-
-      xhr.open('POST', 'https://api.cloudinary.com/v1_1/dkteewpks/video/upload');
-      xhr.send(formData);
-
-    } catch (error) {
-      console.error('Video upload error:', error);
-      alert('Video yüklenirken hata oluştu. Lütfen tekrar deneyin.');
-      setVideoPreview(null);
-      setUploadingVideo(false);
-      setVideoUploadProgress(0);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       alert('Şifreler eşleşmiyor!');
       return;
     }
 
+    // Validate teacher fields
     if (userType === 'teacher') {
       if (formData.branchIds.length === 0) {
         alert('En az bir branş seçmelisiniz!');
@@ -290,6 +220,7 @@ export default function RegisterPage() {
         throw new Error(data.message || 'Kayıt başarısız');
       }
 
+      // Başarılı - token'ları kaydet ve yönlendir
       const tokens = data.data || data;
       localStorage.setItem('accessToken', tokens.accessToken);
       localStorage.setItem('refreshToken', tokens.refreshToken);
@@ -392,7 +323,7 @@ export default function RegisterPage() {
             </div>
           )}
 
-          {/* Step 2: Basic Info - Video Upload Bölümü Güncellendi */}
+          {/* Step 2: Basic Info */}
           {step === 2 && (
             <form onSubmit={(e) => { e.preventDefault(); setStep(3); }} className="animate-fade-up">
               <h1 className="text-2xl md:text-3xl text-center mb-2">
@@ -508,7 +439,7 @@ export default function RegisterPage() {
 
               {userType === 'teacher' && (
                 <>
-                  {/* Branşlar */}
+                  {/* Branşlar - Multi Select */}
                   <div className="mb-4">
                     <label className="input-label">Branşlar * (Birden fazla seçebilirsiniz)</label>
                     <div className="grid grid-cols-2 gap-2 mt-2">
@@ -533,7 +464,7 @@ export default function RegisterPage() {
                     )}
                   </div>
 
-                  {/* Dersler */}
+                  {/* Dersler - Multi Select */}
                   <div className="mb-4">
                     <label className="input-label">Verdiğiniz Dersler * (Birden fazla seçebilirsiniz)</label>
                     <div className="grid grid-cols-2 gap-2 mt-2">
@@ -558,7 +489,7 @@ export default function RegisterPage() {
                     )}
                   </div>
 
-                  {/* Sınav Tipleri */}
+                  {/* Sınav Tipleri - Multi Select (Opsiyonel) */}
                   <div className="mb-4">
                     <label className="input-label">Sınav Tipleri (Opsiyonel)</label>
                     <div className="grid grid-cols-2 gap-2 mt-2">
@@ -616,82 +547,19 @@ export default function RegisterPage() {
                     </div>
                   </div>
 
-                  {/* Tanıtım Videosu - YENİ! */}
+                  {/* Tanıtım Videosu */}
                   <div className="mb-4">
-                    <label className="input-label">Tanıtım Videosu (Opsiyonel)</label>
-                    <div className="space-y-3">
-                      {/* Video Preview */}
-                      {videoPreview && !uploadingVideo && (
-                        <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden">
-                          <video
-                            src={videoPreview}
-                            controls
-                            className="w-full h-full"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setVideoPreview(null);
-                              setFormData(prev => ({ ...prev, introVideoUrl: '' }));
-                            }}
-                            className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
-                          >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                      )}
-
-                      {/* Upload Progress */}
-                      {uploadingVideo && (
-                        <div className="space-y-2">
-                          <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-                            <div
-                              className="bg-navy-600 h-full transition-all duration-300"
-                              style={{ width: `${videoUploadProgress}%` }}
-                            />
-                          </div>
-                          <p className="text-sm text-center text-slate-600">
-                            Yükleniyor: {videoUploadProgress}%
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Upload Button */}
-                      {!videoPreview && (
-                        <div>
-                          <input
-                            type="file"
-                            id="introVideo"
-                            accept="video/mp4,video/quicktime,video/x-msvideo,video/webm"
-                            onChange={handleVideoChange}
-                            className="hidden"
-                            disabled={uploadingVideo}
-                          />
-                          <label
-                            htmlFor="introVideo"
-                            className={`inline-flex items-center gap-2 bg-navy-600 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-navy-700 text-sm ${uploadingVideo ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          >
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                            </svg>
-                            {uploadingVideo ? 'Yükleniyor...' : 'Video Seç'}
-                          </label>
-                          <p className="text-xs text-slate-500 mt-1">MP4, MOV, AVI, WEBM (Max 50MB)</p>
-                        </div>
-                      )}
-
-                      {/* Success Message */}
-                      {formData.introVideoUrl && !uploadingVideo && (
-                        <div className="flex items-center gap-2 text-green-600 text-sm">
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                          Video başarıyla yüklendi!
-                        </div>
-                      )}
-                    </div>
+                    <label htmlFor="introVideoUrl" className="input-label">Tanıtım Video URL (Opsiyonel)</label>
+                    <input
+                      type="url"
+                      id="introVideoUrl"
+                      name="introVideoUrl"
+                      value={formData.introVideoUrl}
+                      onChange={handleChange}
+                      className="input"
+                      placeholder="https://youtube.com/watch?v=..."
+                    />
+                    <p className="text-xs text-slate-500 mt-1">YouTube veya Vimeo linki</p>
                   </div>
 
                   {/* Saat Ücreti */}
@@ -770,7 +638,7 @@ export default function RegisterPage() {
             </form>
           )}
 
-          {/* Step 3: Confirmation - Özet sayfası aynı kaldı */}
+          {/* Step 3: Parent Info (for students) / Confirm (for teachers) */}
           {step === 3 && (
             <form onSubmit={handleSubmit} className="animate-fade-up">
               {userType === 'student' ? (
@@ -849,16 +717,11 @@ export default function RegisterPage() {
                         <span className="text-green-600 text-sm">✓ Yüklendi</span>
                       </div>
                     )}
-                    {formData.introVideoUrl && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Tanıtım Videosu</span>
-                        <span className="text-green-600 text-sm">✓ Yüklendi</span>
-                      </div>
-                    )}
                   </div>
                 </>
               )}
 
+              {/* Terms */}
               <div className="space-y-3 mb-6">
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input
@@ -913,6 +776,7 @@ export default function RegisterPage() {
             </form>
           )}
 
+          {/* Login Link */}
           <p className="text-center text-slate-600 mt-8">
             Zaten hesabınız var mı?{' '}
             <Link href="/login" className="font-semibold text-navy-600 hover:text-navy-800">
