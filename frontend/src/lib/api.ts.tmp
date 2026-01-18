@@ -97,33 +97,6 @@ class ApiClient {
     const r = await this.client.get('/students/me/lessons');
     return r.data.data || r.data;
   }
-
-  async getStudentLessonReport(lessonId: string) {
-    const r = await this.client.get(`/students/me/lessons/${lessonId}/report`);
-    return r.data.data || r.data;
-  }
-
-  // TEACHER
-  async getTeacherDashboard() {
-    const r = await this.client.get('/teachers/me/dashboard');
-    return r.data.data || r.data;
-  }
-
-  async getMyAvailability() {
-    const r = await this.client.get('/teachers/me/availability');
-    return r.data.data || r.data;
-  }
-
-  async updateMyAvailability(data: any) {
-    const r = await this.client.put('/teachers/me/availability', data);
-    return r.data;
-  }
-
-  async getMyStudents() {
-    const r = await this.client.get('/teachers/me/students');
-    return r.data.data || r.data;
-  }
-
   async getMyLessons() {
     const r = await this.client.get('/teachers/me/lessons');
     return r.data.data || r.data;
@@ -153,7 +126,7 @@ class ApiClient {
   }
 
   // Profil bilgilerini güncelle (bio, hourlyRate, iban)
-  async updateMyProfile(data: { bio?: string; hourlyRate?: number; iban?: string; profilePhotoUrl?: string; introVideoUrl?: string }) {
+  async updateMyProfile(data: { bio?: string; hourlyRate?: number; iban?: string }) {
     const r = await this.client.put('/teachers/me', data);
     return r.data.data || r.data;
   }
