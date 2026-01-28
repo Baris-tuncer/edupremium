@@ -7,8 +7,6 @@ const supabase = createClient(
 );
 
 export async function POST(request: NextRequest) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.visserr.com';
-  
   try {
     const formData = await request.formData();
     const data: Record<string, string> = {};
@@ -16,24 +14,19 @@ export async function POST(request: NextRequest) {
       data[key] = value.toString();
     });
 
-    console.log('Paratika Callback Data:', JSON.stringify(data));
-
     const responseCode = data.responseCode;
     const merchantPaymentId = data.merchantPaymentId;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.visserr.com';
 
     if (responseCode === '00') {
-      // Ödeme başarılı
-      const { data: pendingPayment, error: fetchError } = await supabase
+      const { data: pendingPayment } = await supabase
         .from('pending_payments')
         .select('*')
         .eq('order_id', merchantPaymentId)
         .single();
 
-      console.log('Pending Payment:', pendingPayment, 'Error:', fetchError);
-
       if (pendingPayment) {
-        // Ders oluştur
-        const { data: lesson, error: lessonError } = await supabase
+        const { data: lesson } = await supabase
           .from('lessons')
           .insert({
             teacher_id: pendingPayment.teacher_id,
@@ -43,54 +36,36 @@ export async function POST(request: NextRequest) {
             duration_minutes: 60,
             price: pendingPayment.amount,
             status: 'CONFIRMED',
-            payment_status: 'PAID',
-            payment_id: data.pgTranId || merchantPaymentId,
             created_at: new Date().toISOString(),
           })
           .select()
           .single();
 
-        console.log('Lesson Created:', lesson, 'Error:', lessonError);
-
-        // Availability'yi güncelle
         if (lesson && pendingPayment.availability_id) {
-          const { error: availError } = await supabase
+          await supabase
             .from('availabilities')
             .update({ is_booked: true })
             .eq('id', pendingPayment.availability_id);
-          
-          console.log('Availability Updated, Error:', availError);
         }
 
-        // Pending payment'ı güncelle
-        const { error: updateError } = await supabase
+        await supabase
           .from('pending_payments')
-          .update({ 
-            status: 'COMPLETED', 
-            payment_id: data.pgTranId || merchantPaymentId,
-            completed_at: new Date().toISOString() 
-          })
+          .update({ status: 'COMPLETED', completed_at: new Date().toISOString() })
           .eq('order_id', merchantPaymentId);
-
-        console.log('Pending Payment Updated, Error:', updateError);
       }
 
       return NextResponse.redirect(`${baseUrl}/payment/success?orderId=${merchantPaymentId}`);
     } else {
-      // Ödeme başarısız
       await supabase
         .from('pending_payments')
-        .update({ 
-          status: 'FAILED',
-          error_message: data.responseMsg || 'Ödeme başarısız'
-        })
+        .update({ status: 'FAILED' })
         .eq('order_id', merchantPaymentId);
 
-      return NextResponse.redirect(`${baseUrl}/payment/fail?error=Odeme_basarisiz`);
+      return NextResponse.redirect(`${baseUrl}/payment/fail?error=Odeme basarisiz`);
     }
   } catch (error: any) {
-    console.error('Callback Error:', error);
-    return NextResponse.redirect(`${baseUrl}/payment/fail?error=Sistem_hatasi`);
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.visserr.com';
+    return NextResponse.redirect(`${baseUrl}/payment/fail?error=Sistem hatasi`);
   }
 }
 
@@ -103,5 +78,5 @@ export async function GET(request: NextRequest) {
   if (responseCode === '00' && merchantPaymentId) {
     return NextResponse.redirect(`${baseUrl}/payment/success?orderId=${merchantPaymentId}`);
   }
-  return NextResponse.redirect(`${baseUrl}/payment/fail?error=Odeme_basarisiz`);
+  return NextResponse.redirect(`${baseUrl}/payment/fail?error=Odeme basarisiz`);
 }
