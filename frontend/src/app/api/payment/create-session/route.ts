@@ -10,16 +10,16 @@ const supabase = createClient(
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { 
-      teacherId, 
-      studentId, 
+    const {
+      teacherId,
+      studentId,
       studentEmail,
       studentName,
       studentPhone,
-      subject, 
-      scheduledAt, 
+      subject,
+      scheduledAt,
       amount,
-      availabilityId 
+      availabilityId
     } = body;
 
     const orderId = `EDU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
       SESSIONTYPE: 'PAYMENTSESSION',
       RETURNURL: `${baseUrl}/api/payment/callback`,
       AMOUNT: amount.toFixed(2),
-      CURRENCY: 'TL',
+      CURRENCY: 'TRY',
       CUSTOMER: studentName,
       CUSTOMEREMAIL: studentEmail,
       CUSTOMERPHONE: studentPhone || '',
@@ -72,7 +72,10 @@ export async function POST(request: NextRequest) {
     } else {
       return NextResponse.json({
         success: false,
-        error: data.responseMsg || 'Session olusturulamadi', errorCode: data.errorCode, errorMsg: data.errorMsg, fullResponse: data, errorCode: data.errorCode, errorMsg: data.errorMsg, fullResponse: data,
+        error: data.responseMsg || 'Session olusturulamadi',
+        errorCode: data.errorCode,
+        errorMsg: data.errorMsg,
+        fullResponse: data,
       }, { status: 400 });
     }
   } catch (error: any) {
