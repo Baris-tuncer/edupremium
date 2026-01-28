@@ -74,7 +74,7 @@ export default function TeacherDetailPage() {
         .select('*')
         .eq('teacher_id', teacherId)
         .eq('is_booked', false)
-        .gte('date', today)
+        .gte('start_time', today)
         .order('date', { ascending: true })
         .order('start_time', { ascending: true });
 
@@ -248,7 +248,7 @@ export default function TeacherDetailPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto">
                     {availabilities.map((slot) => (
                       <button key={slot.id} onClick={() => setSelectedSlot(slot)} className={`p-4 rounded-xl border-2 text-left transition-all ${selectedSlot?.id === slot.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}>
-                        <p className="font-medium text-gray-900">{formatDate(slot.date)}</p>
+                        <p className="font-medium text-gray-900">{formatDate(new Date(slot.start_time).toISOString().split('T')[0])}</p>
                         <p className="text-gray-600">{slot.start_time} - {slot.end_time}</p>
                       </button>
                     ))}
