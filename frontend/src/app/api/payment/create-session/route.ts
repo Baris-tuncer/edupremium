@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     });
 
     const responseText = await response.text();
-    const data = Object.fromEntries(new URLSearchParams(responseText));
+    const data = JSON.parse(responseText);
 
     if (data.responseCode === '00' && data.sessionToken) {
       await supabase.from('pending_payments').insert({
