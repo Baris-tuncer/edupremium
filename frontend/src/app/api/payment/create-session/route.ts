@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
       CUSTOMEREMAIL: studentEmail,
       CUSTOMERPHONE: studentPhone || '',
       MERCHANTPAYMENTID: orderId,
+      ORDERITEMS: JSON.stringify([{ code: 'DERS', name: subject, description: subject + ' dersi', quantity: '1', amount: amount }]),
     });
 
     const response = await fetch(getApiUrl(), {
