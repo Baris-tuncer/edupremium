@@ -1,68 +1,82 @@
-// src/app/api/payment/create-session/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { createPaymentSession, getPaymentPageUrl } from '@/lib/paratika';
+import { PARATIKA_CONFIG, getApiUrl, getPaymentPageUrl } from '@/lib/paratika';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { amount, teacherId, studentId, studentEmail, studentName, availabilityId, subject, scheduledAt } = body;
+    const { 
+      teacherId, 
+      studentId, 
+      studentEmail,
+      studentName,
+      studentPhone,
+      subject, 
+      scheduledAt, 
+      amount,
+      availabilityId 
+    } = body;
 
-    if (!amount || !teacherId || !studentId || !availabilityId) {
-      return NextResponse.json({ error: 'Eksik parametreler' }, { status: 400 });
-    }
+    const orderId = `EDU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.visserr.com';
 
-    const orderId = `EDU-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-
-    const { data: teacher } = await supabase
-      .from('teacher_profiles')
-      .select('full_name')
-      .eq('id', teacherId)
-      .single();
-
-    const description = `${teacher?.full_name || 'Öğretmen'} - ${subject || 'Ders'} - EduPremium`;
-
-    const sessionResult = await createPaymentSession({
-      amount: parseFloat(amount),
-      orderId,
-      customerEmail: studentEmail || 'student@edupremium.com',
-      customerName: studentName || 'Öğrenci',
-      description,
-      teacherId,
-      studentId,
-      availabilityId,
-      subject,
-      scheduledAt,
+    const params = new URLSearchParams({
+      ACTION: 'SESSIONTOKEN',
+      MERCHANT: PARATIKA_CONFIG.MERCHANT,
+      MERCHANTUSER: PARATIKA_CONFIG.MERCHANT_USER,
+      MERCHANTPASSWORD: PARATIKA_CONFIG.MERCHANT_PASSWORD,
+      SESSIONTYPE: 'PAYMENTSESSION',
+      RETURNURL: `${baseUrl}/api/payment/callback`,
+      AMOUNT: amount.toFixed(2),
+      CURRENCY: 'TL',
+      CUSTOMER: studentName,
+      CUSTOMEREMAIL: studentEmail,
+      CUSTOMERPHONE: studentPhone || '',
+      MERCHANTPAYMENTID: orderId,
     });
 
-    if (!sessionResult.success || !sessionResult.sessionToken) {
-      return NextResponse.json({ error: sessionResult.error || 'Ödeme oturumu oluşturulamadı' }, { status: 500 });
-    }
-
-    // Pending payment kaydı (opsiyonel)
-    await supabase.from('pending_payments').insert({
-      order_id: orderId,
-      session_token: sessionResult.sessionToken,
-      teacher_id: teacherId,
-      student_id: studentId,
-      availability_id: availabilityId,
-      amount: parseFloat(amount),
-      subject,
-      scheduled_at: scheduledAt,
-      status: 'PENDING',
-      created_at: new Date().toISOString(),
+    const response = await fetch(getApiUrl(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString(),
     });
 
-    const paymentUrl = getPaymentPageUrl(sessionResult.sessionToken);
+    const responseText = await response.text();
+    const data = Object.fromEntries(new URLSearchParams(responseText));
 
-    return NextResponse.json({ success: true, sessionToken: sessionResult.sessionToken, paymentUrl, orderId });
-  } catch (error) {
-    console.error('Payment session error:', error);
-    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
+    if (data.responseCode === '00' && data.sessionToken) {
+      await supabase.from('pending_payments').insert({
+        order_id: orderId,
+        teacher_id: teacherId,
+        student_id: studentId,
+        subject: subject,
+        scheduled_at: scheduledAt,
+        amount: amount,
+        availability_id: availabilityId,
+        session_token: data.sessionToken,
+        status: 'PENDING',
+        created_at: new Date().toISOString(),
+      });
+
+      return NextResponse.json({
+        success: true,
+        sessionToken: data.sessionToken,
+        paymentUrl: getPaymentPageUrl(data.sessionToken),
+        orderId: orderId,
+      });
+    } else {
+      return NextResponse.json({
+        success: false,
+        error: data.responseMsg || 'Session olusturulamadi',
+      }, { status: 400 });
+    }
+  } catch (error: any) {
+    console.error('Payment error:', error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
