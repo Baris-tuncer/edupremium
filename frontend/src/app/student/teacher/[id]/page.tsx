@@ -75,7 +75,7 @@ export default function TeacherDetailPage() {
         .eq('teacher_id', teacherId)
         .eq('is_booked', false)
         .gte('start_time', today)
-        .order('date', { ascending: true })
+        
         .order('start_time', { ascending: true });
 
       setAvailabilities(availData || []);
