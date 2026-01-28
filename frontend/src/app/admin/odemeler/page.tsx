@@ -1,240 +1,250 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { toast } from 'react-hot-toast';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
 interface Payment {
   id: string;
-  orderCode: string;
-  student: { firstName: string; lastName: string };
-  teacher: { firstName: string; lastName: string };
-  subject: { name: string };
-  scheduledAt: string;
-  paymentStatus: string;
-  paymentMethod?: string;
-  paymentAmount: number;
-  teacherEarning: number;
-  platformFee: number;
-  createdAt: string;
-}
-
-interface Totals {
-  totalRevenue: number;
-  totalPlatformFee: number;
-  totalTeacherEarnings: number;
-  totalTax: number;
+  lesson_id: string;
+  subject: string;
+  teacher_name: string;
+  student_name: string;
+  price: number;
+  teacher_earning: number;
+  platform_commission: number;
+  status: string;
+  scheduled_at: string;
 }
 
 export default function AdminPaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
-  const [totals, setTotals] = useState<Totals>({
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
+  const [stats, setStats] = useState({
     totalRevenue: 0,
-    totalPlatformFee: 0,
-    totalTeacherEarnings: 0,
-    totalTax: 0,
+    platformCommission: 0,
+    teacherPayments: 0,
+    completedCount: 0
   });
-  const [isLoading, setIsLoading] = useState(true);
-  const [filter, setFilter] = useState('ALL');
 
   useEffect(() => {
-    fetchPayments();
+    loadPayments();
   }, []);
 
-  const fetchPayments = async () => {
+  const loadPayments = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
+      // Tamamlanmis dersleri cek (odemeler olarak)
+      const { data: lessons, error } = await supabase
+        .from('lessons')
+        .select('id, subject, price, status, scheduled_at, teacher_id, student_id')
+        .order('scheduled_at', { ascending: false });
 
-      const response = await fetch(`${baseUrl}/admin/payments`, {
-        headers: { Authorization: `Bearer ${token}` },
+      if (error) throw error;
+
+      // Ogretmen ve ogrenci isimlerini al
+      const teacherIds = [...new Set(lessons?.map(l => l.teacher_id) || [])];
+      const studentIds = [...new Set(lessons?.map(l => l.student_id).filter(Boolean) || [])];
+
+      const { data: teachers } = await supabase
+        .from('teacher_profiles')
+        .select('id, full_name')
+        .in('id', teacherIds);
+
+      const { data: students } = await supabase
+        .from('student_profiles')
+        .select('id, full_name')
+        .in('id', studentIds.length > 0 ? studentIds : ['00000000-0000-0000-0000-000000000000']);
+
+      const teacherMap = new Map();
+      (teachers || []).forEach(t => teacherMap.set(t.id, t.full_name));
+
+      const studentMap = new Map();
+      (students || []).forEach(s => studentMap.set(s.id, s.full_name));
+
+      // Komisyon hesapla (%25)
+      const commissionRate = 0.25;
+      
+      const formattedPayments = (lessons || []).map(l => {
+        const commission = Math.round((l.price || 0) * commissionRate);
+        const teacherEarning = (l.price || 0) - commission;
+        
+        return {
+          id: l.id,
+          lesson_id: l.id,
+          subject: l.subject,
+          teacher_name: teacherMap.get(l.teacher_id) || 'Bilinmiyor',
+          student_name: studentMap.get(l.student_id) || 'Bilinmiyor',
+          price: l.price || 0,
+          teacher_earning: teacherEarning,
+          platform_commission: commission,
+          status: l.status,
+          scheduled_at: l.scheduled_at
+        };
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setPayments(data.data || []);
-        if (data.totals) {
-          setTotals(data.totals);
-        }
-      }
+      setPayments(formattedPayments);
+
+      // Istatistikler (sadece tamamlanan dersler)
+      const completed = formattedPayments.filter(p => p.status === 'COMPLETED');
+      const totalRevenue = completed.reduce((sum, p) => sum + p.price, 0);
+      const platformCommission = completed.reduce((sum, p) => sum + p.platform_commission, 0);
+      const teacherPayments = completed.reduce((sum, p) => sum + p.teacher_earning, 0);
+
+      setStats({
+        totalRevenue,
+        platformCommission,
+        teacherPayments,
+        completedCount: completed.length
+      });
+
     } catch (error) {
-      console.error('Error fetching payments:', error);
-      toast.error('Ödemeler yüklenemedi');
+      console.error('Error:', error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const filteredPayments = payments.filter((p) => {
-    if (filter === 'ALL') return true;
-    return p.paymentStatus === filter;
+  const filteredPayments = payments.filter(p => {
+    if (filter === 'all') return true;
+    return p.status === filter;
   });
+
+  const formatCurrency = (n: number) => n.toLocaleString('tr-TR') + ' TL';
+  const formatDate = (d: string) => new Date(d).toLocaleDateString('tr-TR');
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      PENDING: 'bg-yellow-100 text-yellow-800',
-      PAID: 'bg-blue-100 text-blue-800',
-      COMPLETED: 'bg-green-100 text-green-800',
-      FAILED: 'bg-red-100 text-red-800',
-      REFUNDED: 'bg-purple-100 text-purple-800',
-      CANCELLED: 'bg-gray-100 text-gray-800',
+      'PENDING': 'bg-yellow-100 text-yellow-700',
+      'CONFIRMED': 'bg-blue-100 text-blue-700',
+      'COMPLETED': 'bg-green-100 text-green-700',
+      'CANCELLED': 'bg-red-100 text-red-700'
     };
     const labels: Record<string, string> = {
-      PENDING: 'Beklemede',
-      PAID: 'Ödendi',
-      COMPLETED: 'Tamamlandı',
-      FAILED: 'Başarısız',
-      REFUNDED: 'İade Edildi',
-      CANCELLED: 'İptal',
+      'PENDING': 'Bekliyor',
+      'CONFIRMED': 'Onaylandi',
+      'COMPLETED': 'Tamamlandi',
+      'CANCELLED': 'Iptal'
     };
     return (
-      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${styles[status] || 'bg-gray-100 text-gray-800'}`}>
+      <span className={`px-3 py-1 text-xs font-medium rounded-full ${styles[status] || 'bg-slate-100'}`}>
         {labels[status] || status}
       </span>
     );
   };
 
-  const getMethodLabel = (method?: string) => {
-    if (!method) return '-';
-    const labels: Record<string, string> = {
-      CREDIT_CARD: 'Kredi Kartı',
-      BANK_TRANSFER: 'Havale/EFT',
-    };
-    return labels[method] || method;
-  };
-
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-screen">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      <div className="p-8 flex items-center justify-center min-h-[400px]">
+        <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Ödemeler</h1>
-          <p className="text-gray-600 mt-1">Tüm ödeme işlemlerini görüntüleyin</p>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-slate-900">Odemeler</h1>
+        <p className="text-slate-600 mt-1">Tum odeme islemlerini goruntuleyebilirsiniz</p>
+      </div>
+
+      {/* Istatistik Kartlari */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white">
+          <p className="text-green-100 text-sm">Toplam Gelir (Brut)</p>
+          <p className="text-3xl font-bold mt-2">{formatCurrency(stats.totalRevenue)}</p>
+          <p className="text-green-100 text-sm mt-1">{stats.completedCount} tamamlanan ders</p>
+        </div>
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white">
+          <p className="text-blue-100 text-sm">Platform Komisyonu</p>
+          <p className="text-3xl font-bold mt-2">{formatCurrency(stats.platformCommission)}</p>
+          <p className="text-blue-100 text-sm mt-1">%25 komisyon</p>
+        </div>
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white">
+          <p className="text-purple-100 text-sm">Ogretmen Odemeleri</p>
+          <p className="text-3xl font-bold mt-2">{formatCurrency(stats.teacherPayments)}</p>
+          <p className="text-purple-100 text-sm mt-1">Net odenen</p>
+        </div>
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 text-white">
+          <p className="text-orange-100 text-sm">Bekleyen Odeme</p>
+          <p className="text-3xl font-bold mt-2">{payments.filter(p => p.status === 'CONFIRMED').length}</p>
+          <p className="text-orange-100 text-sm mt-1">Onaylanmis dersler</p>
         </div>
       </div>
 
-      {/* Financial Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white">
-          <div className="text-green-100 text-sm mb-1">Toplam Gelir (Brüt)</div>
-          <div className="text-3xl font-bold">₺{totals.totalRevenue.toLocaleString('tr-TR')}</div>
-          <div className="text-green-100 text-xs mt-2">Velilerden alınan toplam</div>
-        </div>
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white">
-          <div className="text-blue-100 text-sm mb-1">Platform Komisyonu</div>
-          <div className="text-3xl font-bold">₺{totals.totalPlatformFee.toLocaleString('tr-TR')}</div>
-          <div className="text-blue-100 text-xs mt-2">%20 komisyon</div>
-        </div>
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white">
-          <div className="text-purple-100 text-sm mb-1">Öğretmen Ödemeleri</div>
-          <div className="text-3xl font-bold">₺{totals.totalTeacherEarnings.toLocaleString('tr-TR')}</div>
-          <div className="text-purple-100 text-xs mt-2">Öğretmenlere ödenen</div>
-        </div>
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white">
-          <div className="text-orange-100 text-sm mb-1">KDV Tutarı</div>
-          <div className="text-3xl font-bold">₺{totals.totalTax.toLocaleString('tr-TR')}</div>
-          <div className="text-orange-100 text-xs mt-2">%20 KDV</div>
-        </div>
-      </div>
-
-      {/* Fiyatlandırma Açıklaması */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-        <h4 className="font-semibold text-blue-900 mb-2">Fiyatlandırma Mantığı</h4>
-        <div className="text-sm text-blue-700 space-y-1">
-          <p>• Öğretmen Ücreti: Öğretmenin belirlediği saatlik ücret</p>
-          <p>• Platform Komisyonu: Öğretmen ücreti x %20</p>
-          <p>• Ara Toplam: Öğretmen Ücreti + Platform Komisyonu</p>
-          <p>• KDV: Ara Toplam x %20</p>
-          <p>• Veli Ödemesi: Ara Toplam + KDV</p>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="flex gap-2 mb-6 flex-wrap">
-        {['ALL', 'PENDING', 'PAID', 'COMPLETED', 'FAILED', 'REFUNDED'].map((f) => (
+      {/* Filtreler */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {[
+          { value: 'all', label: 'Tumu' },
+          { value: 'PENDING', label: 'Bekleyen' },
+          { value: 'CONFIRMED', label: 'Onaylanan' },
+          { value: 'COMPLETED', label: 'Tamamlanan' },
+          { value: 'CANCELLED', label: 'Iptal' }
+        ].map(f => (
           <button
-            key={f}
-            onClick={() => setFilter(f)}
+            key={f.value}
+            onClick={() => setFilter(f.value)}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              filter === f
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+              filter === f.value
+                ? 'bg-red-500 text-white'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
             }`}
           >
-            {f === 'ALL'
-              ? 'Tümü'
-              : f === 'PENDING'
-              ? 'Bekleyen'
-              : f === 'PAID'
-              ? 'Ödendi'
-              : f === 'COMPLETED'
-              ? 'Tamamlandı'
-              : f === 'FAILED'
-              ? 'Başarısız'
-              : 'İade'}
+            {f.label}
           </button>
         ))}
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      {/* Tablo */}
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
         <table className="w-full">
-          <thead className="bg-gray-50 border-b">
-            <tr>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Tarih</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Öğrenci</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Öğretmen</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Ders</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Yöntem</th>
-              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">Öğretmen</th>
-              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">Komisyon</th>
-              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">Toplam</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Durum</th>
+          <thead>
+            <tr className="border-b border-slate-200 bg-slate-50">
+              <th className="text-left py-4 px-6 font-medium text-slate-600">Tarih</th>
+              <th className="text-left py-4 px-6 font-medium text-slate-600">Ders</th>
+              <th className="text-left py-4 px-6 font-medium text-slate-600">Ogretmen</th>
+              <th className="text-left py-4 px-6 font-medium text-slate-600">Ogrenci</th>
+              <th className="text-center py-4 px-6 font-medium text-slate-600">Toplam</th>
+              <th className="text-center py-4 px-6 font-medium text-slate-600">Komisyon</th>
+              <th className="text-center py-4 px-6 font-medium text-slate-600">Ogretmen</th>
+              <th className="text-center py-4 px-6 font-medium text-slate-600">Durum</th>
             </tr>
           </thead>
-          <tbody className="divide-y">
-            {filteredPayments.length > 0 ? (
-              filteredPayments.map((payment) => (
-                <tr key={payment.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {new Date(payment.createdAt).toLocaleDateString('tr-TR', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {payment.student?.firstName} {payment.student?.lastName}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {payment.teacher?.firstName} {payment.teacher?.lastName}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{payment.subject?.name}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{getMethodLabel(payment.paymentMethod)}</td>
-                  <td className="px-6 py-4 text-sm text-right text-gray-900">
-                    ₺{(payment.teacherEarning || 0).toLocaleString('tr-TR')}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-right text-blue-600">
-                    ₺{(payment.platformFee || 0).toLocaleString('tr-TR')}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-right font-semibold text-green-600">
-                    ₺{(payment.paymentAmount || 0).toLocaleString('tr-TR')}
-                  </td>
-                  <td className="px-6 py-4">{getStatusBadge(payment.paymentStatus)}</td>
-                </tr>
-              ))
-            ) : (
+          <tbody>
+            {filteredPayments.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
-                  Ödeme bulunamadı
+                <td colSpan={8} className="py-12 text-center text-slate-500">
+                  Odeme bulunamadi
                 </td>
               </tr>
+            ) : (
+              filteredPayments.map(payment => (
+                <tr key={payment.id} className="border-b border-slate-100 hover:bg-slate-50">
+                  <td className="py-4 px-6 text-slate-600">
+                    {formatDate(payment.scheduled_at)}
+                  </td>
+                  <td className="py-4 px-6 font-medium text-slate-900">
+                    {payment.subject}
+                  </td>
+                  <td className="py-4 px-6 text-slate-600">
+                    {payment.teacher_name}
+                  </td>
+                  <td className="py-4 px-6 text-slate-600">
+                    {payment.student_name}
+                  </td>
+                  <td className="py-4 px-6 text-center font-medium text-slate-900">
+                    {formatCurrency(payment.price)}
+                  </td>
+                  <td className="py-4 px-6 text-center text-blue-600 font-medium">
+                    {formatCurrency(payment.platform_commission)}
+                  </td>
+                  <td className="py-4 px-6 text-center text-green-600 font-medium">
+                    {formatCurrency(payment.teacher_earning)}
+                  </td>
+                  <td className="py-4 px-6 text-center">
+                    {getStatusBadge(payment.status)}
+                  </td>
+                </tr>
+              ))
             )}
           </tbody>
         </table>

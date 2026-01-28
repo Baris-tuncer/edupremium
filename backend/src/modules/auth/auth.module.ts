@@ -1,26 +1,30 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module, Global } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
-import { AuthController } from './auth.controller';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
-import { JwtStrategy } from './jwt.strategy';
-import { JwtAuthGuard } from './jwt-auth.guard';
-import { RolesGuard } from './roles.guard';
+import { AuthController } from './auth.controller';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { InvitationModule } from '../invitation/invitation.module';
+import { JwtAuthGuard } from './jwt-auth.guard';
+import { JwtStrategy } from './jwt.strategy';
 
+@Global()
 @Module({
   imports: [
     PrismaModule,
-    PassportModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'edupremium-secret-key-2024',
-      signOptions: { expiresIn: '999y' },
+    InvitationModule,
+    ConfigModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET') || 'edupremium-secret-key-2024',
+        signOptions: { expiresIn: '999y' },
+      }),
+      inject: [ConfigService],
     }),
-    forwardRef(() => InvitationModule),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard],
-  exports: [AuthService, JwtAuthGuard, RolesGuard, JwtModule],
+  providers: [AuthService, JwtAuthGuard, JwtStrategy],
+  exports: [AuthService, JwtModule, JwtAuthGuard, JwtStrategy],
 })
 export class AuthModule {}

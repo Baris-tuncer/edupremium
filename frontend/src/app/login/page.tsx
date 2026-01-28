@@ -1,148 +1,176 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import api from '@/lib/api';
+import { useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState('');
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!email || !password) {
-      setError('Email ve şifre gerekli');
-      return;
-    }
-
-    setLoading(true);
+    setIsLoading(true);
     setError('');
+    setSuccess('');
 
     try {
-      console.log('🔐 Login attempt:', email);
-      const response = await api.login(email, password);
-      console.log('✅ Login response:', response);
-      
-      const data = response.data || response;
-      console.log('📦 Parsed data:', data);
-      
-      if (!data.user) {
-        throw new Error('Kullanıcı bilgisi alınamadı');
-      }
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
 
-      // Token'ları localStorage'e kaydet
-      if (data.accessToken) {
-        localStorage.setItem('accessToken', data.accessToken);
-        console.log('✅ Token saved');
-      }
-      if (data.refreshToken) {
-        localStorage.setItem('refreshToken', data.refreshToken);
-      }
-
-      // Role'e göre yönlendir
-      const role = data.user.role;
-      console.log('👤 User role:', role);
-      
-      if (role === 'ADMIN') {
-        console.log('🔀 Redirecting to admin dashboard');
-        router.push('/admin/dashboard');
-      } else if (role === 'TEACHER') {
-        console.log('🔀 Redirecting to teacher dashboard');
-        router.push('/teacher/dashboard');
-      } else if (role === 'STUDENT') {
-        console.log('🔀 Redirecting to student dashboard');
-        router.push('/student/dashboard');
-      } else {
-        console.log('🔀 Redirecting to home');
-        router.push('/');
-      }
+      if (authError) throw new Error(authError.message);
+      window.location.href = '/teacher/profile';
     } catch (err: any) {
-      console.error('❌ Login error:', err);
-      setError(err.response?.data?.message || err.message || 'Giriş başarısız');
+      setError(err.message || 'Giris yapilamadi.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsResetting(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: window.location.origin + '/reset-password',
+      });
+
+      if (error) throw new Error(error.message);
+      
+      setSuccess('Sifre sifirlama linki e-posta adresinize gonderildi. Lutfen e-postanizi kontrol edin.');
+      setShowForgotPassword(false);
+      setResetEmail('');
+    } catch (err: any) {
+      setError(err.message || 'Sifre sifirlama basarisiz.');
+    } finally {
+      setIsResetting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center py-12 px-4">
-      <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-navy-900">Giriş Yap</h1>
-          <p className="text-slate-600 mt-2">Hesabınıza giriş yapın</p>
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="max-w-md w-full p-8 bg-white rounded-xl shadow-lg">
+        <h2 className="text-2xl font-bold text-center mb-2">Ogretmen Girisi</h2>
+        <p className="text-center text-gray-500 mb-8">EduPremium hesabiniza giris yapin</p>
+        
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+        
+        {success && (
+          <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg text-sm">
+            {success}
+          </div>
+        )}
 
-        <div className="bg-white rounded-2xl shadow-elegant p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                {error}
+        {!showForgotPassword ? (
+          <>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">E-posta</label>
+                <input 
+                  type="email" 
+                  required 
+                  value={formData.email} 
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })} 
+                  className="mt-1 w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" 
+                  placeholder="ornek@email.com" 
+                />
               </div>
-            )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Sifre</label>
+                <input 
+                  type="password" 
+                  required 
+                  value={formData.password} 
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })} 
+                  className="mt-1 w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" 
+                  placeholder="********" 
+                />
+              </div>
+              
+              <div className="flex items-center justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  Sifremi Unuttum
+                </button>
+              </div>
+              
+              <button 
+                type="submit" 
+                disabled={isLoading} 
+                className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              >
+                {isLoading ? 'Giris Yapiliyor...' : 'Giris Yap'}
+              </button>
+            </form>
             
-            <div>
-              <label htmlFor="email" className="input-label">
-                E-posta
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input"
-                placeholder="admin@edupremium.com"
-                disabled={loading}
-                required
-              />
+            <div className="mt-6 text-center">
+              <p className="text-gray-600 text-sm">
+                Hesabiniz yok mu?{' '}
+                <a href="/register" className="text-blue-600 hover:text-blue-800 font-medium">
+                  Kayit Olun
+                </a>
+              </p>
             </div>
-
-            <div>
-              <label htmlFor="password" className="input-label">
-                Şifre
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input"
-                placeholder="••••••••"
-                disabled={loading}
-                required
-              />
+          </>
+        ) : (
+          <>
+            <div className="mb-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Sifre Sifirlama</h3>
+              <p className="text-sm text-gray-600">
+                E-posta adresinizi girin, size sifre sifirlama linki gonderelim.
+              </p>
             </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary w-full py-3 disabled:opacity-50"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  Giriş yapılıyor...
-                </span>
-              ) : (
-                'Giriş Yap'
-              )}
-            </button>
-          </form>
-
-          <p className="text-center text-slate-600 mt-6">
-            Hesabınız yok mu?{' '}
-            <Link href="/register" className="font-semibold text-navy-600 hover:text-navy-800">
-              Kayıt Olun
-            </Link>
-          </p>
-        </div>
+            
+            <form onSubmit={handleForgotPassword} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">E-posta</label>
+                <input 
+                  type="email" 
+                  required 
+                  value={resetEmail} 
+                  onChange={(e) => setResetEmail(e.target.value)} 
+                  className="mt-1 w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" 
+                  placeholder="ornek@email.com" 
+                />
+              </div>
+              
+              <button 
+                type="submit" 
+                disabled={isResetting} 
+                className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              >
+                {isResetting ? 'Gonderiliyor...' : 'Sifirlama Linki Gonder'}
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => {
+                  setShowForgotPassword(false);
+                  setError('');
+                }}
+                className="w-full py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+              >
+                Girişe Geri Dön
+              </button>
+            </form>
+          </>
+        )}
       </div>
     </div>
   );

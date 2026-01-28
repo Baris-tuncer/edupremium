@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Get, Body, Query, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
@@ -58,14 +58,24 @@ export class AuthController {
   }
 
   // Davet kodunu doğrula (frontend için)
+  // DÜZELTİLDİ: @Body() yerine @Query() kullanılıyor (HTTP GET standardına uygun)
   @Get('invitation/check')
-  async checkInvitationCode(@Body() body: { code: string }) {
-    return this.authService.checkInvitationCode(body.code);
+  async checkInvitationCode(@Query('code') code: string) {
+    return this.authService.checkInvitationCode(code);
   }
 
+  // ============================================
+  // GET ME - KRİTİK ENDPOINT
+  // ============================================
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async getMe(@Request() req) {
-    return this.authService.getMe(req.user.userId);
+    // DEBUG LOG - Sorun çözülünce silinebilir
+    console.log('🎯 AuthController.getMe() called');
+    console.log('🎯 req.user:', req.user);
+    console.log('🎯 req.user.id:', req.user?.id);
+
+    // ÖNEMLİ: req.user.id kullanılıyor (userId değil!)
+    return this.authService.getMe(req.user.id);
   }
 }

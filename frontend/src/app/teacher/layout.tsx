@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import api from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 import TeacherSidebar from './components/Sidebar';
 import TeacherHeader from './components/Header';
 
@@ -14,29 +14,15 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
         router.push('/login');
         return;
       }
 
-      try {
-        const userData = await api.getMe();
-        if (userData.role !== 'TEACHER') {
-          router.push('/');
-          return;
-        }
-        setUser(userData);
-      } catch (error: any) {
-        console.error('Auth check failed:', error);
-        if (error?.response?.status === 401) {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          router.push('/login');
-        }
-      } finally {
-        setIsLoading(false);
-      }
+      setUser(user);
+      setIsLoading(false);
     };
 
     checkAuth();
@@ -46,8 +32,8 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-navy-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-slate-600">Yükleniyor...</p>
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-600">Yukleniyor...</p>
         </div>
       </div>
     );

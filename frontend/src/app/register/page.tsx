@@ -1,926 +1,226 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useState } from 'react'
+import { supabase } from '@/lib/supabase'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { Loader2, AlertCircle, CheckCircle, ArrowRight } from 'lucide-react'
 
-export default function RegisterPage() {
-  const [step, setStep] = useState(1);
-  const [userType, setUserType] = useState<'student' | 'teacher' | null>(null);
-  const [branches, setBranches] = useState<any[]>([]);
-  const [subjects, setSubjects] = useState<any[]>([]);
-  const [examTypes, setExamTypes] = useState<any[]>([]);
+export default function Register() {
+  const router = useRouter()
+
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    fullName: '',
     email: '',
-    phone: '',
     password: '',
-    confirmPassword: '',
-    gradeLevel: '',
-    schoolName: '',
-    parentName: '',
-    parentEmail: '',
-    parentPhone: '',
-    invitationCode: '',
-    branchIds: [] as string[],
-    subjectIds: [] as string[],
-    examTypeIds: [] as string[],
-    iban: '',
-    introVideoUrl: '',
-    hourlyRate: '',
-    profilePhotoUrl: '',
-    profilePhoto: null as File | null,
-    acceptTerms: false,
-    acceptKvkk: false,
-  });
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [videoPreview, setVideoPreview] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [uploadingVideo, setUploadingVideo] = useState(false);
-  const [videoUploadProgress, setVideoUploadProgress] = useState(0);
+    phone: '',
+    inviteCode: ''
+  })
 
-  // Fetch branches, subjects, exam types
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
-        
-        const branchesRes = await fetch(`${API_URL}/branches`);
-        if (branchesRes.ok) {
-          const branchesData = await branchesRes.json();
-          setBranches(branchesData.data || branchesData);
-        }
-
-        const subjectsRes = await fetch(`${API_URL}/subjects`);
-        if (subjectsRes.ok) {
-          const subjectsData = await subjectsRes.json();
-          setSubjects(subjectsData.data || subjectsData);
-        }
-
-        const examTypesRes = await fetch(`${API_URL}/exam-types`);
-        if (examTypesRes.ok) {
-          const examTypesData = await examTypesRes.json();
-          setExamTypes(examTypesData.data || examTypesData);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    if (userType === 'teacher') {
-      fetchData();
-    }
-  }, [userType]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
-    }));
-  };
-
-  const handleMultiSelect = (name: string, value: string) => {
-    setFormData(prev => {
-      const currentValues = prev[name as keyof typeof prev] as string[];
-      const isSelected = currentValues.includes(value);
-      
-      return {
-        ...prev,
-        [name]: isSelected
-          ? currentValues.filter(v => v !== value)
-          : [...currentValues, value]
-      };
-    });
-  };
-
-  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 2 * 1024 * 1024) {
-      alert('Dosya boyutu 2MB\'dan küçük olmalıdır');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPhotoPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-
-    setUploadingPhoto(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', 'edupremium_photos');
-      formData.append('folder', 'edupremium/photos');
-
-      const response = await fetch(
-        'https://api.cloudinary.com/v1_1/dkteewpks/image/upload',
-        {
-          method: 'POST',
-          body: formData,
-        }
-      );
-
-      const data = await response.json();
-      
-      if (data.secure_url) {
-        setFormData(prev => ({ ...prev, profilePhotoUrl: data.secure_url }));
-      } else {
-        throw new Error('Upload failed');
-      }
-    } catch (error) {
-      console.error('Photo upload error:', error);
-      alert('Fotoğraf yüklenirken hata oluştu. Lütfen tekrar deneyin.');
-      setPhotoPreview(null);
-    } finally {
-      setUploadingPhoto(false);
-    }
-  };
-
-  const handleVideoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file size (max 50MB)
-    if (file.size > 50 * 1024 * 1024) {
-      alert('Video boyutu 50MB\'dan küçük olmalıdır');
-      return;
-    }
-
-    // Validate file type
-    const validTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm'];
-    if (!validTypes.includes(file.type)) {
-      alert('Geçerli video formatları: MP4, MOV, AVI, WEBM');
-      return;
-    }
-
-    // Preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setVideoPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-
-    // Upload to Cloudinary
-    setUploadingVideo(true);
-    setVideoUploadProgress(0);
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', 'edupremium_videos'); // Cloudinary upload preset for videos
-      formData.append('folder', 'edupremium/videos');
-      formData.append('resource_type', 'video');
+      // 1. ADIM: Davet Kodu Kontrolü
+      const { data: codeData, error: codeError } = await supabase
+        .from('invitation_codes')
+        .select('*')
+        .eq('code', formData.inviteCode.trim())
+        .eq('is_used', false)
+        .single()
 
-      // Create XMLHttpRequest to track progress
-      const xhr = new XMLHttpRequest();
-
-      xhr.upload.addEventListener('progress', (e) => {
-        if (e.lengthComputable) {
-          const percentComplete = Math.round((e.loaded / e.total) * 100);
-          setVideoUploadProgress(percentComplete);
-        }
-      });
-
-      xhr.addEventListener('load', () => {
-        if (xhr.status === 200) {
-          const data = JSON.parse(xhr.responseText);
-          if (data.secure_url) {
-            setFormData(prev => ({ ...prev, introVideoUrl: data.secure_url }));
-          } else {
-            throw new Error('Upload failed');
-          }
-          setUploadingVideo(false);
-        } else {
-          throw new Error('Upload failed');
-        }
-      });
-
-      xhr.addEventListener('error', () => {
-        throw new Error('Upload failed');
-      });
-
-      xhr.open('POST', 'https://api.cloudinary.com/v1_1/dkteewpks/video/upload');
-      xhr.send(formData);
-
-    } catch (error) {
-      console.error('Video upload error:', error);
-      alert('Video yüklenirken hata oluştu. Lütfen tekrar deneyin.');
-      setVideoPreview(null);
-      setUploadingVideo(false);
-      setVideoUploadProgress(0);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (formData.password !== formData.confirmPassword) {
-      alert('Şifreler eşleşmiyor!');
-      return;
-    }
-
-    if (userType === 'teacher') {
-      if (formData.branchIds.length === 0) {
-        alert('En az bir branş seçmelisiniz!');
-        return;
-      }
-      if (formData.subjectIds.length === 0) {
-        alert('En az bir ders seçmelisiniz!');
-        return;
-      }
-    }
-
-    setIsLoading(true);
-
-    try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
-      
-      let endpoint = '';
-      let body: any = {};
-
-      if (userType === 'student') {
-        endpoint = '/auth/register/student';
-        body = {
-          email: formData.email,
-          password: formData.password,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          phone: formData.phone || undefined,
-          gradeLevel: formData.gradeLevel ? parseInt(formData.gradeLevel) : undefined,
-          schoolName: formData.schoolName || undefined,
-          parentName: formData.parentName || undefined,
-          parentEmail: formData.parentEmail || undefined,
-          parentPhone: formData.parentPhone || undefined,
-        };
-      } else {
-        endpoint = '/auth/register/teacher';
-        body = {
-          email: formData.email,
-          password: formData.password,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          phone: formData.phone || undefined,
-          invitationCode: formData.invitationCode,
-          branchIds: formData.branchIds,
-          subjectIds: formData.subjectIds,
-          examTypeIds: formData.examTypeIds.length > 0 ? formData.examTypeIds : undefined,
-          introVideoUrl: formData.introVideoUrl || undefined,
-          profilePhotoUrl: formData.profilePhotoUrl || undefined,
-          hourlyRate: parseFloat(formData.hourlyRate),
-          iban: formData.iban || undefined,
-        };
+      if (codeError || !codeData) {
+        throw new Error('Geçersiz veya kullanılmış davet kodu!')
       }
 
-      const response = await fetch(`${API_URL}${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // 2. ADIM: Kayıt Ol (Sign Up)
+      const { data: signUpData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.fullName,
+            phone: formData.phone,
+          },
         },
-        body: JSON.stringify(body),
-      });
+      })
 
-      const data = await response.json();
+      if (authError) throw authError
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Kayıt başarısız');
+      // 3. ADIM: Otomatik Giriş
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      })
+
+      if (signInError) throw signInError
+
+      // 4. ADIM: Teacher Profile Oluştur
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (user) {
+        const { error: profileError } = await supabase
+          .from('teacher_profiles')
+          .upsert({
+            id: user.id,
+            full_name: formData.fullName,
+            email: formData.email,
+            phone: formData.phone,
+            title: 'Eğitmen',
+          })
+        
+        if (profileError) {
+          console.error('Profil oluşturma hatası:', profileError)
+        }
       }
 
-      const tokens = data.data || data;
-      localStorage.setItem('accessToken', tokens.accessToken);
-      localStorage.setItem('refreshToken', tokens.refreshToken);
+      // 5. ADIM: Davet Kodunu Yak
+      await supabase
+        .from('invitation_codes')
+        .update({ is_used: true })
+        .eq('id', codeData.id)
+
+      setSuccess(true)
       
-      alert('Kayıt başarılı!');
-      window.location.href = userType === 'student' ? '/student/dashboard' : '/teacher/dashboard';
-      
-    } catch (error: any) {
-      alert(error.message || 'Bir hata oluştu');
+      // 6. ADIM: Yönlendirme
+      setTimeout(() => {
+        router.push('/teacher/profile')
+        router.refresh()
+      }, 1500)
+
+    } catch (err: any) {
+      console.error('İşlem Hatası:', err)
+      setError(err.message || 'Beklenmeyen bir hata oluştu.')
     } finally {
-      setIsLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4">
-      <div className="max-w-2xl mx-auto">
-        {/* Logo */}
-        <Link href="/" className="inline-flex items-center gap-3 mb-8 group">
-          <div className="w-12 h-12 bg-gradient-navy rounded-xl flex items-center justify-center shadow-elegant group-hover:shadow-elevated transition-shadow duration-300">
-            <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
-          </div>
-          <div>
-            <span className="font-display text-2xl font-semibold text-navy-900">EduPremium</span>
-          </div>
-        </Link>
-
-        {/* Progress Steps */}
-        <div className="flex items-center justify-center gap-4 mb-8">
-          {[1, 2, 3].map((s) => (
-            <React.Fragment key={s}>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-colors ${
-                step >= s ? 'bg-navy-900 text-white' : 'bg-slate-200 text-slate-500'
-              }`}>
-                {step > s ? (
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                ) : s}
-              </div>
-              {s < 3 && (
-                <div className={`w-16 h-1 rounded-full ${step > s ? 'bg-navy-900' : 'bg-slate-200'}`} />
-              )}
-            </React.Fragment>
-          ))}
+    <div className="min-h-screen flex items-center justify-center bg-[#f8f9fc] p-4 font-sans">
+      <div className="bg-white w-full max-w-[480px] p-8 rounded-2xl shadow-xl border border-gray-100">
+        
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-[#1a237e] tracking-tight">EduPremium</h1>
+          <p className="text-gray-500 mt-2 text-sm font-medium">Seçkin Eğitmen Başvuru Formu</p>
         </div>
 
-        <div className="card p-8">
-          {/* Step 1: Choose Type */}
-          {step === 1 && (
-            <div className="animate-fade-up">
-              <h1 className="text-2xl md:text-3xl text-center mb-2">Kayıt Ol</h1>
-              <p className="text-slate-600 text-center mb-8">Nasıl kayıt olmak istiyorsunuz?</p>
-
-              <div className="grid md:grid-cols-2 gap-4 mb-8">
-                <button
-                  onClick={() => setUserType('student')}
-                  className={`p-6 rounded-2xl border-2 text-left transition-all ${
-                    userType === 'student'
-                      ? 'border-navy-600 bg-navy-50'
-                      : 'border-slate-200 hover:border-slate-300'
-                  }`}
-                >
-                  <div className="w-14 h-14 bg-navy-100 rounded-xl flex items-center justify-center mb-4">
-                    <svg className="w-7 h-7 text-navy-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                  </div>
-                  <h3 className="font-display text-xl font-semibold text-navy-900 mb-2">Öğrenci / Veli</h3>
-                  <p className="text-slate-600 text-sm">Özel ders almak için kayıt olun</p>
-                </button>
-
-                <button
-                  onClick={() => setUserType('teacher')}
-                  className={`p-6 rounded-2xl border-2 text-left transition-all ${
-                    userType === 'teacher'
-                      ? 'border-navy-600 bg-navy-50'
-                      : 'border-slate-200 hover:border-slate-300'
-                  }`}
-                >
-                  <div className="w-14 h-14 bg-gold-100 rounded-xl flex items-center justify-center mb-4">
-                    <svg className="w-7 h-7 text-gold-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                    </svg>
-                  </div>
-                  <h3 className="font-display text-xl font-semibold text-navy-900 mb-2">Öğretmen</h3>
-                  <p className="text-slate-600 text-sm">Davet kodunuz varsa öğretmen olarak kayıt olun</p>
-                </button>
-              </div>
-
-              <button
-                onClick={() => userType && setStep(2)}
-                disabled={!userType}
-                className="btn-primary w-full py-4 text-lg disabled:opacity-50"
-              >
-                Devam Et
-              </button>
+        {success ? (
+          <div className="text-center py-12 animate-in fade-in zoom-in duration-300">
+            <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="w-10 h-10" />
             </div>
-          )}
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">Başarıyla Katıldınız!</h3>
+            <p className="text-gray-600 mb-6">Profiliniz oluşturuluyor, yönlendiriliyorsunuz...</p>
+            <div className="h-1 w-32 bg-gray-100 rounded-full mx-auto overflow-hidden">
+              <div className="h-full bg-green-500 animate-pulse w-full"></div>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleRegister} className="space-y-5">
+            
+            {error && (
+              <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm flex items-start gap-3 border border-red-100 shadow-sm">
+                <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
+                <span className="font-medium">{error}</span>
+              </div>
+            )}
 
-          {/* Step 2: Basic Info - Video Upload Bölümü Güncellendi */}
-          {step === 2 && (
-            <form onSubmit={(e) => { e.preventDefault(); setStep(3); }} className="animate-fade-up">
-              <h1 className="text-2xl md:text-3xl text-center mb-2">
-                {userType === 'student' ? 'Öğrenci Bilgileri' : 'Öğretmen Bilgileri'}
-              </h1>
-              <p className="text-slate-600 text-center mb-8">Kişisel bilgilerinizi girin</p>
-
-              {userType === 'teacher' && (
-                <div className="mb-6">
-                  <label htmlFor="invitationCode" className="input-label">Davet Kodu *</label>
-                  <input
-                    type="text"
-                    id="invitationCode"
-                    name="invitationCode"
-                    value={formData.invitationCode}
-                    onChange={handleChange}
-                    className="input"
-                    placeholder="INV-2026-XXXXXX"
-                    required
-                  />
-                  <p className="text-sm text-slate-500 mt-1">Davet kodunuz yoksa lütfen bizimle iletişime geçin.</p>
-                </div>
-              )}
-
-              <div className="grid md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label htmlFor="firstName" className="input-label">Ad *</label>
-                  <input
-                    type="text"
-                    id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    className="input"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="lastName" className="input-label">Soyad *</label>
-                  <input
-                    type="text"
-                    id="lastName"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    className="input"
-                    required
-                  />
-                </div>
+            <div className="grid gap-5">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1.5">Ad Soyad</label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1a237e] focus:border-transparent transition-all outline-none text-gray-800 placeholder-gray-400"
+                  placeholder="Örn: Dr. Barış Tuncer"
+                  value={formData.fullName}
+                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                />
               </div>
 
-              <div className="mb-4">
-                <label htmlFor="email" className="input-label">E-posta *</label>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1.5">E-posta</label>
                 <input
                   type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="input"
                   required
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1a237e] focus:border-transparent transition-all outline-none text-gray-800 placeholder-gray-400"
+                  placeholder="ornek@email.com"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
               </div>
 
-              <div className="mb-4">
-                <label htmlFor="phone" className="input-label">Telefon *</label>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1.5">Şifre</label>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1a237e] focus:border-transparent transition-all outline-none text-gray-800 placeholder-gray-400"
+                  placeholder="En az 6 karakter"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1.5">Telefon</label>
                 <input
                   type="tel"
-                  id="phone"
-                  name="phone"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1a237e] focus:border-transparent transition-all outline-none text-gray-800 placeholder-gray-400"
+                  placeholder="05..."
                   value={formData.phone}
-                  onChange={handleChange}
-                  className="input"
-                  placeholder="5XX XXX XX XX"
-                  required
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 />
               </div>
 
-              {userType === 'student' && (
-                <>
-                  <div className="grid md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label htmlFor="gradeLevel" className="input-label">Sınıf *</label>
-                      <select
-                        id="gradeLevel"
-                        name="gradeLevel"
-                        value={formData.gradeLevel}
-                        onChange={handleChange}
-                        className="input"
-                        required
-                      >
-                        <option value="">Seçin</option>
-                        {[5, 6, 7, 8, 9, 10, 11, 12].map(g => (
-                          <option key={g} value={g}>{g}. Sınıf</option>
-                        ))}
-                        <option value="mezun">Mezun</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label htmlFor="schoolName" className="input-label">Okul Adı</label>
-                      <input
-                        type="text"
-                        id="schoolName"
-                        name="schoolName"
-                        value={formData.schoolName}
-                        onChange={handleChange}
-                        className="input"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {userType === 'teacher' && (
-                <>
-                  {/* Branşlar */}
-                  <div className="mb-4">
-                    <label className="input-label">Branşlar * (Birden fazla seçebilirsiniz)</label>
-                    <div className="grid grid-cols-2 gap-2 mt-2">
-                      {branches.length > 0 ? (
-                        branches.map(branch => (
-                          <label key={branch.id} className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50">
-                            <input
-                              type="checkbox"
-                              checked={formData.branchIds.includes(branch.id)}
-                              onChange={() => handleMultiSelect('branchIds', branch.id)}
-                              className="w-4 h-4 text-navy-600 rounded"
-                            />
-                            <span className="text-sm">{branch.name}</span>
-                          </label>
-                        ))
-                      ) : (
-                        <p className="text-sm text-slate-500 col-span-2">Yükleniyor...</p>
-                      )}
-                    </div>
-                    {formData.branchIds.length === 0 && (
-                      <p className="text-xs text-red-500 mt-1">En az bir branş seçmelisiniz</p>
-                    )}
-                  </div>
-
-                  {/* Dersler */}
-                  <div className="mb-4">
-                    <label className="input-label">Verdiğiniz Dersler * (Birden fazla seçebilirsiniz)</label>
-                    <div className="grid grid-cols-2 gap-2 mt-2">
-                      {subjects.length > 0 ? (
-                        subjects.map(subject => (
-                          <label key={subject.id} className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50">
-                            <input
-                              type="checkbox"
-                              checked={formData.subjectIds.includes(subject.id)}
-                              onChange={() => handleMultiSelect('subjectIds', subject.id)}
-                              className="w-4 h-4 text-navy-600 rounded"
-                            />
-                            <span className="text-sm">{subject.name}</span>
-                          </label>
-                        ))
-                      ) : (
-                        <p className="text-sm text-slate-500 col-span-2">Yükleniyor...</p>
-                      )}
-                    </div>
-                    {formData.subjectIds.length === 0 && (
-                      <p className="text-xs text-red-500 mt-1">En az bir ders seçmelisiniz</p>
-                    )}
-                  </div>
-
-                  {/* Sınav Tipleri */}
-                  <div className="mb-4">
-                    <label className="input-label">Sınav Tipleri (Opsiyonel)</label>
-                    <div className="grid grid-cols-2 gap-2 mt-2">
-                      {examTypes.length > 0 ? (
-                        examTypes.map(examType => (
-                          <label key={examType.id} className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50">
-                            <input
-                              type="checkbox"
-                              checked={formData.examTypeIds.includes(examType.id)}
-                              onChange={() => handleMultiSelect('examTypeIds', examType.id)}
-                              className="w-4 h-4 text-navy-600 rounded"
-                            />
-                            <span className="text-sm">{examType.name}</span>
-                          </label>
-                        ))
-                      ) : (
-                        <p className="text-sm text-slate-500 col-span-2">Yükleniyor...</p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Profil Fotoğrafı */}
-                  <div className="mb-4">
-                    <label className="input-label">Profil Fotoğrafı (Opsiyonel)</label>
-                    <div className="flex items-center gap-4">
-                      <div className="w-24 h-24 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50">
-                        {uploadingPhoto ? (
-                          <svg className="w-6 h-6 animate-spin text-navy-600" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                          </svg>
-                        ) : photoPreview ? (
-                          <img src={photoPreview} alt="Önizleme" className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-gray-400 text-xs text-center">Vesikalık<br/>Fotoğraf</span>
-                        )}
-                      </div>
-                      <div>
-                        <input
-                          type="file"
-                          id="profilePhoto"
-                          accept="image/*"
-                          onChange={handlePhotoChange}
-                          className="hidden"
-                          disabled={uploadingPhoto}
-                        />
-                        <label
-                          htmlFor="profilePhoto"
-                          className={`inline-block bg-navy-600 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-navy-700 text-sm ${uploadingPhoto ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                          {uploadingPhoto ? 'Yükleniyor...' : 'Fotoğraf Seç'}
-                        </label>
-                        <p className="text-xs text-slate-500 mt-1">JPG, PNG (Max 2MB)</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Tanıtım Videosu - YENİ! */}
-                  <div className="mb-4">
-                    <label className="input-label">Tanıtım Videosu (Opsiyonel)</label>
-                    <div className="space-y-3">
-                      {/* Video Preview */}
-                      {videoPreview && !uploadingVideo && (
-                        <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden">
-                          <video
-                            src={videoPreview}
-                            controls
-                            className="w-full h-full"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setVideoPreview(null);
-                              setFormData(prev => ({ ...prev, introVideoUrl: '' }));
-                            }}
-                            className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
-                          >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                      )}
-
-                      {/* Upload Progress */}
-                      {uploadingVideo && (
-                        <div className="space-y-2">
-                          <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-                            <div
-                              className="bg-navy-600 h-full transition-all duration-300"
-                              style={{ width: `${videoUploadProgress}%` }}
-                            />
-                          </div>
-                          <p className="text-sm text-center text-slate-600">
-                            Yükleniyor: {videoUploadProgress}%
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Upload Button */}
-                      {!videoPreview && (
-                        <div>
-                          <input
-                            type="file"
-                            id="introVideo"
-                            accept="video/mp4,video/quicktime,video/x-msvideo,video/webm"
-                            onChange={handleVideoChange}
-                            className="hidden"
-                            disabled={uploadingVideo}
-                          />
-                          <label
-                            htmlFor="introVideo"
-                            className={`inline-flex items-center gap-2 bg-navy-600 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-navy-700 text-sm ${uploadingVideo ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          >
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                            </svg>
-                            {uploadingVideo ? 'Yükleniyor...' : 'Video Seç'}
-                          </label>
-                          <p className="text-xs text-slate-500 mt-1">MP4, MOV, AVI, WEBM (Max 50MB)</p>
-                        </div>
-                      )}
-
-                      {/* Success Message */}
-                      {formData.introVideoUrl && !uploadingVideo && (
-                        <div className="flex items-center gap-2 text-green-600 text-sm">
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                          Video başarıyla yüklendi!
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Saat Ücreti */}
-                  <div className="mb-4">
-                    <label htmlFor="hourlyRate" className="input-label">Saat Ücreti (₺) *</label>
-                    <input
-                      type="number"
-                      id="hourlyRate"
-                      name="hourlyRate"
-                      value={formData.hourlyRate}
-                      onChange={handleChange}
-                      className="input"
-                      placeholder="450"
-                      min="100"
-                      required
-                    />
-                    <p className="text-xs text-slate-500 mt-1">Minimum 100₺</p>
-                  </div>
-
-                  {/* IBAN */}
-                  <div className="mb-4">
-                    <label htmlFor="iban" className="input-label">IBAN *</label>
-                    <input
-                      type="text"
-                      id="iban"
-                      name="iban"
-                      value={formData.iban}
-                      onChange={handleChange}
-                      className="input"
-                      placeholder="TR00 0000 0000 0000 0000 0000 00"
-                      required
-                    />
-                    <p className="text-xs text-slate-500 mt-1">Ders ücretleriniz bu hesaba aktarılacaktır</p>
-                  </div>
-                </>
-              )}
-
-              <div className="grid md:grid-cols-2 gap-4 mb-6">
-                <div>
-                  <label htmlFor="password" className="input-label">Şifre *</label>
-                  <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="input"
-                    placeholder="En az 8 karakter"
-                    minLength={8}
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="confirmPassword" className="input-label">Şifre Tekrar *</label>
-                  <input
-                    type="password"
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    className="input"
-                    minLength={8}
-                    required
-                  />
-                </div>
+              <div className="pt-2">
+                <label className="block text-sm font-bold text-[#1a237e] mb-2">Öğretmen Davet Kodu</label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-4 py-3 border-2 border-dashed border-[#1a237e]/40 rounded-xl focus:ring-2 focus:ring-[#1a237e] focus:border-transparent transition-all outline-none bg-blue-50/30 font-mono text-center tracking-[0.2em] uppercase text-lg text-[#1a237e]"
+                  placeholder="KODU GİRİN"
+                  value={formData.inviteCode}
+                  onChange={(e) => setFormData({ ...formData, inviteCode: e.target.value.toUpperCase() })}
+                />
               </div>
+            </div>
 
-              <div className="flex gap-4">
-                <button type="button" onClick={() => setStep(1)} className="btn-secondary flex-1 py-4">
-                  Geri
-                </button>
-                <button type="submit" className="btn-primary flex-1 py-4">
-                  Devam Et
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* Step 3: Confirmation - Özet sayfası aynı kaldı */}
-          {step === 3 && (
-            <form onSubmit={handleSubmit} className="animate-fade-up">
-              {userType === 'student' ? (
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#1a237e] text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-900 active:scale-[0.98] transition-all shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2 mt-4"
+            >
+              {loading ? (
                 <>
-                  <h1 className="text-2xl md:text-3xl text-center mb-2">Veli Bilgileri</h1>
-                  <p className="text-slate-600 text-center mb-8">Ders raporları için veli bilgilerini girin</p>
-
-                  <div className="mb-4">
-                    <label htmlFor="parentName" className="input-label">Veli Adı Soyadı *</label>
-                    <input
-                      type="text"
-                      id="parentName"
-                      name="parentName"
-                      value={formData.parentName}
-                      onChange={handleChange}
-                      className="input"
-                      required
-                    />
-                  </div>
-
-                  <div className="mb-4">
-                    <label htmlFor="parentEmail" className="input-label">Veli E-posta *</label>
-                    <input
-                      type="email"
-                      id="parentEmail"
-                      name="parentEmail"
-                      value={formData.parentEmail}
-                      onChange={handleChange}
-                      className="input"
-                      required
-                    />
-                    <p className="text-sm text-slate-500 mt-1">Ders raporları bu adrese gönderilecektir.</p>
-                  </div>
-
-                  <div className="mb-6">
-                    <label htmlFor="parentPhone" className="input-label">Veli Telefon</label>
-                    <input
-                      type="tel"
-                      id="parentPhone"
-                      name="parentPhone"
-                      value={formData.parentPhone}
-                      onChange={handleChange}
-                      className="input"
-                    />
-                  </div>
+                  <Loader2 className="animate-spin w-5 h-5" />
+                  İşleniyor...
                 </>
               ) : (
                 <>
-                  <h1 className="text-2xl md:text-3xl text-center mb-2">Kayıt Özeti</h1>
-                  <p className="text-slate-600 text-center mb-8">Bilgilerinizi kontrol edin</p>
-
-                  <div className="bg-slate-50 rounded-xl p-6 mb-6 space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Ad Soyad</span>
-                      <span className="font-medium text-navy-900">{formData.firstName} {formData.lastName}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">E-posta</span>
-                      <span className="font-medium text-navy-900">{formData.email}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Telefon</span>
-                      <span className="font-medium text-navy-900">{formData.phone}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Branşlar</span>
-                      <span className="font-medium text-navy-900">{formData.branchIds.length} seçildi</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Dersler</span>
-                      <span className="font-medium text-navy-900">{formData.subjectIds.length} seçildi</span>
-                    </div>
-                    {formData.profilePhotoUrl && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Profil Fotoğrafı</span>
-                        <span className="text-green-600 text-sm">✓ Yüklendi</span>
-                      </div>
-                    )}
-                    {formData.introVideoUrl && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Tanıtım Videosu</span>
-                        <span className="text-green-600 text-sm">✓ Yüklendi</span>
-                      </div>
-                    )}
-                  </div>
+                  Başvuruyu Tamamla
+                  <ArrowRight className="w-5 h-5" />
                 </>
               )}
+            </button>
 
-              <div className="space-y-3 mb-6">
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="acceptTerms"
-                    checked={formData.acceptTerms}
-                    onChange={handleChange}
-                    className="mt-1 w-4 h-4 rounded border-slate-300 text-navy-600 focus:ring-navy-500"
-                    required
-                  />
-                  <span className="text-sm text-slate-600">
-                    <Link href="/terms" className="text-navy-600 hover:underline">Kullanım Koşulları</Link>'nı okudum ve kabul ediyorum. *
-                  </span>
-                </label>
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="acceptKvkk"
-                    checked={formData.acceptKvkk}
-                    onChange={handleChange}
-                    className="mt-1 w-4 h-4 rounded border-slate-300 text-navy-600 focus:ring-navy-500"
-                    required
-                  />
-                  <span className="text-sm text-slate-600">
-                    <Link href="/privacy" className="text-navy-600 hover:underline">KVKK Aydınlatma Metni</Link>'ni okudum ve onaylıyorum. *
-                  </span>
-                </label>
-              </div>
-
-              <div className="flex gap-4">
-                <button type="button" onClick={() => setStep(2)} className="btn-secondary flex-1 py-4">
-                  Geri
-                </button>
-                <button
-                  type="submit"
-                  disabled={isLoading || !formData.acceptTerms || !formData.acceptKvkk}
-                  className="btn-primary flex-1 py-4 disabled:opacity-50"
-                >
-                  {isLoading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      Kaydediliyor...
-                    </span>
-                  ) : (
-                    'Kayıt Ol'
-                  )}
-                </button>
-              </div>
-            </form>
-          )}
-
-          <p className="text-center text-slate-600 mt-8">
-            Zaten hesabınız var mı?{' '}
-            <Link href="/login" className="font-semibold text-navy-600 hover:text-navy-800">
-              Giriş Yapın
-            </Link>
-          </p>
-        </div>
+            <div className="text-center text-sm text-gray-500 mt-6">
+              Zaten hesabın var mı?{' '}
+              <Link href="/login" className="text-[#1a237e] font-bold hover:underline">
+                Giriş Yap
+              </Link>
+            </div>
+          </form>
+        )}
       </div>
     </div>
-  );
+  )
 }

@@ -1,144 +1,126 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import api from '@/lib/api';
+import { useState, useEffect, useMemo } from 'react';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
-
-interface Subject {
-  id: string;
-  name: string;
-}
-
-interface Branch {
-  id: string;
-  name: string;
-}
-
-interface ExamType {
-  id: string;
-  name: string;
-}
+import { 
+  EDUCATION_LEVELS, 
+  formatSubject 
+} from '@/lib/constants';
+import {
+  calculatePriceDetails,
+  calculateDisplayPrice,
+  calculateTeacherNet,
+  validateBasePrice,
+  formatPrice,
+  PRICING_CONSTANTS,
+  getCommissionTier,
+  getLessonsUntilNextTier
+} from '@/lib/pricing';
 
 export default function TeacherProfilePage() {
-  const [profile, setProfile] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
-  
-  const photoInputRef = useRef<HTMLInputElement>(null);
-  const videoInputRef = useRef<HTMLInputElement>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
-  const [formData, setFormData] = useState({
-    bio: '',
-    hourlyRate: '',
-    iban: '',
-  });
-
-  const [allSubjects, setAllSubjects] = useState<Subject[]>([]);
-  const [allBranches, setAllBranches] = useState<Branch[]>([]);
-  const [allExamTypes, setAllExamTypes] = useState<ExamType[]>([]);
-  const [selectedSubjectIds, setSelectedSubjectIds] = useState<string[]>([]);
-  const [selectedBranchIds, setSelectedBranchIds] = useState<string[]>([]);
-  const [selectedExamTypeIds, setSelectedExamTypeIds] = useState<string[]>([]);
+  // Form state
+  const [fullName, setFullName] = useState('');
+  const [title, setTitle] = useState('');
+  const [bio, setBio] = useState('');
+  const [phone, setPhone] = useState('');
+  const [basePrice, setBasePrice] = useState<number>(0);
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
+  const [diplomaUrl, setDiplomaUrl] = useState('');
+  const [completedLessons, setCompletedLessons] = useState(0);
+  const [commissionRate, setCommissionRate] = useState(0.25);
 
   useEffect(() => {
-    fetchProfile();
-    fetchOptions();
+    loadProfile();
   }, []);
 
-  const fetchProfile = async () => {
+  const loadProfile = async () => {
     try {
-      const data = await api.getMyProfile();
-      setProfile(data);
-      setFormData({
-        bio: data.bio || '',
-        hourlyRate: data.hourlyRate || '',
-        iban: data.iban || '',
-      });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      setSelectedSubjectIds(data.subjects?.map((s: any) => s.id) || []);
-      setSelectedBranchIds(data.branches?.map((b: any) => b.id) || []);
-      setSelectedExamTypeIds(data.examTypes?.map((e: any) => e.id) || []);
+      const { data, error } = await supabase
+        .from('teacher_profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Profile load error:', error);
+        return;
+      }
+
+      if (data) {
+        setFullName(data.full_name || '');
+        setTitle(data.title || '');
+        setBio(data.bio || '');
+        setPhone(data.phone || '');
+        setBasePrice(data.base_price || data.price_per_hour || 0);
+        setSelectedSubjects(data.subjects || []);
+        setAvatarUrl(data.avatar_url || '');
+        setVideoUrl(data.video_url || '');
+        setDiplomaUrl(data.diploma_url || '');
+        setCompletedLessons(data.completed_lessons_count || 0);
+        setCommissionRate(data.commission_rate || 0.25);
+      }
     } catch (error) {
-      console.error('Failed to fetch profile:', error);
-      toast.error('Profil yüklenemedi');
+      console.error('Load error:', error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const fetchOptions = async () => {
-    try {
-      const [subjects, branches, examTypes] = await Promise.all([
-        api.listSubjects(),
-        api.listBranches(),
-        api.listExamTypes(),
-      ]);
-      setAllSubjects(subjects);
-      setAllBranches(branches);
-      setAllExamTypes(examTypes);
-    } catch (error) {
-      console.error('Failed to fetch options:', error);
-    }
-  };
+  // Fiyat hesaplaması (canlı)
+  const priceDetails = useMemo(() => {
+    return calculatePriceDetails(basePrice, commissionRate);
+  }, [basePrice, commissionRate]);
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Validasyon
+  const priceValidation = useMemo(() => {
+    return validateBasePrice(basePrice);
+  }, [basePrice]);
+
+  // Komisyon bilgileri
+  const commissionTier = getCommissionTier(completedLessons);
+  const nextTierInfo = getLessonsUntilNextTier(completedLessons);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('Lütfen bir resim dosyası seçin');
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Dosya boyutu en fazla 5MB olabilir');
-      return;
-    }
-
-    setIsUploadingPhoto(true);
-    const uploadToast = toast.loading('Fotoğraf yükleniyor...');
-
+    setUploading(true);
     try {
-      // Upload to Cloudinary
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', 'edupremium_photos');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      const cloudinaryResponse = await fetch(
-        'https://api.cloudinary.com/v1_1/dkteewpks/image/upload',
-        {
-          method: 'POST',
-          body: formData,
-        }
-      );
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/avatar.${fileExt}`;
 
-      if (!cloudinaryResponse.ok) {
-        throw new Error('Cloudinary upload failed');
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) {
+        toast.error('Yukleme hatasi: ' + uploadError.message);
+        return;
       }
 
-      const cloudinaryData = await cloudinaryResponse.json();
-      const photoUrl = cloudinaryData.secure_url;
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
 
-      // Update backend
-      await api.updateMyProfile({
-        ...formData,
-        profilePhotoUrl: photoUrl,
-      });
-
-      toast.success('Fotoğraf başarıyla yüklendi!', { id: uploadToast });
-      fetchProfile(); // Refresh profile
+      setAvatarUrl(urlData.publicUrl + '?t=' + Date.now());
+      toast.success('Fotograf yuklendi');
     } catch (error) {
-      console.error('Photo upload error:', error);
-      toast.error('Fotoğraf yüklenemedi', { id: uploadToast });
+      toast.error('Yukleme sirasinda hata olustu');
     } finally {
-      setIsUploadingPhoto(false);
-      if (photoInputRef.current) {
-        photoInputRef.current.value = '';
-      }
+      setUploading(false);
     }
   };
 
@@ -146,379 +128,417 @@ export default function TeacherProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith('video/')) {
-      toast.error('Lütfen bir video dosyası seçin');
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error('Video 100MB\'dan kucuk olmali');
       return;
     }
 
-    // Validate file size (max 50MB)
-    if (file.size > 50 * 1024 * 1024) {
-      toast.error('Video boyutu en fazla 50MB olabilir');
+    setUploading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/video.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) {
+        toast.error('Video yukleme hatasi: ' + uploadError.message);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      setVideoUrl(urlData.publicUrl + '?t=' + Date.now());
+      toast.success('Video yuklendi');
+    } catch (error) {
+      toast.error('Video yukleme sirasinda hata olustu');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDiplomaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Diploma 10MB dan kucuk olmali');
       return;
     }
 
-    setIsUploadingVideo(true);
-    const uploadToast = toast.loading('Video yükleniyor...');
-
+    setUploading(true);
     try {
-      // Upload to Cloudinary
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', 'edupremium_videos');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      const cloudinaryResponse = await fetch(
-        'https://api.cloudinary.com/v1_1/dkteewpks/video/upload',
-        {
-          method: 'POST',
-          body: formData,
-        }
-      );
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/diploma.${fileExt}`;
 
-      if (!cloudinaryResponse.ok) {
-        throw new Error('Cloudinary upload failed');
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) {
+        toast.error('Diploma yukleme hatasi: ' + uploadError.message);
+        return;
       }
 
-      const cloudinaryData = await cloudinaryResponse.json();
-      const videoUrl = cloudinaryData.secure_url;
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
 
-      // Update backend
-      await api.updateMyProfile({
-        ...formData,
-        introVideoUrl: videoUrl,
-      });
-
-      toast.success('Video başarıyla yüklendi!', { id: uploadToast });
-      fetchProfile(); // Refresh profile
+      setDiplomaUrl(urlData.publicUrl + '?t=' + Date.now());
+      toast.success('Diploma yuklendi');
     } catch (error) {
-      console.error('Video upload error:', error);
-      toast.error('Video yüklenemedi', { id: uploadToast });
+      toast.error('Diploma yukleme sirasinda hata olustu');
     } finally {
-      setIsUploadingVideo(false);
-      if (videoInputRef.current) {
-        videoInputRef.current.value = '';
-      }
+      setUploading(false);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
+  const toggleSubject = (level: string, subject: string) => {
+    const key = formatSubject(level, subject);
+    setSelectedSubjects(prev => 
+      prev.includes(key) ? prev.filter(s => s !== key) : [...prev, key]
+    );
+  };
 
+  const isSubjectSelected = (level: string, subject: string) => {
+    return selectedSubjects.includes(formatSubject(level, subject));
+  };
+
+  const handleSave = async () => {
+    if (!priceValidation.valid) {
+      toast.error(priceValidation.error || 'Gecersiz fiyat');
+      return;
+    }
+
+    setSaving(true);
     try {
-      await api.updateMyProfile({
-        bio: formData.bio,
-        hourlyRate: parseFloat(formData.hourlyRate),
-        iban: formData.iban,
-      });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      await Promise.all([
-        api.updateMySubjects(selectedSubjectIds),
-        api.updateMyBranches(selectedBranchIds),
-        api.updateMyExamTypes(selectedExamTypeIds),
-      ]);
+      const teacherNet = calculateTeacherNet(basePrice, commissionRate);
+      const displayPrice = calculateDisplayPrice(basePrice, commissionRate);
 
-      toast.success('✅ Profil başarıyla güncellendi!');
-      fetchProfile();
+      const { error } = await supabase
+        .from('teacher_profiles')
+        .update({
+          full_name: fullName,
+          title,
+          bio,
+          phone,
+          base_price: basePrice,
+          hourly_rate_net: teacherNet,
+          hourly_rate_display: displayPrice,
+          price_per_hour: basePrice, // backward compatibility
+          subjects: selectedSubjects,
+          avatar_url: avatarUrl,
+          video_url: videoUrl,
+          diploma_url: diplomaUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (error) {
+        toast.error('Kayit hatasi: ' + error.message);
+        return;
+      }
+
+      toast.success('Profil kaydedildi');
     } catch (error) {
-      console.error('Failed to update profile:', error);
-      toast.error('Profil güncellenemedi');
+      toast.error('Kayit sirasinda hata olustu');
     } finally {
-      setIsSaving(false);
+      setSaving(false);
     }
   };
 
-  const toggleSubject = (subjectId: string) => {
-    setSelectedSubjectIds(prev =>
-      prev.includes(subjectId)
-        ? prev.filter(id => id !== subjectId)
-        : [...prev, subjectId]
-    );
-  };
-
-  const toggleBranch = (branchId: string) => {
-    setSelectedBranchIds(prev =>
-      prev.includes(branchId)
-        ? prev.filter(id => id !== branchId)
-        : [...prev, branchId]
-    );
-  };
-
-  const toggleExamType = (examTypeId: string) => {
-    setSelectedExamTypeIds(prev =>
-      prev.includes(examTypeId)
-        ? prev.filter(id => id !== examTypeId)
-        : [...prev, examTypeId]
-    );
-  };
-
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-screen">
-        <div className="w-8 h-8 border-4 border-navy-600 border-t-transparent rounded-full animate-spin" />
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="p-8">
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold text-navy-900 mb-2">Profil Ayarları</h1>
-          <p className="text-slate-600">Profilinizi düzenleyin ve öğrencilere kendinizi tanıtın</p>
+    <div className="max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold text-slate-900 mb-6">Profil Ayarlari</h1>
+
+      <div className="space-y-8">
+        {/* Komisyon Durumu Kartı */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-blue-100 text-sm">Komisyon Seviyeniz</p>
+              <p className="text-2xl font-bold">{commissionTier.label} (%{commissionTier.percentage})</p>
+              <p className="text-blue-100 mt-1">Tamamlanan Ders: {completedLessons}</p>
+            </div>
+            {nextTierInfo ? (
+              <div className="text-right">
+                <p className="text-blue-100 text-sm">Sonraki Seviye</p>
+                <p className="text-xl font-semibold">{nextTierInfo.nextTier} (%{nextTierInfo.nextRate})</p>
+                <p className="text-blue-100">{nextTierInfo.lessonsNeeded} ders kaldi</p>
+              </div>
+            ) : (
+              <div className="text-right">
+                <p className="text-2xl">🏆</p>
+                <p className="text-blue-100">En yuksek seviye!</p>
+              </div>
+            )}
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Bio */}
-          <div className="card p-6">
-            <label className="block font-medium text-navy-900 mb-2">
-              Hakkımda
-            </label>
-            <textarea
-              value={formData.bio}
-              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              rows={6}
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-navy-500 focus:border-transparent"
-              placeholder="Kendinizi tanıtın, deneyimlerinizden bahsedin..."
-            />
-            <p className="text-sm text-slate-500 mt-2">
-              Bu metin öğrencilerin sizin profilinizde göreceği açıklama olacaktır.
-            </p>
-          </div>
-
-          {/* Hourly Rate */}
-          <div className="card p-6">
-            <label className="block font-medium text-navy-900 mb-2">
-              Saatlik Ücretiniz (₺)
-            </label>
-            <input
-              type="number"
-              value={formData.hourlyRate}
-              onChange={(e) => setFormData({ ...formData, hourlyRate: e.target.value })}
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-navy-500 focus:border-transparent"
-              placeholder="500"
-              min="0"
-              step="1"
-            />
-            <p className="text-sm text-slate-500 mt-2">
-              Bu, tamamlanan dersler için size ödenecek saatlik ücrettir.
-            </p>
-          </div>
-
-          {/* Subject Selection */}
-          <div className="card p-6">
-            <label className="block font-medium text-navy-900 mb-4">
-              Dersler
-              <span className="text-sm font-normal text-slate-500 ml-2">
-                ({selectedSubjectIds.length} seçili)
-              </span>
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {allSubjects.map((subject) => (
-                <label
-                  key={subject.id}
-                  className="flex items-center gap-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedSubjectIds.includes(subject.id)}
-                    onChange={() => toggleSubject(subject.id)}
-                    className="w-4 h-4 text-navy-600 border-slate-300 rounded focus:ring-navy-500"
-                  />
-                  <span className="text-sm text-slate-700">{subject.name}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Branch Selection */}
-          <div className="card p-6">
-            <label className="block font-medium text-navy-900 mb-4">
-              Kademeler
-              <span className="text-sm font-normal text-slate-500 ml-2">
-                ({selectedBranchIds.length} seçili)
-              </span>
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {allBranches.map((branch) => (
-                <label
-                  key={branch.id}
-                  className="flex items-center gap-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedBranchIds.includes(branch.id)}
-                    onChange={() => toggleBranch(branch.id)}
-                    className="w-4 h-4 text-navy-600 border-slate-300 rounded focus:ring-navy-500"
-                  />
-                  <span className="text-sm text-slate-700">{branch.name}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* ExamType Selection */}
-          <div className="card p-6">
-            <label className="block font-medium text-navy-900 mb-4">
-              Sınav Türleri
-              <span className="text-sm font-normal text-slate-500 ml-2">
-                ({selectedExamTypeIds.length} seçili)
-              </span>
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {allExamTypes.map((examType) => (
-                <label
-                  key={examType.id}
-                  className="flex items-center gap-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedExamTypeIds.includes(examType.id)}
-                    onChange={() => toggleExamType(examType.id)}
-                    className="w-4 h-4 text-navy-600 border-slate-300 rounded focus:ring-navy-500"
-                  />
-                  <span className="text-sm text-slate-700">{examType.name}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* IBAN */}
-          <div className="card p-6">
-            <label className="block font-medium text-navy-900 mb-2">
-              IBAN
-            </label>
-            <input
-              type="text"
-              value={formData.iban}
-              onChange={(e) => setFormData({ ...formData, iban: e.target.value.toUpperCase() })}
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-navy-500 focus:border-transparent font-mono"
-              placeholder="TR00 0000 0000 0000 0000 0000 00"
-              maxLength={32}
-            />
-            <p className="text-sm text-slate-500 mt-2">
-              Kazançlarınızın aktarılacağı banka hesap numarası.
-            </p>
-          </div>
-
-          {/* Profile Photo & Intro Video */}
+        {/* Profil Fotoğrafı ve Video */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Profil Medyasi</h2>
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Profile Photo */}
-            <div className="card p-6">
-              <label className="block font-medium text-navy-900 mb-4">
-                Profil Fotoğrafı
-              </label>
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 bg-navy-100 rounded-full flex items-center justify-center text-2xl font-display font-semibold text-navy-600 overflow-hidden">
-                    {profile?.profilePhotoUrl ? (
-                      <img src={profile.profilePhotoUrl} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      profile?.firstName?.charAt(0)
-                    )}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Profil Fotografi</label>
+              <div className="flex items-center gap-4">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar" className="w-20 h-20 rounded-full object-cover" />
+                ) : (
+                  <div className="w-20 h-20 bg-slate-200 rounded-full flex items-center justify-center">
+                    <span className="text-2xl text-slate-400">{fullName?.charAt(0) || '?'}</span>
                   </div>
-                  <div className="flex-1">
-                    <input
-                      ref={photoInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoUpload}
-                      className="hidden"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => photoInputRef.current?.click()}
-                      disabled={isUploadingPhoto}
-                      className="w-full px-4 py-2 bg-navy-600 text-white rounded-lg hover:bg-navy-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isUploadingPhoto ? 'Yükleniyor...' : profile?.profilePhotoUrl ? 'Fotoğrafı Değiştir' : 'Fotoğraf Yükle'}
-                    </button>
-                  </div>
-                </div>
-                <p className="text-xs text-slate-500">
-                  JPG, PNG veya GIF. Max 5MB.
-                </p>
+                )}
+                <label className="cursor-pointer px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200">
+                  {uploading ? 'Yukleniyor...' : 'Fotograf Sec'}
+                  <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploading} />
+                </label>
               </div>
             </div>
-
-            {/* Intro Video */}
-            <div className="card p-6">
-              <label className="block font-medium text-navy-900 mb-4">
-                Tanıtım Videosu
-              </label>
-              {profile?.introVideoUrl ? (
-                <div className="space-y-3">
-                  <video
-                    src={profile.introVideoUrl}
-                    controls
-                    className="w-full rounded-lg"
-                    style={{ maxHeight: '200px' }}
-                  />
-                  <input
-                    ref={videoInputRef}
-                    type="file"
-                    accept="video/*"
-                    onChange={handleVideoUpload}
-                    className="hidden"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => videoInputRef.current?.click()}
-                    disabled={isUploadingVideo}
-                    className="w-full px-4 py-2 text-sm text-navy-600 border border-navy-600 rounded-lg hover:bg-navy-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isUploadingVideo ? 'Yükleniyor...' : 'Videoyu Değiştir'}
-                  </button>
-                  <p className="text-xs text-slate-500">
-                    MP4, MOV veya AVI. Max 50MB.
-                  </p>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Tanitim Videosu</label>
+              {videoUrl ? (
+                <div className="space-y-2">
+                  <video src={videoUrl} controls className="w-full h-48 aspect-video object-contain rounded-lg" />
+                  <label className="cursor-pointer inline-block px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200">
+                    {uploading ? 'Yukleniyor...' : 'Degistir'}
+                    <input type="file" accept="video/*" className="hidden" onChange={handleVideoUpload} disabled={uploading} />
+                  </label>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  <input
-                    ref={videoInputRef}
-                    type="file"
-                    accept="video/*"
-                    onChange={handleVideoUpload}
-                    className="hidden"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => videoInputRef.current?.click()}
-                    disabled={isUploadingVideo}
-                    className="w-full px-4 py-3 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 hover:border-navy-500 hover:text-navy-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <svg className="w-8 h-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                    {isUploadingVideo ? 'Yükleniyor...' : 'Video Yükle'}
-                  </button>
-                  <p className="text-xs text-slate-500">
-                    MP4, MOV veya AVI. Max 50MB.
-                  </p>
-                </div>
+                <label className="cursor-pointer block p-8 border-2 border-dashed border-slate-300 rounded-lg text-center hover:border-blue-400">
+                  <span className="text-slate-500">{uploading ? 'Yukleniyor...' : 'Video Yukle (Max 100MB)'}</span>
+                  <input type="file" accept="video/*" className="hidden" onChange={handleVideoUpload} disabled={uploading} />
+                </label>
               )}
             </div>
           </div>
+        </div>
 
-          {/* Submit Button */}
-          <div className="flex justify-end gap-4">
-            <button
-              type="button"
-              onClick={fetchProfile}
-              className="px-6 py-3 text-slate-600 hover:text-navy-900 transition-colors"
-            >
-              İptal
-            </button>
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="px-8 py-3 bg-navy-600 text-white rounded-xl hover:bg-navy-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSaving ? 'Kaydediliyor...' : 'Kaydet'}
-            </button>
+        {/* Diploma */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Diploma / Sertifika</h2>
+          <p className="text-sm text-slate-500 mb-4">Ogrencilerin guvenini kazanmak icin diplomanizi yukleyin.</p>
+          {diplomaUrl ? (
+            <div className="space-y-3">
+              <img src={diplomaUrl} alt="Diploma" className="max-w-md rounded-lg border" />
+              <label className="cursor-pointer inline-block px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200">
+                {uploading ? 'Yukleniyor...' : 'Degistir'}
+                <input type="file" accept="image/*,.pdf" className="hidden" onChange={handleDiplomaUpload} disabled={uploading} />
+              </label>
+            </div>
+          ) : (
+            <label className="cursor-pointer block p-8 border-2 border-dashed border-slate-300 rounded-lg text-center hover:border-blue-400">
+              <span className="text-slate-500">{uploading ? 'Yukleniyor...' : 'Diploma Yukle (Max 10MB)'}</span>
+              <input type="file" accept="image/*,.pdf" className="hidden" onChange={handleDiplomaUpload} disabled={uploading} />
+            </label>
+          )}
+        </div>
+
+        {/* Kişisel Bilgiler */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Kisisel Bilgiler</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Ad Soyad</label>
+              <input
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Unvan</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Ornegin: Matematik Ogretmeni"
+                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">Telefon</label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="05XX XXX XX XX"
+                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">Hakkimda</label>
+              <textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                rows={4}
+                placeholder="Kendinizi tanitin..."
+                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+              />
+            </div>
           </div>
-        </form>
+        </div>
+
+        {/* Fiyatlandırma */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Fiyatlandirma</h2>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Baz Fiyat Input */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Ders Bedeli (Baz Fiyat)
+              </label>
+              <div className="relative">
+                <input
+                  type="number"
+                  value={basePrice || ''}
+                  onChange={(e) => setBasePrice(parseInt(e.target.value) || 0)}
+                  min={PRICING_CONSTANTS.MIN_BASE_PRICE}
+                  placeholder={`Minimum ${PRICING_CONSTANTS.MIN_BASE_PRICE}`}
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-lg font-semibold ${
+                    !priceValidation.valid && basePrice > 0 ? 'border-red-300 bg-red-50' : 'border-slate-200'
+                  }`}
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">TL</span>
+              </div>
+              {!priceValidation.valid && basePrice > 0 && (
+                <p className="mt-1 text-sm text-red-600">{priceValidation.error}</p>
+              )}
+            </div>
+
+            {/* Fiyat Dökümü Kartı */}
+            {basePrice >= PRICING_CONSTANTS.MIN_BASE_PRICE && (
+              <div className="bg-slate-50 rounded-xl p-4 space-y-3">
+                {/* Kesinti */}
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-600 flex items-center gap-2">
+                    <span className="text-red-500">📉</span> Kesinti (Komisyon %{commissionTier.percentage})
+                  </span>
+                  <span className="font-medium text-red-600">-{formatPrice(priceDetails.commissionAmount)}</span>
+                </div>
+
+                {/* Öğretmene Kalan */}
+                <div className="flex justify-between items-center py-2 border-t border-b border-slate-200">
+                  <span className="text-slate-800 font-medium flex items-center gap-2">
+                    <span className="text-green-500">✅</span> Elinize Gececek Net
+                  </span>
+                  <span className="font-bold text-lg text-green-600">{formatPrice(priceDetails.teacherNet)}</span>
+                </div>
+
+                {/* Vergiler */}
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-500 flex items-center gap-2">
+                    <span>🏛️</span> Vergiler (Veli Öder)
+                  </span>
+                  <span className="text-slate-500">+{formatPrice(priceDetails.taxTotal)}</span>
+                </div>
+
+                {/* Veli Fiyatı */}
+                <div className="flex justify-between items-center pt-3 border-t border-slate-300">
+                  <span className="text-slate-800 font-medium flex items-center gap-2">
+                    <span>🏷️</span> Veliye Gorunecek Fiyat
+                  </span>
+                  <span className="font-bold text-xl text-blue-600">{formatPrice(priceDetails.displayPrice)}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Bilgilendirme */}
+          <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+            <div className="flex items-start gap-3">
+              <span className="text-xl">💡</span>
+              <div className="text-sm text-amber-800">
+                <p className="font-medium">Nasil Calisir?</p>
+                <p className="mt-1">
+                  Belirlediginiz ders bedelinden <strong>%{commissionTier.percentage} komisyon</strong> kesilir, 
+                  kalan tutar size odenir. Vergiler veliye yansitilir.
+                </p>
+                <p className="mt-2 text-amber-700">
+                  Daha fazla ders verdikce komisyon oraniniz duser: 
+                  <strong> 101+ ders: %20</strong>, 
+                  <strong> 201+ ders: %15</strong>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Ders Seçimi */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Verdigim Dersler</h2>
+          <p className="text-slate-600 text-sm mb-6">
+            Vermek istediginiz dersleri seciniz.
+          </p>
+
+          <div className="space-y-6">
+            {Object.entries(EDUCATION_LEVELS).map(([levelKey, levelData]) => (
+              <div key={levelKey}>
+                <h3 className="font-medium text-slate-800 mb-3">{levelData.label}</h3>
+                <div className="flex flex-wrap gap-2">
+                  {levelData.subjects.map((subject) => {
+                    const selected = isSubjectSelected(levelKey, subject);
+                    return (
+                      <button
+                        key={subject}
+                        onClick={() => toggleSubject(levelKey, subject)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                          selected
+                            ? 'bg-blue-600 text-white shadow-md'
+                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                        }`}
+                      >
+                        {subject}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {selectedSubjects.length > 0 && (
+            <div className="mt-6 pt-4 border-t border-slate-200">
+              <p className="text-sm text-slate-600">
+                <strong>{selectedSubjects.length}</strong> ders secildi
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Kaydet Butonu */}
+        <div className="flex justify-end">
+          <button
+            onClick={handleSave}
+            disabled={saving || !priceValidation.valid}
+            className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {saving ? 'Kaydediliyor...' : 'Degisiklikleri Kaydet'}
+          </button>
+        </div>
       </div>
     </div>
   );

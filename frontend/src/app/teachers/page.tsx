@@ -293,6 +293,7 @@ export default function TeachersPage() {
                     className="input w-full text-sm"
                   />
                 </div>
+                <p className="text-xs text-slate-500 mt-2">* Veliye gösterilecek fiyat</p>
               </div>
 
               {/* Clear Filters */}

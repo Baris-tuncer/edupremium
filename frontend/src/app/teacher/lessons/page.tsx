@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import api from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
 
 export default function TeacherLessonsPage() {
   const [lessons, setLessons] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState('upcoming');
+  const [completingId, setCompletingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchLessons();
@@ -15,43 +16,111 @@ export default function TeacherLessonsPage() {
 
   const fetchLessons = async () => {
     try {
-      const data = await api.getMyLessons();
-      setLessons(Array.isArray(data) ? data : []);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error('Oturum bulunamadı');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('lessons')
+        .select('*')
+        .eq('teacher_id', user.id)
+        .order('scheduled_at', { ascending: true });
+
+      if (error) {
+        console.log('Error:', error.message);
+        setLessons([]);
+      } else {
+        setLessons(data || []);
+      }
     } catch (error) {
       console.error('Failed to fetch lessons:', error);
-      toast.error('Dersler yüklenemedi');
+      setLessons([]);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const completeLesson = async (lessonId: string) => {
+    setCompletingId(lessonId);
+    
+    try {
+      const { error } = await supabase
+        .from('lessons')
+        .update({ 
+          status: 'COMPLETED',
+          completed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', lessonId);
+
+      if (error) {
+        toast.error('Ders tamamlanamadı: ' + error.message);
+        return;
+      }
+
+      setLessons(prev => prev.map(lesson => 
+        lesson.id === lessonId 
+          ? { ...lesson, status: 'COMPLETED', completed_at: new Date().toISOString() }
+          : lesson
+      ));
+
+      toast.success('Ders başarıyla tamamlandı!');
+    } catch (error) {
+      console.error('Failed to complete lesson:', error);
+      toast.error('Bir hata oluştu');
+    } finally {
+      setCompletingId(null);
+    }
+  };
+
+  const now = new Date();
+
   const filteredLessons = lessons.filter((lesson) => {
-    if (filter === 'all') return true;
-    return lesson.status === filter;
+    if (filter === 'upcoming') {
+      return lesson.status !== 'COMPLETED' && lesson.status !== 'CANCELLED';
+    } else if (filter === 'completed') {
+      return lesson.status === 'COMPLETED';
+    }
+    return true;
   });
 
-  const getStatusBadge = (status: string) => {
-    const styles: Record<string, string> = {
-      PENDING_PAYMENT: 'bg-yellow-100 text-yellow-800',
-      CONFIRMED: 'bg-green-100 text-green-800',
-      IN_PROGRESS: 'bg-blue-100 text-blue-800',
-      COMPLETED: 'bg-gray-100 text-gray-800',
-      CANCELLED: 'bg-red-100 text-red-800',
-    };
+  const canComplete = (lesson: any) => {
+    const lessonDate = new Date(lesson.scheduled_at);
+    return lessonDate <= now && lesson.status !== 'COMPLETED' && lesson.status !== 'CANCELLED';
+  };
 
-    const labels: Record<string, string> = {
-      PENDING_PAYMENT: 'Ödeme Bekliyor',
-      CONFIRMED: 'Onaylandı',
-      IN_PROGRESS: 'Devam Ediyor',
-      COMPLETED: 'Tamamlandı',
-      CANCELLED: 'İptal Edildi',
-    };
+  const getStatusBadge = (status: string, scheduledAt: string) => {
+    const lessonDate = new Date(scheduledAt);
+    const isPast = lessonDate < now;
 
-    return (
-      <span className={`px-3 py-1 rounded-full text-xs font-medium ${styles[status] || styles.PENDING_PAYMENT}`}>
-        {labels[status] || status}
-      </span>
-    );
+    if (status === 'COMPLETED') {
+      return (
+        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          Tamamlandı
+        </span>
+      );
+    } else if (status === 'CANCELLED') {
+      return (
+        <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+          İptal Edildi
+        </span>
+      );
+    } else if (isPast) {
+      return (
+        <span className="px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+          Bekliyor
+        </span>
+      );
+    } else {
+      return (
+        <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+          Planlandı
+        </span>
+      );
+    }
   };
 
   if (isLoading) {
@@ -69,64 +138,87 @@ export default function TeacherLessonsPage() {
         <p className="text-slate-600">Tüm derslerinizi ve randevularınızı görüntüleyin</p>
       </div>
 
-      {/* Filters */}
       <div className="flex gap-4 mb-6">
-        {['all', 'CONFIRMED', 'COMPLETED', 'CANCELLED'].map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              filter === f
-                ? 'bg-navy-600 text-white'
-                : 'bg-white text-slate-600 hover:bg-slate-50'
-            }`}
-          >
-            {f === 'all' ? 'Tümü' : f === 'CONFIRMED' ? 'Onaylı' : f === 'COMPLETED' ? 'Tamamlanan' : 'İptal'}
-          </button>
-        ))}
+        <button
+          onClick={() => setFilter('upcoming')}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            filter === 'upcoming'
+              ? 'bg-navy-600 text-white'
+              : 'bg-white text-slate-600 hover:bg-slate-50'
+          }`}
+        >
+          Gelecek Dersler
+        </button>
+        <button
+          onClick={() => setFilter('completed')}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            filter === 'completed'
+              ? 'bg-navy-600 text-white'
+              : 'bg-white text-slate-600 hover:bg-slate-50'
+          }`}
+        >
+          Tamamlanan Dersler
+        </button>
       </div>
 
-      {/* Lessons List */}
       <div className="space-y-4">
         {filteredLessons.length > 0 ? (
           filteredLessons.map((lesson) => (
-            <div key={lesson.id} className="card p-6">
+            <div key={lesson.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-navy-100 rounded-full flex items-center justify-center font-semibold text-navy-600">
-                    {lesson.student?.firstName?.charAt(0)}
+                    {lesson.subject?.charAt(0) || '?'}
                   </div>
                   <div>
-                    <h3 className="font-display font-semibold text-navy-900">
-                      {lesson.student?.firstName} {lesson.student?.lastName}
+                    <h3 className="font-semibold text-navy-900">
+                      {lesson.subject || 'Ders'}
                     </h3>
-                    <p className="text-sm text-slate-600">{lesson.subject?.name}</p>
+                    <p className="text-sm text-slate-600">{lesson.duration_minutes} dakika • {lesson.price} ₺</p>
                   </div>
                 </div>
 
-                <div className="text-right flex items-center gap-4">
-                  <div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
                     <p className="font-medium text-navy-900">
-                      {new Date(lesson.scheduledAt).toLocaleDateString('tr-TR', {
+                      {new Date(lesson.scheduled_at).toLocaleDateString('tr-TR', {
                         day: 'numeric',
                         month: 'long',
                         year: 'numeric',
                       })}
                     </p>
                     <p className="text-sm text-slate-600">
-                      {new Date(lesson.scheduledAt).toLocaleTimeString('tr-TR', {
+                      {new Date(lesson.scheduled_at).toLocaleTimeString('tr-TR', {
                         hour: '2-digit',
                         minute: '2-digit',
                       })}
                     </p>
                   </div>
-                  {getStatusBadge(lesson.status)}
+                  
+                  {getStatusBadge(lesson.status, lesson.scheduled_at)}
+                  
+                  {canComplete(lesson) && (
+                    <button
+                      onClick={() => completeLesson(lesson.id)}
+                      disabled={completingId === lesson.id}
+                      className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {completingId === lesson.id ? (
+                        <span className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Tamamlanıyor...
+                        </span>
+                      ) : (
+                        'Dersi Tamamla'
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
           ))
         ) : (
-          <div className="card p-12 text-center">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
             <svg
               className="w-16 h-16 mx-auto mb-4 text-slate-300"
               fill="none"
@@ -140,7 +232,9 @@ export default function TeacherLessonsPage() {
                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
-            <p className="text-slate-500">Henüz ders bulunmuyor</p>
+            <p className="text-slate-500">
+              {filter === 'upcoming' ? 'Henüz planlanmış ders bulunmuyor' : 'Henüz tamamlanmış ders bulunmuyor'}
+            </p>
           </div>
         )}
       </div>

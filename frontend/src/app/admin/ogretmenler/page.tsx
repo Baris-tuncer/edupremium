@@ -1,38 +1,28 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { toast } from 'react-hot-toast';
+import { supabase } from '@/lib/supabase';
 
 interface Teacher {
   id: string;
-  firstName: string;
-  lastName: string;
+  full_name: string;
   email: string;
   phone: string | null;
-  branches: Array<{ id: string; name: string }>;
-  subjects: Array<{ id: string; name: string }>;
-  hourlyRate: number;
-  pricing?: {
-    teacherEarning: number;
-    platformFee: number;
-    tax: number;
-    totalPrice: number;
-  };
-  totalLessons: number;
-  isActive: boolean;
-  status: string;
-  createdAt: string;
-  bio?: string;
-  profilePhotoUrl?: string;
-  introVideoUrl?: string;
+  subjects: string[];
+  base_price: number;
+  commission_rate: number;
+  completed_lessons_count: number;
+  is_verified: boolean;
+  updated_at: string;
+  avatar_url: string | null;
 }
 
 export default function AdminTeachersPage() {
-  const [activeTab, setActiveTab] = useState<'all' | 'active' | 'inactive'>('all');
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<'all' | 'verified' | 'unverified'>('all');
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     loadTeachers();
@@ -40,258 +30,228 @@ export default function AdminTeachersPage() {
 
   const loadTeachers = async () => {
     try {
-      setLoading(true);
-      const token = localStorage.getItem('accessToken');
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
+      const { data, error: fetchError } = await supabase
+        .from('teacher_profiles')
+        .select('id, full_name, email, phone, subjects, base_price, commission_rate, completed_lessons_count, is_verified, updated_at, avatar_url')
+        .order('updated_at', { ascending: false });
 
-      const response = await fetch(`${baseUrl}/admin/teachers`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        setTeachers(result.data || []);
+      if (fetchError) {
+        setError(fetchError.message);
+        return;
       }
-    } catch (error: any) {
-      console.error('Öğretmenler yüklenemedi:', error);
-      toast.error('Öğretmenler yüklenemedi');
+
+      setTeachers(data || []);
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeactivate = async (teacherId: string) => {
-    if (!confirm('Bu öğretmeni devre dışı bırakmak istediğinizden emin misiniz?')) {
-      return;
-    }
-
+  const toggleVerification = async (teacherId: string, currentStatus: boolean) => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
+      const { error } = await supabase
+        .from('teacher_profiles')
+        .update({ is_verified: !currentStatus })
+        .eq('id', teacherId);
 
-      const response = await fetch(`${baseUrl}/admin/teachers/${teacherId}/reject`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        toast.success('Öğretmen devre dışı bırakıldı');
-        loadTeachers();
-        setIsModalOpen(false);
-      } else {
-        const data = await response.json();
-        toast.error(data.message || 'İşlem başarısız');
-      }
-    } catch (error: any) {
-      toast.error('İşlem başarısız');
+      if (error) throw error;
+      loadTeachers();
+      setSelectedTeacher(null);
+    } catch (error) {
+      console.error('Error:', error);
     }
   };
 
-  const handleActivate = async (teacherId: string) => {
-    if (!confirm('Bu öğretmeni aktif etmek istediğinizden emin misiniz?')) {
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem('accessToken');
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
-
-      const response = await fetch(`${baseUrl}/admin/teachers/${teacherId}/activate`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        toast.success('Öğretmen aktif edildi');
-        loadTeachers();
-        setIsModalOpen(false);
-      } else {
-        const data = await response.json();
-        toast.error(data.message || 'İşlem başarısız');
-      }
-    } catch (error: any) {
-      toast.error('İşlem başarısız');
-    }
-  };
-
-  const filteredTeachers = teachers.filter((t) => {
-    if (activeTab === 'active') return t.isActive;
-    if (activeTab === 'inactive') return !t.isActive;
+  const filteredTeachers = teachers.filter(t => {
+    if (filter === 'verified') return t.is_verified;
+    if (filter === 'unverified') return !t.is_verified;
     return true;
   });
 
-  const openModal = (teacher: Teacher) => {
-    setSelectedTeacher(teacher);
-    setIsModalOpen(true);
+  const formatCurrency = (n: number) => (n || 0).toLocaleString('tr-TR') + ' TL';
+  const formatDate = (d: string) => d ? new Date(d).toLocaleDateString('tr-TR') : '-';
+
+  const getCommissionLabel = (rate: number) => {
+    if (rate === 0.15) return 'Premium (%15)';
+    if (rate === 0.20) return 'Standart (%20)';
+    return 'Baslangic (%25)';
   };
 
+  if (loading) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-[400px]">
+        <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6">
+          <h2 className="text-red-700 font-semibold mb-2">Hata Olustu</h2>
+          <p className="text-red-600">{error}</p>
+          <button 
+            onClick={() => { setError(null); setLoading(true); loadTeachers(); }}
+            className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+          >
+            Tekrar Dene
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Öğretmen Yönetimi</h1>
-        <div className="text-sm text-gray-500">
-          Toplam: {teachers.length} öğretmen
+    <div className="p-8">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Ogretmenler</h1>
+          <p className="text-slate-600 mt-1">Tum ogretmenleri yonetin</p>
+        </div>
+        <div className="text-sm text-slate-500">
+          Toplam: {teachers.length} ogretmen
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-4 mb-6 border-b border-gray-200">
-        <button
-          onClick={() => setActiveTab('all')}
-          className={`pb-3 px-4 font-medium transition-colors ${
-            activeTab === 'all'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          Tümü
-          <span className="ml-2 bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">
-            {teachers.length}
-          </span>
-        </button>
-        <button
-          onClick={() => setActiveTab('active')}
-          className={`pb-3 px-4 font-medium transition-colors ${
-            activeTab === 'active'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          Aktif
-          <span className="ml-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-            {teachers.filter((t) => t.isActive).length}
-          </span>
-        </button>
-        <button
-          onClick={() => setActiveTab('inactive')}
-          className={`pb-3 px-4 font-medium transition-colors ${
-            activeTab === 'inactive'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          Pasif
-          <span className="ml-2 bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
-            {teachers.filter((t) => !t.isActive).length}
-          </span>
-        </button>
+      {/* Filtreler */}
+      <div className="flex gap-2 mb-6">
+        {(['all', 'verified', 'unverified'] as const).map(f => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              filter === f
+                ? 'bg-red-500 text-white'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            {f === 'all' ? 'Tumu' : f === 'verified' ? 'Onaylilar' : 'Onaysizlar'}
+            <span className="ml-2 text-xs">
+              ({f === 'all' ? teachers.length : 
+                f === 'verified' ? teachers.filter(t => t.is_verified).length :
+                teachers.filter(t => !t.is_verified).length})
+            </span>
+          </button>
+        ))}
       </div>
 
-      {/* Loading */}
-      {loading ? (
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Yükleniyor...</p>
-        </div>
-      ) : filteredTeachers.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <p className="text-gray-600">Öğretmen bulunmuyor</p>
-        </div>
-      ) : (
-        <div className="grid gap-4">
-          {filteredTeachers.map((teacher) => (
-            <div
-              key={teacher.id}
-              className="bg-white p-6 rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-4 flex-1">
-                  {/* Avatar */}
-                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center text-2xl font-bold text-gray-600 overflow-hidden">
-                    {teacher.profilePhotoUrl ? (
-                      <img src={teacher.profilePhotoUrl} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      `${teacher.firstName[0]}${teacher.lastName[0]}`
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {teacher.firstName} {teacher.lastName}
-                      </h3>
-                      {teacher.isActive ? (
-                        <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                          Aktif
-                        </span>
+      {/* Tablo */}
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-slate-200 bg-slate-50">
+              <th className="text-left py-4 px-6 font-medium text-slate-600">Ogretmen</th>
+              <th className="text-left py-4 px-6 font-medium text-slate-600">Branslar</th>
+              <th className="text-center py-4 px-6 font-medium text-slate-600">Baz Fiyat</th>
+              <th className="text-center py-4 px-6 font-medium text-slate-600">Komisyon</th>
+              <th className="text-center py-4 px-6 font-medium text-slate-600">Ders</th>
+              <th className="text-center py-4 px-6 font-medium text-slate-600">Durum</th>
+              <th className="text-center py-4 px-6 font-medium text-slate-600">Islem</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredTeachers.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="py-12 text-center text-slate-500">
+                  Ogretmen bulunamadi
+                </td>
+              </tr>
+            ) : (
+              filteredTeachers.map(teacher => (
+                <tr key={teacher.id} className="border-b border-slate-100 hover:bg-slate-50">
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-3">
+                      {teacher.avatar_url ? (
+                        <img src={teacher.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover" />
                       ) : (
-                        <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
-                          Pasif
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-                      <div>
-                        <span className="text-gray-500">Email:</span>
-                        <span className="ml-2 text-gray-900">{teacher.email}</span>
-                      </div>
-                      {teacher.phone && (
-                        <div>
-                          <span className="text-gray-500">Telefon:</span>
-                          <span className="ml-2 text-gray-900">{teacher.phone}</span>
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                          <span className="text-sm font-semibold text-blue-700">
+                            {teacher.full_name?.charAt(0) || '?'}
+                          </span>
                         </div>
                       )}
                       <div>
-                        <span className="text-gray-500">Branş:</span>
-                        <span className="ml-2 text-gray-900">
-                          {teacher.branches?.map((b) => b.name).join(', ') || '-'}
+                        <p className="font-medium text-slate-900">{teacher.full_name || 'Isimsiz'}</p>
+                        <p className="text-sm text-slate-500">{teacher.email}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-6">
+                    <div className="flex flex-wrap gap-1">
+                      {teacher.subjects?.slice(0, 2).map((s, i) => (
+                        <span key={i} className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full">
+                          {s}
                         </span>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Tamamlanan Ders:</span>
-                        <span className="ml-2 text-gray-900">{teacher.totalLessons || 0}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Öğretmen Ücreti:</span>
-                        <span className="ml-2 text-gray-900">₺{teacher.hourlyRate}/saat</span>
-                      </div>
-                      {teacher.pricing && (
-                        <div>
-                          <span className="text-gray-500">Veli Ödemesi:</span>
-                          <span className="ml-2 text-green-600 font-semibold">₺{teacher.pricing.totalPrice.toFixed(0)}/saat</span>
-                        </div>
+                      ))}
+                      {(teacher.subjects?.length || 0) > 2 && (
+                        <span className="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded-full">
+                          +{teacher.subjects.length - 2}
+                        </span>
                       )}
                     </div>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => openModal(teacher)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                  >
-                    İncele
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+                  </td>
+                  <td className="py-4 px-6 text-center font-medium">
+                    {formatCurrency(teacher.base_price)}
+                  </td>
+                  <td className="py-4 px-6 text-center">
+                    <span className="text-sm text-slate-600">
+                      {getCommissionLabel(teacher.commission_rate || 0.25)}
+                    </span>
+                  </td>
+                  <td className="py-4 px-6 text-center font-medium">
+                    {teacher.completed_lessons_count || 0}
+                  </td>
+                  <td className="py-4 px-6 text-center">
+                    {teacher.is_verified ? (
+                      <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                        Onayli
+                      </span>
+                    ) : (
+                      <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">
+                        Bekliyor
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-4 px-6 text-center">
+                    <button
+                      onClick={() => setSelectedTeacher(teacher)}
+                      className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg transition-colors"
+                    >
+                      Detay
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {/* Modal */}
-      {isModalOpen && selectedTeacher && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      {selectedTeacher && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-start mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {selectedTeacher.firstName} {selectedTeacher.lastName}
-                </h2>
-                <button
-                  onClick={() => setIsModalOpen(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-4">
+                  {selectedTeacher.avatar_url ? (
+                    <img src={selectedTeacher.avatar_url} alt="" className="w-16 h-16 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                      <span className="text-2xl font-semibold text-blue-700">
+                        {selectedTeacher.full_name?.charAt(0) || '?'}
+                      </span>
+                    </div>
+                  )}
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-900">{selectedTeacher.full_name}</h2>
+                    <p className="text-slate-500">{selectedTeacher.email}</p>
+                  </div>
+                </div>
+                <button onClick={() => setSelectedTeacher(null)} className="text-slate-400 hover:text-slate-600">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -300,122 +260,62 @@ export default function AdminTeachersPage() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Email</label>
-                    <p className="text-gray-900">{selectedTeacher.email}</p>
+                    <label className="text-sm text-slate-500">Telefon</label>
+                    <p className="font-medium">{selectedTeacher.phone || '-'}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Telefon</label>
-                    <p className="text-gray-900">{selectedTeacher.phone || '-'}</p>
+                    <label className="text-sm text-slate-500">Son Guncelleme</label>
+                    <p className="font-medium">{formatDate(selectedTeacher.updated_at)}</p>
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Branşlar</label>
+                  <label className="text-sm text-slate-500">Branslar</label>
                   <div className="flex flex-wrap gap-2 mt-1">
-                    {selectedTeacher.branches?.map((branch) => (
-                      <span
-                        key={branch.id}
-                        className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full"
-                      >
-                        {branch.name}
-                      </span>
-                    )) || <span className="text-gray-500">-</span>}
+                    {selectedTeacher.subjects?.map((s, i) => (
+                      <span key={i} className="px-3 py-1 bg-blue-50 text-blue-700 text-sm rounded-full">{s}</span>
+                    )) || <span className="text-slate-400">-</span>}
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Dersler</label>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {selectedTeacher.subjects?.map((subject) => (
-                      <span
-                        key={subject.id}
-                        className="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full"
-                      >
-                        {subject.name}
-                      </span>
-                    )) || <span className="text-gray-500">-</span>}
-                  </div>
-                </div>
-
-                {/* Fiyatlandırma Detayları */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-gray-900 mb-3">Fiyatlandırma Detayları</h4>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <h4 className="font-semibold text-slate-900 mb-3">Fiyatlandirma</h4>
+                  <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-500">Öğretmen Ücreti:</span>
-                      <span className="font-medium">₺{selectedTeacher.hourlyRate}</span>
+                      <span className="text-slate-500">Baz Fiyat:</span>
+                      <span className="font-medium">{formatCurrency(selectedTeacher.base_price)}</span>
                     </div>
-                    {selectedTeacher.pricing && (
-                      <>
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">Platform Komisyonu (%20):</span>
-                          <span className="font-medium">₺{selectedTeacher.pricing.platformFee.toFixed(0)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">KDV (%20):</span>
-                          <span className="font-medium">₺{selectedTeacher.pricing.tax.toFixed(0)}</span>
-                        </div>
-                        <div className="flex justify-between border-t pt-2">
-                          <span className="text-gray-700 font-semibold">Veli Ödemesi:</span>
-                          <span className="font-bold text-green-600">₺{selectedTeacher.pricing.totalPrice.toFixed(0)}</span>
-                        </div>
-                      </>
-                    )}
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Komisyon Orani:</span>
+                      <span className="font-medium">{getCommissionLabel(selectedTeacher.commission_rate || 0.25)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Tamamlanan Ders:</span>
+                      <span className="font-medium">{selectedTeacher.completed_lessons_count || 0}</span>
+                    </div>
                   </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Tamamlanan Ders</label>
-                    <p className="text-gray-900">{selectedTeacher.totalLessons || 0}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Durum</label>
-                    <p className={selectedTeacher.isActive ? 'text-green-600' : 'text-red-600'}>
-                      {selectedTeacher.isActive ? 'Aktif' : 'Pasif'}
-                    </p>
-                  </div>
-                </div>
-
-                {selectedTeacher.bio && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Hakkında</label>
-                    <p className="text-gray-900 mt-1">{selectedTeacher.bio}</p>
-                  </div>
-                )}
-
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Kayıt Tarihi</label>
-                  <p className="text-gray-900">
-                    {new Date(selectedTeacher.createdAt).toLocaleDateString('tr-TR', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
-                  </p>
                 </div>
               </div>
 
-              {/* Actions */}
-              <div className="flex gap-3 mt-6 pt-6 border-t border-gray-200">
-                {selectedTeacher.isActive ? (
+              <div className="flex gap-3 mt-6 pt-6 border-t">
+                {selectedTeacher.is_verified ? (
                   <button
-                    onClick={() => handleDeactivate(selectedTeacher.id)}
-                    className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                    onClick={() => toggleVerification(selectedTeacher.id, true)}
+                    className="flex-1 px-4 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-xl transition-colors"
                   >
-                    Devre Dışı Bırak
+                    Onayi Kaldir
                   </button>
                 ) : (
                   <button
-                    onClick={() => handleActivate(selectedTeacher.id)}
-                    className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                    onClick={() => toggleVerification(selectedTeacher.id, false)}
+                    className="flex-1 px-4 py-3 bg-green-500 hover:bg-green-600 text-white font-medium rounded-xl transition-colors"
                   >
-                    Aktif Et
+                    Onayla
                   </button>
                 )}
                 <button
-                  onClick={() => setIsModalOpen(false)}
-                  className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                  onClick={() => setSelectedTeacher(null)}
+                  className="flex-1 px-4 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-xl transition-colors"
                 >
                   Kapat
                 </button>
