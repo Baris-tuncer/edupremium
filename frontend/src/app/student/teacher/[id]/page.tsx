@@ -11,6 +11,7 @@ interface Teacher {
   bio: string;
   avatar_url: string;
   video_url: string;
+  diploma_url: string;
   subjects: string[];
   hourly_rate_display: number;
   base_price: number;
@@ -158,6 +159,7 @@ export default function TeacherDetailPage() {
           ← Geri
         </button>
 
+        {/* Ogretmen Bilgileri */}
         <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
           <div className="flex gap-6">
             <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
@@ -184,14 +186,41 @@ export default function TeacherDetailPage() {
             </div>
           </div>
 
+          {/* Hakkinda */}
           {teacher.bio && (
             <div className="mt-6 pt-6 border-t">
               <h3 className="font-semibold text-gray-900 mb-2">Hakkinda</h3>
               <p className="text-gray-600">{teacher.bio}</p>
             </div>
           )}
+
+          {/* Tanitim Videosu */}
+          {teacher.video_url && (
+            <div className="mt-6 pt-6 border-t">
+              <h3 className="font-semibold text-gray-900 mb-3">Tanitim Videosu</h3>
+              <video 
+                src={teacher.video_url} 
+                controls 
+                className="w-full rounded-xl max-h-96 bg-black"
+                poster={teacher.avatar_url}
+              />
+            </div>
+          )}
+
+          {/* Diploma/Sertifika */}
+          {teacher.diploma_url && (
+            <div className="mt-6 pt-6 border-t">
+              <h3 className="font-semibold text-gray-900 mb-3">Diploma / Sertifika</h3>
+              <img 
+                src={teacher.diploma_url} 
+                alt="Diploma" 
+                className="w-full max-w-md rounded-xl border border-gray-200"
+              />
+            </div>
+          )}
         </div>
 
+        {/* Ders Rezervasyonu */}
         <div className="bg-white rounded-2xl shadow-sm p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-6">Ders Rezervasyonu</h2>
 
