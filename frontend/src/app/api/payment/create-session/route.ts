@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     } else {
       return NextResponse.json({
         success: false,
-        error: data.responseMsg || 'Session olusturulamadi',
+        error: data.responseMsg || 'Session olusturulamadi', errorCode: data.errorCode, errorMsg: data.errorMsg, fullResponse: data, errorCode: data.errorCode, errorMsg: data.errorMsg, fullResponse: data,
       }, { status: 400 });
     }
   } catch (error: any) {
