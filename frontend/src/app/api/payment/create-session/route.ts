@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       scheduled_at: scheduledAt,
       status: 'PENDING',
       created_at: new Date().toISOString(),
-    }).catch(err => console.log('Pending payment error:', err.message));
+    });
 
     const paymentUrl = getPaymentPageUrl(sessionResult.sessionToken);
 
