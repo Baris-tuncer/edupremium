@@ -6,6 +6,26 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+// HTML redirect helper
+function htmlRedirect(url: string) {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta http-equiv="refresh" content="0;url=${url}">
+        <script>window.location.href = "${url}";</script>
+      </head>
+      <body>
+        <p>Yönlendiriliyorsunuz... <a href="${url}">Tıklayın</a></p>
+      </body>
+    </html>
+  `;
+  return new NextResponse(html, {
+    status: 200,
+    headers: { 'Content-Type': 'text/html; charset=utf-8' },
+  });
+}
+
 export async function POST(request: NextRequest) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.visserr.com';
   
@@ -75,7 +95,7 @@ export async function POST(request: NextRequest) {
         console.log('Pending Payment Updated, Error:', updateError);
       }
 
-      return NextResponse.redirect(`${baseUrl}/payment/success?orderId=${merchantPaymentId}`);
+      return htmlRedirect(`${baseUrl}/payment/success?orderId=${merchantPaymentId}`);
     } else {
       // Ödeme başarısız
       await supabase
@@ -86,11 +106,11 @@ export async function POST(request: NextRequest) {
         })
         .eq('order_id', merchantPaymentId);
 
-      return NextResponse.redirect(`${baseUrl}/payment/fail?error=Odeme_basarisiz`);
+      return htmlRedirect(`${baseUrl}/payment/fail?error=Odeme_basarisiz`);
     }
   } catch (error: any) {
     console.error('Callback Error:', error);
-    return NextResponse.redirect(`${baseUrl}/payment/fail?error=Sistem_hatasi`);
+    return htmlRedirect(`${baseUrl}/payment/fail?error=Sistem_hatasi`);
   }
 }
 
@@ -101,7 +121,7 @@ export async function GET(request: NextRequest) {
   const merchantPaymentId = searchParams.get('merchantPaymentId');
 
   if (responseCode === '00' && merchantPaymentId) {
-    return NextResponse.redirect(`${baseUrl}/payment/success?orderId=${merchantPaymentId}`);
+    return htmlRedirect(`${baseUrl}/payment/success?orderId=${merchantPaymentId}`);
   }
-  return NextResponse.redirect(`${baseUrl}/payment/fail?error=Odeme_basarisiz`);
+  return htmlRedirect(`${baseUrl}/payment/fail?error=Odeme_basarisiz`);
 }
