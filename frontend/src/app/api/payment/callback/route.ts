@@ -5,6 +5,7 @@ import {
   getStudentPaymentConfirmationEmail, 
   getTeacherNewLessonEmail 
 } from '@/lib/email-templates';
+import { createDailyRoom } from '@/lib/daily';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -52,7 +53,7 @@ function formatTime(dateString: string): string {
   });
 }
 
-async function sendEmails(pendingPayment: any, orderId: string) {
+async function sendEmails(pendingPayment: any, orderId: string, meetingLink: string | null) {
   try {
     console.log('sendEmails started for order:', orderId);
 
@@ -96,6 +97,7 @@ async function sendEmails(pendingPayment: any, orderId: string) {
         time,
         price: pendingPayment.amount,
         orderId,
+        meetingLink,
       }),
     });
 
@@ -119,6 +121,7 @@ async function sendEmails(pendingPayment: any, orderId: string) {
         time,
         price: pendingPayment.amount,
         earnings: teacherEarnings,
+        meetingLink,
       }),
     });
 
@@ -158,6 +161,7 @@ export async function POST(request: NextRequest) {
       console.log('Pending Payment:', pendingPayment, 'Error:', fetchError);
 
       if (pendingPayment) {
+        // Ders oluştur
         const { data: lesson, error: lessonError } = await supabase
           .from('lessons')
           .insert({
@@ -176,6 +180,22 @@ export async function POST(request: NextRequest) {
           .single();
 
         console.log('Lesson Created:', lesson, 'Error:', lessonError);
+
+        // Daily.co room oluştur
+        let meetingLink: string | null = null;
+        if (lesson) {
+          meetingLink = await createDailyRoom(lesson.id);
+          console.log('Meeting Link Created:', meetingLink);
+
+          // Meeting link'i lesson'a kaydet
+          if (meetingLink) {
+            await supabase
+              .from('lessons')
+              .update({ meeting_link: meetingLink })
+              .eq('id', lesson.id);
+            console.log('Meeting link saved to lesson');
+          }
+        }
 
         if (pendingPayment.availability_id) {
           const { error: availError } = await supabase
@@ -196,8 +216,8 @@ export async function POST(request: NextRequest) {
 
         console.log('Pending Payment Updated');
 
-        // Email gönder
-        await sendEmails(pendingPayment, merchantPaymentId);
+        // Email gönder (meeting link ile)
+        await sendEmails(pendingPayment, merchantPaymentId, meetingLink);
       }
 
       return htmlRedirect(`${baseUrl}/payment/success?orderId=${merchantPaymentId}`);

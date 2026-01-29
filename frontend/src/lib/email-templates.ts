@@ -1,6 +1,3 @@
-// Email Templates for EduPremium
-// Premium, professional email designs
-
 export function getStudentPaymentConfirmationEmail(data: {
   studentName: string;
   teacherName: string;
@@ -9,7 +6,27 @@ export function getStudentPaymentConfirmationEmail(data: {
   time: string;
   price: number;
   orderId: string;
+  meetingLink?: string | null;
 }) {
+  const meetingSection = data.meetingLink ? `
+        <!-- Meeting Link -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 20px 30px;">
+          <tr>
+            <td>
+              <table width="100%" cellspacing="0" cellpadding="0" style="background-color: #dbeafe; border: 2px solid #3b82f6; border-radius: 12px; padding: 20px;">
+                <tr>
+                  <td align="center">
+                    <p style="color: #1d4ed8; margin: 0 0 10px 0; font-size: 14px; font-weight: 600;">🎥 Online Ders Linki</p>
+                    <a href="${data.meetingLink}" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; text-decoration: none; padding: 12px 30px; border-radius: 8px; font-size: 14px; font-weight: 600;">Derse Katıl</a>
+                    <p style="color: #6b7280; margin: 10px 0 0 0; font-size: 11px;">Bu linki ders saatinde kullanabilirsiniz</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+  ` : '';
+
   return `
 <!DOCTYPE html>
 <html>
@@ -83,6 +100,8 @@ export function getStudentPaymentConfirmationEmail(data: {
           </tr>
         </table>
 
+        ${meetingSection}
+
         <!-- Payment Info -->
         <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 20px 30px;">
           <tr>
@@ -135,7 +154,27 @@ export function getTeacherNewLessonEmail(data: {
   time: string;
   price: number;
   earnings: number;
+  meetingLink?: string | null;
 }) {
+  const meetingSection = data.meetingLink ? `
+        <!-- Meeting Link -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 20px 30px;">
+          <tr>
+            <td>
+              <table width="100%" cellspacing="0" cellpadding="0" style="background-color: #dbeafe; border: 2px solid #3b82f6; border-radius: 12px; padding: 20px;">
+                <tr>
+                  <td align="center">
+                    <p style="color: #1d4ed8; margin: 0 0 10px 0; font-size: 14px; font-weight: 600;">🎥 Online Ders Linki</p>
+                    <a href="${data.meetingLink}" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; text-decoration: none; padding: 12px 30px; border-radius: 8px; font-size: 14px; font-weight: 600;">Derse Katıl</a>
+                    <p style="color: #6b7280; margin: 10px 0 0 0; font-size: 11px;">Bu linki ders saatinde kullanabilirsiniz</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+  ` : '';
+
   return `
 <!DOCTYPE html>
 <html>
@@ -208,6 +247,8 @@ export function getTeacherNewLessonEmail(data: {
             </td>
           </tr>
         </table>
+
+        ${meetingSection}
 
         <!-- Earnings -->
         <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 20px 30px;">
