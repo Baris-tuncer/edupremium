@@ -9,9 +9,12 @@ export default function TeacherLessonsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState('upcoming');
   const [completingId, setCompletingId] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
     fetchLessons();
+    const interval = setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchLessons = async () => {
@@ -76,8 +79,6 @@ export default function TeacherLessonsPage() {
     }
   };
 
-  const now = new Date();
-
   const filteredLessons = lessons.filter((lesson) => {
     if (filter === 'upcoming') {
       return lesson.status !== 'COMPLETED' && lesson.status !== 'CANCELLED';
@@ -89,10 +90,9 @@ export default function TeacherLessonsPage() {
 
   const canComplete = (lesson: any) => {
     const lessonDate = new Date(lesson.scheduled_at);
-    return lessonDate <= now && lesson.status !== 'COMPLETED' && lesson.status !== 'CANCELLED';
+    return lessonDate <= currentTime && lesson.status !== 'COMPLETED' && lesson.status !== 'CANCELLED';
   };
 
-  // Derse Katıl butonu: ders başlangıcından 15 dk öncesinden, başlangıçtan 15 dk sonrasına kadar göster
   const canJoinMeeting = (lesson: any) => {
     if (!lesson.meeting_link) return false;
     if (lesson.status === 'COMPLETED' || lesson.status === 'CANCELLED') return false;
@@ -101,12 +101,12 @@ export default function TeacherLessonsPage() {
     const fifteenMinsBefore = new Date(lessonStart.getTime() - 15 * 60 * 1000);
     const fifteenMinsAfter = new Date(lessonStart.getTime() + 15 * 60 * 1000);
     
-    return now >= fifteenMinsBefore && now <= fifteenMinsAfter;
+    return currentTime >= fifteenMinsBefore && currentTime <= fifteenMinsAfter;
   };
 
   const getStatusBadge = (status: string, scheduledAt: string) => {
     const lessonDate = new Date(scheduledAt);
-    const isPast = lessonDate < now;
+    const isPast = lessonDate < currentTime;
 
     if (status === 'COMPLETED') {
       return (
