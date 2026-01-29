@@ -25,6 +25,33 @@ export async function POST(request: NextRequest) {
     const orderId = `EDU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.visserr.com';
 
+    // Önce pending_payment kaydını oluştur
+    const { data: pendingData, error: pendingError } = await supabase
+      .from('pending_payments')
+      .insert({
+        order_id: orderId,
+        teacher_id: teacherId,
+        student_id: studentId,
+        subject: subject,
+        scheduled_at: scheduledAt,
+        amount: amount,
+        availability_id: availabilityId,
+        status: 'PENDING',
+        created_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    console.log('Pending Payment Insert:', pendingData, 'Error:', pendingError);
+
+    if (pendingError) {
+      console.error('Pending payment insert error:', pendingError);
+      return NextResponse.json({
+        success: false,
+        error: 'Ödeme kaydı oluşturulamadı: ' + pendingError.message,
+      }, { status: 500 });
+    }
+
     const params = new URLSearchParams({
       ACTION: 'SESSIONTOKEN',
       MERCHANT: PARATIKA_CONFIG.MERCHANT,
@@ -51,18 +78,15 @@ export async function POST(request: NextRequest) {
     const data = JSON.parse(responseText);
 
     if (data.responseCode === '00' && data.sessionToken) {
-      await supabase.from('pending_payments').insert({
-        order_id: orderId,
-        teacher_id: teacherId,
-        student_id: studentId,
-        subject: subject,
-        scheduled_at: scheduledAt,
-        amount: amount,
-        availability_id: availabilityId,
-        session_token: data.sessionToken,
-        status: 'PENDING',
-        created_at: new Date().toISOString(),
-      });
+      // Session token'ı güncelle
+      const { error: updateError } = await supabase
+        .from('pending_payments')
+        .update({ session_token: data.sessionToken })
+        .eq('order_id', orderId);
+
+      if (updateError) {
+        console.error('Session token update error:', updateError);
+      }
 
       return NextResponse.json({
         success: true,
@@ -71,6 +95,9 @@ export async function POST(request: NextRequest) {
         orderId: orderId,
       });
     } else {
+      // Paratika hata verdi, pending_payment'ı sil
+      await supabase.from('pending_payments').delete().eq('order_id', orderId);
+
       return NextResponse.json({
         success: false,
         error: data.responseMsg || 'Session olusturulamadi',
