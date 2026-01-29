@@ -1,4 +1,3 @@
-{
   "crons": [
     {
       "path": "/api/cron/lesson-reminder",
