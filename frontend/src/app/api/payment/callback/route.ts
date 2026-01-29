@@ -38,13 +38,18 @@ function formatDate(dateString: string): string {
     weekday: 'long', 
     year: 'numeric', 
     month: 'long', 
-    day: 'numeric' 
+    day: 'numeric',
+    timeZone: 'Europe/Istanbul'
   });
 }
 
 function formatTime(dateString: string): string {
   const date = new Date(dateString);
-  return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+  return date.toLocaleTimeString('tr-TR', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    timeZone: 'Europe/Istanbul'
+  });
 }
 
 async function sendEmails(pendingPayment: any, orderId: string) {
