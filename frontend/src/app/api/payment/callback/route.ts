@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { Resend } from 'resend';
+import { 
+  getStudentPaymentConfirmationEmail, 
+  getTeacherNewLessonEmail 
+} from '@/lib/email-templates';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// HTML redirect helper
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 function htmlRedirect(url: string) {
   const html = `
     <!DOCTYPE html>
@@ -26,6 +32,84 @@ function htmlRedirect(url: string) {
   });
 }
 
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('tr-TR', { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+}
+
+function formatTime(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+}
+
+async function sendEmails(pendingPayment: any, orderId: string) {
+  try {
+    const { data: student } = await supabase
+      .from('student_profiles')
+      .select('full_name, email')
+      .eq('id', pendingPayment.student_id)
+      .single();
+
+    const { data: teacher } = await supabase
+      .from('teacher_profiles')
+      .select('full_name, email, commission_rate')
+      .eq('id', pendingPayment.teacher_id)
+      .single();
+
+    if (!student || !teacher) {
+      console.error('Student or teacher not found');
+      return;
+    }
+
+    const date = formatDate(pendingPayment.scheduled_at);
+    const time = formatTime(pendingPayment.scheduled_at);
+    const commissionRate = teacher.commission_rate || 0.25;
+    const teacherEarnings = Math.round(pendingPayment.amount * (1 - commissionRate));
+
+    // Öğrenciye email
+    const { error: studentError } = await resend.emails.send({
+      from: 'EduPremium <noreply@visserr.com>',
+      to: student.email,
+      subject: '✅ Ödemeniz Onaylandı - EduPremium',
+      html: getStudentPaymentConfirmationEmail({
+        studentName: student.full_name || 'Öğrenci',
+        teacherName: teacher.full_name || 'Öğretmen',
+        subject: pendingPayment.subject,
+        date, time,
+        price: pendingPayment.amount,
+        orderId,
+      }),
+    });
+    if (studentError) console.error('Student email error:', studentError);
+    else console.log('Student email sent to:', student.email);
+
+    // Öğretmene email
+    const { error: teacherError } = await resend.emails.send({
+      from: 'EduPremium <noreply@visserr.com>',
+      to: teacher.email,
+      subject: '🎉 Yeni Ders Satışı - EduPremium',
+      html: getTeacherNewLessonEmail({
+        teacherName: teacher.full_name || 'Öğretmen',
+        studentName: student.full_name || 'Öğrenci',
+        subject: pendingPayment.subject,
+        date, time,
+        price: pendingPayment.amount,
+        earnings: teacherEarnings,
+      }),
+    });
+    if (teacherError) console.error('Teacher email error:', teacherError);
+    else console.log('Teacher email sent to:', teacher.email);
+
+  } catch (error) {
+    console.error('Email error:', error);
+  }
+}
+
 export async function POST(request: NextRequest) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.visserr.com';
   
@@ -42,7 +126,6 @@ export async function POST(request: NextRequest) {
     const merchantPaymentId = data.merchantPaymentId;
 
     if (responseCode === '00') {
-      // Ödeme başarılı
       const { data: pendingPayment, error: fetchError } = await supabase
         .from('pending_payments')
         .select('*')
@@ -52,7 +135,6 @@ export async function POST(request: NextRequest) {
       console.log('Pending Payment:', pendingPayment, 'Error:', fetchError);
 
       if (pendingPayment) {
-        // Ders oluştur
         const { data: lesson, error: lessonError } = await supabase
           .from('lessons')
           .insert({
@@ -72,18 +154,15 @@ export async function POST(request: NextRequest) {
 
         console.log('Lesson Created:', lesson, 'Error:', lessonError);
 
-        // Availability'yi güncelle
-        if (lesson && pendingPayment.availability_id) {
+        if (pendingPayment.availability_id) {
           const { error: availError } = await supabase
             .from('availabilities')
             .update({ is_booked: true })
             .eq('id', pendingPayment.availability_id);
-          
           console.log('Availability Updated, Error:', availError);
         }
 
-        // Pending payment'ı güncelle
-        const { error: updateError } = await supabase
+        await supabase
           .from('pending_payments')
           .update({ 
             status: 'COMPLETED', 
@@ -92,18 +171,15 @@ export async function POST(request: NextRequest) {
           })
           .eq('order_id', merchantPaymentId);
 
-        console.log('Pending Payment Updated, Error:', updateError);
+        // Email gönder
+        sendEmails(pendingPayment, merchantPaymentId).catch(console.error);
       }
 
       return htmlRedirect(`${baseUrl}/payment/success?orderId=${merchantPaymentId}`);
     } else {
-      // Ödeme başarısız
       await supabase
         .from('pending_payments')
-        .update({ 
-          status: 'FAILED',
-          error_message: data.responseMsg || 'Ödeme başarısız'
-        })
+        .update({ status: 'FAILED', error_message: data.responseMsg || 'Ödeme başarısız' })
         .eq('order_id', merchantPaymentId);
 
       return htmlRedirect(`${baseUrl}/payment/fail?error=Odeme_basarisiz`);
