@@ -49,17 +49,23 @@ function formatTime(dateString: string): string {
 
 async function sendEmails(pendingPayment: any, orderId: string) {
   try {
-    const { data: student } = await supabase
+    console.log('sendEmails started for order:', orderId);
+
+    const { data: student, error: studentError } = await supabase
       .from('student_profiles')
       .select('full_name, email')
       .eq('id', pendingPayment.student_id)
       .single();
 
-    const { data: teacher } = await supabase
+    console.log('Student data:', student, 'Error:', studentError);
+
+    const { data: teacher, error: teacherError } = await supabase
       .from('teacher_profiles')
       .select('full_name, email, commission_rate')
       .eq('id', pendingPayment.teacher_id)
       .single();
+
+    console.log('Teacher data:', teacher, 'Error:', teacherError);
 
     if (!student || !teacher) {
       console.error('Student or teacher not found');
@@ -72,7 +78,8 @@ async function sendEmails(pendingPayment: any, orderId: string) {
     const teacherEarnings = Math.round(pendingPayment.amount * (1 - commissionRate));
 
     // Öğrenciye email
-    const { error: studentError } = await resend.emails.send({
+    console.log('Sending student email to:', student.email);
+    const { data: studentEmailData, error: studentEmailError } = await resend.emails.send({
       from: 'EduPremium <noreply@visserr.com>',
       to: student.email,
       subject: '✅ Ödemeniz Onaylandı - EduPremium',
@@ -80,16 +87,22 @@ async function sendEmails(pendingPayment: any, orderId: string) {
         studentName: student.full_name || 'Öğrenci',
         teacherName: teacher.full_name || 'Öğretmen',
         subject: pendingPayment.subject,
-        date, time,
+        date,
+        time,
         price: pendingPayment.amount,
         orderId,
       }),
     });
-    if (studentError) console.error('Student email error:', studentError);
-    else console.log('Student email sent to:', student.email);
+
+    if (studentEmailError) {
+      console.error('Student email error:', studentEmailError);
+    } else {
+      console.log('Student email sent successfully:', studentEmailData);
+    }
 
     // Öğretmene email
-    const { error: teacherError } = await resend.emails.send({
+    console.log('Sending teacher email to:', teacher.email);
+    const { data: teacherEmailData, error: teacherEmailError } = await resend.emails.send({
       from: 'EduPremium <noreply@visserr.com>',
       to: teacher.email,
       subject: '🎉 Yeni Ders Satışı - EduPremium',
@@ -97,16 +110,21 @@ async function sendEmails(pendingPayment: any, orderId: string) {
         teacherName: teacher.full_name || 'Öğretmen',
         studentName: student.full_name || 'Öğrenci',
         subject: pendingPayment.subject,
-        date, time,
+        date,
+        time,
         price: pendingPayment.amount,
         earnings: teacherEarnings,
       }),
     });
-    if (teacherError) console.error('Teacher email error:', teacherError);
-    else console.log('Teacher email sent to:', teacher.email);
+
+    if (teacherEmailError) {
+      console.error('Teacher email error:', teacherEmailError);
+    } else {
+      console.log('Teacher email sent successfully:', teacherEmailData);
+    }
 
   } catch (error) {
-    console.error('Email error:', error);
+    console.error('sendEmails error:', error);
   }
 }
 
@@ -171,8 +189,10 @@ export async function POST(request: NextRequest) {
           })
           .eq('order_id', merchantPaymentId);
 
+        console.log('Pending Payment Updated');
+
         // Email gönder
-        sendEmails(pendingPayment, merchantPaymentId).catch(console.error);
+        await sendEmails(pendingPayment, merchantPaymentId);
       }
 
       return htmlRedirect(`${baseUrl}/payment/success?orderId=${merchantPaymentId}`);
@@ -186,6 +206,7 @@ export async function POST(request: NextRequest) {
     }
   } catch (error: any) {
     console.error('Callback Error:', error);
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.visserr.com';
     return htmlRedirect(`${baseUrl}/payment/fail?error=Sistem_hatasi`);
   }
 }
