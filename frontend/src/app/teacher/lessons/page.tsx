@@ -49,7 +49,7 @@ export default function TeacherLessonsPage() {
     try {
       const { error } = await supabase
         .from('lessons')
-        .update({ 
+        .update({
           status: 'COMPLETED',
           completed_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -61,8 +61,8 @@ export default function TeacherLessonsPage() {
         return;
       }
 
-      setLessons(prev => prev.map(lesson => 
-        lesson.id === lessonId 
+      setLessons(prev => prev.map(lesson =>
+        lesson.id === lessonId
           ? { ...lesson, status: 'COMPLETED', completed_at: new Date().toISOString() }
           : lesson
       ));
@@ -92,53 +92,63 @@ export default function TeacherLessonsPage() {
     return lessonDate <= now && lesson.status !== 'COMPLETED' && lesson.status !== 'CANCELLED';
   };
 
+  // Derse Katıl butonu: ders başlangıcından 15 dk öncesinden, başlangıçtan 15 dk sonrasına kadar göster
+  const canJoinMeeting = (lesson: any) => {
+    if (!lesson.meeting_link) return false;
+    if (lesson.status === 'COMPLETED' || lesson.status === 'CANCELLED') return false;
+    
+    const lessonStart = new Date(lesson.scheduled_at);
+    const fifteenMinsBefore = new Date(lessonStart.getTime() - 15 * 60 * 1000);
+    const fifteenMinsAfter = new Date(lessonStart.getTime() + 15 * 60 * 1000);
+    
+    return now >= fifteenMinsBefore && now <= fifteenMinsAfter;
+  };
+
   const getStatusBadge = (status: string, scheduledAt: string) => {
     const lessonDate = new Date(scheduledAt);
     const isPast = lessonDate < now;
 
     if (status === 'COMPLETED') {
       return (
-        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+        <span className="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
           Tamamlandı
         </span>
       );
-    } else if (status === 'CANCELLED') {
+    }
+    if (status === 'CANCELLED') {
       return (
-        <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+        <span className="px-3 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
           İptal Edildi
         </span>
       );
-    } else if (isPast) {
+    }
+    if (isPast) {
       return (
-        <span className="px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-          Bekliyor
-        </span>
-      );
-    } else {
-      return (
-        <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-          Planlandı
+        <span className="px-3 py-1 text-xs font-medium rounded-full bg-amber-100 text-amber-800">
+          Tamamlanmadı
         </span>
       );
     }
+    return (
+      <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+        Planlandı
+      </span>
+    );
   };
 
   if (isLoading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-screen">
-        <div className="w-8 h-8 border-4 border-navy-600 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-navy-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="font-display text-3xl font-bold text-navy-900 mb-2">Derslerim</h1>
-        <p className="text-slate-600">Tüm derslerinizi ve randevularınızı görüntüleyin</p>
-      </div>
+    <div className="p-6 max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold text-navy-900 mb-6">Derslerim</h1>
 
-      <div className="flex gap-4 mb-6">
+      <div className="flex gap-2 mb-6">
         <button
           onClick={() => setFilter('upcoming')}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -196,6 +206,17 @@ export default function TeacherLessonsPage() {
                   </div>
                   
                   {getStatusBadge(lesson.status, lesson.scheduled_at)}
+                  
+                  {canJoinMeeting(lesson) && (
+                    
+                      href={lesson.meeting_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    >
+                      🎥 Derse Katıl
+                    </a>
+                  )}
                   
                   {canComplete(lesson) && (
                     <button

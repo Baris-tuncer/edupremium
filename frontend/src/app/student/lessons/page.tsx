@@ -12,9 +12,13 @@ export default function StudentLessonsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [studentName, setStudentName] = useState('');
   const [filter, setFilter] = useState<'upcoming' | 'completed' | 'all'>('upcoming');
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
     checkAuthAndLoadData();
+    // Her dakika güncelle (buton durumu için)
+    const interval = setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => clearInterval(interval);
   }, []);
 
   const checkAuthAndLoadData = async () => {
@@ -43,7 +47,6 @@ export default function StudentLessonsPage() {
   };
 
   const fetchLessons = async (userId: string) => {
-    // Önce dersleri çek
     const { data: lessonsData, error: lessonsError } = await supabase
       .from('lessons')
       .select('*')
@@ -60,10 +63,8 @@ export default function StudentLessonsPage() {
       return;
     }
 
-    // Öğretmen ID'lerini topla
     const teacherIds = [...new Set(lessonsData.map(l => l.teacher_id))];
 
-    // Öğretmen bilgilerini çek
     const { data: teachersData, error: teachersError } = await supabase
       .from('teacher_profiles')
       .select('id, full_name, avatar_url, title')
@@ -73,7 +74,6 @@ export default function StudentLessonsPage() {
       console.error('Teachers Error:', teachersError);
     }
 
-    // Öğretmen bilgilerini derslere ekle
     const teacherMap = new Map();
     if (teachersData) {
       teachersData.forEach(t => teacherMap.set(t.id, t));
@@ -114,8 +114,19 @@ export default function StudentLessonsPage() {
     return date.toLocaleDateString('tr-TR', { weekday: 'long' });
   };
 
+  // Derse Katıl butonu: ders başlangıcından 15 dk öncesinden, başlangıçtan 15 dk sonrasına kadar göster
+  const canJoinMeeting = (lesson: any) => {
+    if (!lesson.meeting_link) return false;
+    if (lesson.status === 'COMPLETED' || lesson.status === 'CANCELLED') return false;
+    
+    const lessonStart = new Date(lesson.scheduled_at);
+    const fifteenMinsBefore = new Date(lessonStart.getTime() - 15 * 60 * 1000);
+    const fifteenMinsAfter = new Date(lessonStart.getTime() + 15 * 60 * 1000);
+    
+    return currentTime >= fifteenMinsBefore && currentTime <= fifteenMinsAfter;
+  };
+
   const getStatusBadge = (status: string, scheduledAt: string) => {
-    const now = new Date();
     const lessonDate = new Date(scheduledAt);
     
     if (status === 'COMPLETED') {
@@ -124,35 +135,32 @@ export default function StudentLessonsPage() {
     if (status === 'CANCELLED') {
       return <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full">Iptal Edildi</span>;
     }
-    if (lessonDate < now) {
+    if (lessonDate < currentTime) {
       return <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">Beklemede</span>;
     }
     return <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">Onaylandi</span>;
   };
 
   const filteredLessons = lessons.filter((lesson) => {
-    const now = new Date();
     const lessonDate = new Date(lesson.scheduled_at);
     
     if (filter === 'upcoming') {
-      return lessonDate >= now && lesson.status !== 'COMPLETED' && lesson.status !== 'CANCELLED';
+      return lessonDate >= currentTime && lesson.status !== 'COMPLETED' && lesson.status !== 'CANCELLED';
     }
     if (filter === 'completed') {
-      return lesson.status === 'COMPLETED' || lessonDate < now;
+      return lesson.status === 'COMPLETED' || lessonDate < currentTime;
     }
     return true;
   });
 
   const upcomingCount = lessons.filter((l) => {
-    const now = new Date();
     const lessonDate = new Date(l.scheduled_at);
-    return lessonDate >= now && l.status !== 'COMPLETED' && l.status !== 'CANCELLED';
+    return lessonDate >= currentTime && l.status !== 'COMPLETED' && l.status !== 'CANCELLED';
   }).length;
 
   const completedCount = lessons.filter((l) => {
-    const now = new Date();
     const lessonDate = new Date(l.scheduled_at);
-    return l.status === 'COMPLETED' || lessonDate < now;
+    return l.status === 'COMPLETED' || lessonDate < currentTime;
   }).length;
 
   if (isLoading) {
@@ -275,7 +283,7 @@ export default function StudentLessonsPage() {
                   </div>
                 </div>
 
-                {lesson.meeting_link && (
+                {canJoinMeeting(lesson) && (
                   <div className="mt-4 pt-4 border-t border-slate-100">
                     <a 
                       href={lesson.meeting_link} 
@@ -283,7 +291,7 @@ export default function StudentLessonsPage() {
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-medium rounded-xl hover:bg-green-700 transition-colors"
                     >
-                      Derse Katil
+                      🎥 Derse Katil
                     </a>
                   </div>
                 )}
