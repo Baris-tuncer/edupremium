@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Toaster } from 'react-hot-toast';
+import SupportWidgets from '@/components/SupportWidgets';
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {
@@ -44,7 +45,8 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         {children}
-        <Toaster 
+        <SupportWidgets />
+        <Toaster
           position="top-right"
           toastOptions={{
             duration: 3000,
