@@ -47,8 +47,8 @@ export default function ContactPage() {
                     </svg>
                   </div>
                   <h3 className="font-semibold text-navy-900 mb-2">E-posta</h3>
-                  <p className="text-slate-600">info@edupremium.com</p>
-                  <p className="text-slate-600">destek@edupremium.com</p>
+                  <p className="text-slate-600">info@visserr.com</p>
+                  <p className="text-slate-600">destek@visserr.com</p>
                 </div>
 
                 <div className="card p-6">
@@ -58,8 +58,8 @@ export default function ContactPage() {
                     </svg>
                   </div>
                   <h3 className="font-semibold text-navy-900 mb-2">Telefon</h3>
-                  <p className="text-slate-600">+90 (212) 555 0123</p>
-                  <p className="text-slate-500 text-sm mt-1">Pazartesi - Cuma: 09:00 - 18:00</p>
+                  <p className="text-slate-600">+90 533 295 13 03</p>
+                  <p className="text-slate-500 text-sm mt-1">Pzt-Cuma: 09:00-18:00, Cmt: 10:00-14:00</p>
                 </div>
 
                 <div className="card p-6">
