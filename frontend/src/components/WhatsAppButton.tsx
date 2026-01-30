@@ -45,7 +45,6 @@ const WhatsAppButton = () => {
           fill="#d4af37"
         />
       </svg>
-      
       <span
         style={{
           fontSize: '15px',
