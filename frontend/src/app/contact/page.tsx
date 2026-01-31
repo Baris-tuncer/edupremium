@@ -18,12 +18,24 @@ export default function ContactPage() {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      
+      if (response.ok) {
+        setSubmitted(true);
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      } else {
+        alert('Mesaj gönderilemedi. Lütfen tekrar deneyin.');
+      }
+    } catch (error) {
+      alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+    }
     
     setIsSubmitting(false);
-    setSubmitted(true);
-    setFormData({ name: '', email: '', subject: '', message: '' });
   };
 
   return (
@@ -48,7 +60,6 @@ export default function ContactPage() {
                   </div>
                   <h3 className="font-semibold text-navy-900 mb-2">E-posta</h3>
                   <p className="text-slate-600">info@visserr.com</p>
-                  <p className="text-slate-600">destek@visserr.com</p>
                 </div>
 
                 <div className="card p-6">
