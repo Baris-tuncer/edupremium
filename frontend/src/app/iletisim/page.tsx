@@ -6,8 +6,8 @@ export default function IletisimPage() {
         <div className="grid md:grid-cols-2 gap-12">
           <div>
             <h2 className="font-semibold text-xl text-navy-900 mb-4">Bize Ulaşın</h2>
-            <p className="text-slate-600 mb-4">Email: info@edupremium.com</p>
-            <p className="text-slate-600 mb-4">Telefon: +90 212 555 0000</p>
+            <p className="text-slate-600 mb-4">Email: info@visserr.com</p>
+            <p className="text-slate-600 mb-4">Telefon: +90 533 295 13 03</p>
             <p className="text-slate-600">Adres: İstanbul, Türkiye</p>
           </div>
           <div>
