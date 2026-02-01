@@ -195,7 +195,7 @@ const FeaturedTeachersSection = () => {
         const now = new Date().toISOString();
         const { data, error } = await supabase
           .from('teacher_profiles')
-          .select('id, full_name, featured_headline, rating, experience_years, university, subjects, avatar_url, is_verified, featured_category')
+          .select('*')
           .eq('is_featured', true)
           .gte('featured_until', now);
 
