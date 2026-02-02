@@ -1,420 +1,500 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import api from '@/lib/api';
-import { toast } from 'react-hot-toast';
+import React, { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
+import { supabase } from '@/lib/supabase';
+import { toast, Toaster } from 'react-hot-toast';
 
-interface PricingConfig {
-  commissionRate: number;
-  taxRate: number;
+interface Teacher {
+  id: string;
+  full_name: string;
+  avatar_url: string | null;
+  video_url: string | null;
+  diploma_url: string | null;
+  bio: string | null;
+  base_price: number;
+  subjects: string[];
+  education_levels: string[];
+  experience_years: number | null;
+  rating: number | null;
+  university: string | null;
+  is_featured: boolean;
+  featured_headline: string | null;
+  total_lessons: number;
 }
 
-interface Subject {
+interface AvailabilitySlot {
   id: string;
-  name: string;
-}
-
-interface Branch {
-  id: string;
-  name: string;
-}
-
-interface ExamType {
-  id: string;
-  name: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  is_booked: boolean;
 }
 
 export default function TeacherProfilePage() {
-  const [profile, setProfile] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [pricingConfig, setPricingConfig] = useState<PricingConfig>({
-    commissionRate: 20,
-    taxRate: 20,
-  });
-  const [formData, setFormData] = useState({
-    bio: '',
-    hourlyRate: '',
-    iban: '',
-  });
+  const params = useParams();
+  const router = useRouter();
+  const teacherId = params.id as string;
 
-  // YENİ: Subject/Branch/ExamType için state'ler
-  const [allSubjects, setAllSubjects] = useState<Subject[]>([]);
-  const [allBranches, setAllBranches] = useState<Branch[]>([]);
-  const [allExamTypes, setAllExamTypes] = useState<ExamType[]>([]);
-  const [selectedSubjectIds, setSelectedSubjectIds] = useState<string[]>([]);
-  const [selectedBranchIds, setSelectedBranchIds] = useState<string[]>([]);
-  const [selectedExamTypeIds, setSelectedExamTypeIds] = useState<string[]>([]);
+  const [teacher, setTeacher] = useState<Teacher | null>(null);
+  const [availability, setAvailability] = useState<AvailabilitySlot[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Booking modal
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedTime, setSelectedTime] = useState<AvailabilitySlot | null>(null);
+  const [selectedSubject, setSelectedSubject] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchProfile();
-    fetchPricingConfig();
-    fetchOptions();
-  }, []);
+    if (teacherId) fetchTeacher();
+  }, [teacherId]);
 
-  const fetchProfile = async () => {
+  const fetchTeacher = async () => {
     try {
-      const data = await api.getMyProfile(); // YENİ: getMyProfile kullan
-      setProfile(data);
-      setFormData({
-        bio: data.bio || '',
-        hourlyRate: data.hourlyRate || '',
-        iban: data.iban || '',
-      });
+      // Öğretmen bilgisi
+      const { data: teacherData, error } = await supabase
+        .from('teacher_profiles')
+        .select('*')
+        .eq('id', teacherId)
+        .single();
 
-      // Mevcut seçimleri set et
-      setSelectedSubjectIds(data.subjects?.map((s: any) => s.id) || []);
-      setSelectedBranchIds(data.branches?.map((b: any) => b.id) || []);
-      setSelectedExamTypeIds(data.examTypes?.map((e: any) => e.id) || []);
-    } catch (error) {
-      console.error('Failed to fetch profile:', error);
-      toast.error('Profil yüklenemedi');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchOptions = async () => {
-    try {
-      const [subjects, branches, examTypes] = await Promise.all([
-        api.listSubjects(),
-        api.listBranches(),
-        api.listExamTypes(),
-      ]);
-      setAllSubjects(subjects);
-      setAllBranches(branches);
-      setAllExamTypes(examTypes);
-    } catch (error) {
-      console.error('Failed to fetch options:', error);
-    }
-  };
-
-  const fetchPricingConfig = async () => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edupremium-production.up.railway.app';
-      
-      const response = await fetch(`${baseUrl}/admin/settings/calculate-price`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.data) {
-          setPricingConfig({
-            commissionRate: data.data.commissionRate || 20,
-            taxRate: data.data.taxRate || 20,
-          });
-        }
+      if (error || !teacherData) {
+        setLoading(false);
+        return;
       }
-    } catch (error) {
-      console.error('Failed to fetch pricing config:', error);
-    }
-  };
 
-  const roundToNearest100 = (value: number) => Math.round(value / 100) * 100;
+      // Tamamlanan ders sayısı
+      const { count } = await supabase
+        .from('lessons')
+        .select('*', { count: 'exact', head: true })
+        .eq('teacher_id', teacherId)
+        .eq('status', 'COMPLETED');
 
-  const calculatePricing = (teacherRate: number) => {
-    const commission = teacherRate * (pricingConfig.commissionRate / 100);
-    const subtotal = teacherRate + commission;
-    const tax = subtotal * (pricingConfig.taxRate / 100);
-    const totalPriceRaw = subtotal + tax;
-    const totalPrice = roundToNearest100(totalPriceRaw);
-    return { commission, subtotal, tax, totalPriceRaw, totalPrice };
-  };
-
-  const hourlyRateNum = parseFloat(formData.hourlyRate) || 0;
-  const pricing = calculatePricing(hourlyRateNum);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-
-    try {
-      // Profil bilgilerini güncelle
-      await api.updateMyProfile({
-        bio: formData.bio,
-        hourlyRate: parseFloat(formData.hourlyRate),
-        iban: formData.iban,
+      setTeacher({
+        ...teacherData,
+        total_lessons: count || 0,
       });
 
-      // Subject/Branch/ExamType güncelle
-      await Promise.all([
-        api.updateMySubjects(selectedSubjectIds),
-        api.updateMyBranches(selectedBranchIds),
-        api.updateMyExamTypes(selectedExamTypeIds),
-      ]);
+      // Müsaitlik
+      const today = new Date().toISOString().split('T')[0];
+      const { data: availData } = await supabase
+        .from('availabilities')
+        .select('*')
+        .eq('teacher_id', teacherId)
+        .gte('date', today)
+        .eq('is_booked', false)
+        .order('date', { ascending: true })
+        .order('start_time', { ascending: true })
+        .limit(50);
 
-      toast.success('Profil başarıyla güncellendi!');
-      fetchProfile();
-    } catch (error) {
-      console.error('Failed to update profile:', error);
-      toast.error('Profil güncellenemedi');
+      setAvailability(availData || []);
+    } catch (err) {
+      console.error('Error:', err);
     } finally {
-      setIsSaving(false);
+      setLoading(false);
     }
   };
 
-  const toggleSubject = (subjectId: string) => {
-    setSelectedSubjectIds(prev =>
-      prev.includes(subjectId)
-        ? prev.filter(id => id !== subjectId)
-        : [...prev, subjectId]
-    );
+  const handleBooking = async () => {
+    if (!selectedTime || !teacher) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error('Randevu almak için giriş yapmalısınız');
+      router.push('/login');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const scheduledAt = `${selectedTime.date}T${selectedTime.start_time}`;
+      const subject = selectedSubject || teacher.subjects?.[0] || 'Ders';
+      const amount = teacher.base_price || 500;
+
+      // Paratika ödeme session oluştur
+      const { data: studentProfile } = await supabase
+        .from('student_profiles')
+        .select('full_name, email')
+        .eq('id', user.id)
+        .single();
+
+      const response = await fetch('/api/payment/create-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          teacherId: teacher.id,
+          studentId: user.id,
+          studentEmail: studentProfile?.email || user.email,
+          studentName: studentProfile?.full_name || 'Öğrenci',
+          studentPhone: '',
+          subject,
+          scheduledAt,
+          amount,
+          availabilityId: selectedTime.id,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.paymentUrl) {
+        window.location.href = result.paymentUrl;
+      } else {
+        toast.error('Ödeme sayfası oluşturulamadı');
+      }
+    } catch (err) {
+      toast.error('Bir hata oluştu');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const toggleBranch = (branchId: string) => {
-    setSelectedBranchIds(prev =>
-      prev.includes(branchId)
-        ? prev.filter(id => id !== branchId)
-        : [...prev, branchId]
-    );
+  // Benzersiz tarihler
+  const uniqueDates = Array.from(new Set(availability.map(a => a.date))).slice(0, 7);
+  const availableTimes = availability.filter(a => a.date === selectedDate && !a.is_booked);
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const days = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+    const months = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+    return {
+      day: days[date.getDay()],
+      dayNum: date.getDate().toString(),
+      month: months[date.getMonth()],
+    };
   };
 
-  const toggleExamType = (examTypeId: string) => {
-    setSelectedExamTypeIds(prev =>
-      prev.includes(examTypeId)
-        ? prev.filter(id => id !== examTypeId)
-        : [...prev, examTypeId]
-    );
-  };
+  const initials = teacher?.full_name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??';
 
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-screen">
-        <div className="w-8 h-8 border-4 border-navy-600 border-t-transparent rounded-full animate-spin" />
-      </div>
+      <>
+        <Header />
+        <main className="pt-24 pb-16 bg-slate-50 min-h-screen">
+          <div className="container-wide flex items-center justify-center py-20">
+            <div className="w-8 h-8 border-4 border-navy-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+        </main>
+        <Footer />
+      </>
     );
   }
 
-  return (
-    <div className="p-8">
-      <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold text-navy-900 mb-2">Profil Ayarları</h1>
-          <p className="text-slate-600">Profilinizi düzenleyin ve öğrencilere kendinizi tanıtın</p>
-        </div>
-
-        {/* Profile Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Bio */}
-          <div className="card p-6">
-            <label className="block font-medium text-navy-900 mb-2">
-              Hakkımda
-            </label>
-            <textarea
-              value={formData.bio}
-              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              rows={6}
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-navy-500 focus:border-transparent"
-              placeholder="Kendinizi tanıtın, deneyimlerinizden bahsedin..."
-            />
-            <p className="text-sm text-slate-500 mt-2">
-              Bu metin öğrencilerin sizin profilinizde göreceği açıklama olacaktır.
-            </p>
+  if (!teacher) {
+    return (
+      <>
+        <Header />
+        <main className="pt-24 pb-16 bg-slate-50 min-h-screen">
+          <div className="container-wide text-center py-20">
+            <h1 className="text-2xl font-bold text-navy-900 mb-4">Öğretmen bulunamadı</h1>
+            <Link href="/teachers" className="text-navy-600 hover:underline">← Öğretmenlere Dön</Link>
           </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
-          {/* Hourly Rate with Price Calculation */}
-          <div className="card p-6">
-            <label className="block font-medium text-navy-900 mb-2">
-              Saatlik Ücretiniz (₺)
-            </label>
-            <input
-              type="number"
-              value={formData.hourlyRate}
-              onChange={(e) => setFormData({ ...formData, hourlyRate: e.target.value })}
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-navy-500 focus:border-transparent"
-              placeholder="500"
-              min="0"
-              step="1"
-            />
-            <p className="text-sm text-slate-500 mt-2">
-              Bu, tamamlanan dersler için size ödenecek saatlik ücrettir.
-            </p>
+  const basePrice = teacher.base_price || 0;
+  const commission = basePrice * 0.20;
+  const subtotal = basePrice + commission;
+  const tax = subtotal * 0.20;
+  const price = Math.round((subtotal + tax) / 100) * 100;
 
-            {hourlyRateNum > 0 && (
-              <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-100">
-                <h4 className="font-semibold text-blue-900 mb-3">Fiyat Detayları</h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-blue-700">Sizin Alacağınız:</span>
-                    <span className="font-medium text-blue-900">₺{hourlyRateNum.toLocaleString('tr-TR')}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-blue-700">Platform Komisyonu (%{pricingConfig.commissionRate}):</span>
-                    <span className="font-medium text-blue-900">₺{Math.round(pricing.commission).toLocaleString('tr-TR')}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-blue-700">KDV (%{pricingConfig.taxRate}):</span>
-                    <span className="font-medium text-blue-900">₺{Math.round(pricing.tax).toLocaleString('tr-TR')}</span>
-                  </div>
-                  <div className="flex justify-between pt-2 border-t border-blue-200">
-                    <span className="font-semibold text-blue-900">Veliye Gösterilecek Fiyat:</span>
-                    <span className="font-bold text-green-600 text-lg">₺{pricing.totalPrice.toLocaleString('tr-TR')}</span>
+  return (
+    <>
+      <Header />
+      <Toaster position="top-right" />
+      <main className="pt-24 pb-16 bg-slate-50 min-h-screen">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-2 text-sm text-slate-500 mb-8">
+            <Link href="/" className="hover:text-navy-900">Ana Sayfa</Link>
+            <span>/</span>
+            <Link href="/teachers" className="hover:text-navy-900">Öğretmenler</Link>
+            <span>/</span>
+            <span className="text-navy-900">{teacher.full_name}</span>
+          </nav>
+
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Sol Kolon - Profil */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Ana Bilgiler */}
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+                <div className="flex gap-6">
+                  {teacher.avatar_url ? (
+                    <img
+                      src={teacher.avatar_url}
+                      alt={teacher.full_name}
+                      className="w-32 h-32 rounded-2xl object-cover shadow-md"
+                    />
+                  ) : (
+                    <div className="w-32 h-32 bg-gradient-to-br from-navy-800 to-navy-600 rounded-2xl flex items-center justify-center text-white font-bold text-4xl shadow-md">
+                      {initials}
+                    </div>
+                  )}
+
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        {teacher.is_featured && (
+                          <span className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold px-3 py-1 rounded-full mb-2">
+                            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            EDİTÖRÜN SEÇİMİ
+                          </span>
+                        )}
+                        <h1 className="text-3xl font-bold text-navy-900 mb-1">{teacher.full_name}</h1>
+                        <p className="text-lg text-slate-500">
+                          {teacher.education_levels?.join(', ') || 'Öğretmen'}
+                        </p>
+                      </div>
+                      {teacher.rating && (
+                        <div className="flex items-center gap-1 bg-amber-50 px-4 py-2 rounded-full">
+                          <svg className="w-5 h-5 text-amber-500 fill-current" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                          <span className="font-semibold text-amber-700">{teacher.rating}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {teacher.featured_headline && teacher.is_featured && (
+                      <p className="text-amber-700 italic mt-2">&quot;{teacher.featured_headline}&quot;</p>
+                    )}
+
+                    <div className="flex gap-6 mt-4 text-sm text-slate-600">
+                      {teacher.experience_years && (
+                        <span className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                          {teacher.experience_years} yıl deneyim
+                        </span>
+                      )}
+                      {teacher.university && (
+                        <span className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                          {teacher.university}
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        {teacher.total_lessons} ders tamamlandı
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <p className="text-xs text-blue-600 mt-3">
-                  * Son fiyat en yakın 100 TL'ye yuvarlanır
+              </div>
+
+              {/* Tanıtım Videosu */}
+              {teacher.video_url && (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+                  <h2 className="text-xl font-bold text-navy-900 mb-4 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-navy-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Tanıtım Videosu
+                  </h2>
+                  <video
+                    src={teacher.video_url}
+                    controls
+                    className="w-full rounded-xl border border-slate-200"
+                    style={{ maxHeight: '400px' }}
+                  >
+                    Tarayıcınız video oynatmayı desteklemiyor.
+                  </video>
+                </div>
+              )}
+
+              {/* Hakkında */}
+              {teacher.bio && (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+                  <h2 className="text-xl font-bold text-navy-900 mb-4">Hakkında</h2>
+                  <p className="text-slate-600 leading-relaxed">{teacher.bio}</p>
+                </div>
+              )}
+
+              {/* Dersler */}
+              {teacher.subjects && teacher.subjects.length > 0 && (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+                  <h2 className="text-xl font-bold text-navy-900 mb-4">Verdiği Dersler</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {teacher.subjects.map((subject, i) => (
+                      <span key={i} className="bg-navy-50 text-navy-700 text-sm font-medium px-4 py-2 rounded-full">{subject}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Diploma */}
+              {teacher.diploma_url && (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+                  <h2 className="text-xl font-bold text-navy-900 mb-4 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-navy-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Diploma / Sertifika
+                  </h2>
+                  <img
+                    src={teacher.diploma_url}
+                    alt="Diploma"
+                    className="max-w-full rounded-xl border border-slate-200 cursor-pointer hover:opacity-90 transition-opacity"
+                    onClick={() => window.open(teacher.diploma_url!, '_blank')}
+                  />
+                  <p className="text-xs text-slate-400 mt-2">Büyütmek için tıklayın</p>
+                </div>
+              )}
+            </div>
+
+            {/* Sağ Kolon - Randevu */}
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sticky top-24">
+                <div className="text-center mb-6">
+                  <div className="text-4xl font-bold text-navy-900 mb-1">
+                    ₺{price.toLocaleString('tr-TR')}
+                  </div>
+                  <div className="text-slate-500">/saat</div>
+                </div>
+
+                <button
+                  onClick={() => setIsBookingOpen(true)}
+                  className="w-full bg-gradient-to-r from-navy-900 to-navy-700 text-white py-4 rounded-xl text-lg font-semibold hover:from-navy-800 hover:to-navy-600 transition-all mb-4"
+                >
+                  Randevu Al
+                </button>
+
+                <p className="text-sm text-slate-500 text-center">
+                  Ücretsiz iptal: Dersten 24 saat öncesine kadar
                 </p>
               </div>
-            )}
-          </div>
-
-          {/* YENİ: Subject Selection */}
-          <div className="card p-6">
-            <label className="block font-medium text-navy-900 mb-4">
-              Dersler
-              <span className="text-sm font-normal text-slate-500 ml-2">
-                ({selectedSubjectIds.length} seçili)
-              </span>
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {allSubjects.map((subject) => (
-                <label
-                  key={subject.id}
-                  className="flex items-center gap-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedSubjectIds.includes(subject.id)}
-                    onChange={() => toggleSubject(subject.id)}
-                    className="w-4 h-4 text-navy-600 border-slate-300 rounded focus:ring-navy-500"
-                  />
-                  <span className="text-sm text-slate-700">{subject.name}</span>
-                </label>
-              ))}
             </div>
           </div>
+        </div>
+      </main>
+      <Footer />
 
-          {/* YENİ: Branch Selection */}
-          <div className="card p-6">
-            <label className="block font-medium text-navy-900 mb-4">
-              Kademeler
-              <span className="text-sm font-normal text-slate-500 ml-2">
-                ({selectedBranchIds.length} seçili)
-              </span>
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {allBranches.map((branch) => (
-                <label
-                  key={branch.id}
-                  className="flex items-center gap-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedBranchIds.includes(branch.id)}
-                    onChange={() => toggleBranch(branch.id)}
-                    className="w-4 h-4 text-navy-600 border-slate-300 rounded focus:ring-navy-500"
-                  />
-                  <span className="text-sm text-slate-700">{branch.name}</span>
-                </label>
-              ))}
+      {/* Booking Modal */}
+      {isBookingOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-navy-950/60 backdrop-blur-sm" onClick={() => setIsBookingOpen(false)} />
+
+          <div className="relative bg-white rounded-3xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-slate-100 px-8 py-6 flex items-center justify-between rounded-t-3xl z-10">
+              <div>
+                <h2 className="text-2xl font-bold text-navy-900">Randevu Al</h2>
+                <p className="text-slate-500">{teacher.full_name} ile ders</p>
+              </div>
+              <button onClick={() => setIsBookingOpen(false)} className="p-2 hover:bg-slate-100 rounded-lg">
+                <svg className="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-          </div>
 
-          {/* YENİ: ExamType Selection */}
-          <div className="card p-6">
-            <label className="block font-medium text-navy-900 mb-4">
-              Sınav Türleri
-              <span className="text-sm font-normal text-slate-500 ml-2">
-                ({selectedExamTypeIds.length} seçili)
-              </span>
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {allExamTypes.map((examType) => (
-                <label
-                  key={examType.id}
-                  className="flex items-center gap-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedExamTypeIds.includes(examType.id)}
-                    onChange={() => toggleExamType(examType.id)}
-                    className="w-4 h-4 text-navy-600 border-slate-300 rounded focus:ring-navy-500"
-                  />
-                  <span className="text-sm text-slate-700">{examType.name}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+            <div className="p-8">
+              {/* Tarih Seçimi */}
+              <div className="mb-8">
+                <h3 className="font-semibold text-navy-900 mb-4">Tarih Seçin</h3>
+                {uniqueDates.length > 0 ? (
+                  <div className="flex gap-3 overflow-x-auto pb-2">
+                    {uniqueDates.map((dateStr) => {
+                      const { day, dayNum, month } = formatDate(dateStr);
+                      return (
+                        <button
+                          key={dateStr}
+                          onClick={() => { setSelectedDate(dateStr); setSelectedTime(null); }}
+                          className={`flex flex-col items-center justify-center w-16 h-20 rounded-xl border-2 transition-all shrink-0 ${
+                            selectedDate === dateStr
+                              ? 'border-navy-600 bg-navy-50'
+                              : 'border-slate-200 hover:border-slate-300'
+                          }`}
+                        >
+                          <span className="text-xs text-slate-500 mb-1">{day}</span>
+                          <span className="text-xl font-semibold text-navy-900">{dayNum}</span>
+                          <span className="text-xs text-slate-400">{month}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-slate-500">Müsait tarih bulunamadı</p>
+                )}
+              </div>
 
-          {/* IBAN */}
-          <div className="card p-6">
-            <label className="block font-medium text-navy-900 mb-2">
-              IBAN
-            </label>
-            <input
-              type="text"
-              value={formData.iban}
-              onChange={(e) => setFormData({ ...formData, iban: e.target.value.toUpperCase() })}
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-navy-500 focus:border-transparent font-mono"
-              placeholder="TR00 0000 0000 0000 0000 0000 00"
-              maxLength={32}
-            />
-            <p className="text-sm text-slate-500 mt-2">
-              Kazançlarınızın aktarılacağı banka hesap numarası.
-            </p>
-          </div>
-
-          {/* Profile Photo & Intro Video */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="card p-6">
-              <label className="block font-medium text-navy-900 mb-4">
-                Profil Fotoğrafı
-              </label>
-              <div className="flex items-center gap-4">
-                <div className="w-20 h-20 bg-navy-100 rounded-full flex items-center justify-center text-2xl font-display font-semibold text-navy-600 overflow-hidden">
-                  {profile?.profilePhotoUrl ? (
-                    <img src={profile.profilePhotoUrl} alt="" className="w-full h-full object-cover" />
+              {/* Saat Seçimi */}
+              {selectedDate && (
+                <div className="mb-8">
+                  <h3 className="font-semibold text-navy-900 mb-4">Saat Seçin</h3>
+                  {availableTimes.length > 0 ? (
+                    <div className="grid grid-cols-4 gap-3">
+                      {availableTimes.map((slot) => (
+                        <button
+                          key={slot.id}
+                          onClick={() => setSelectedTime(slot)}
+                          className={`py-3 px-4 rounded-xl border-2 font-medium transition-all ${
+                            selectedTime?.id === slot.id
+                              ? 'border-navy-600 bg-navy-50 text-navy-900'
+                              : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                          }`}
+                        >
+                          {slot.start_time.substring(0, 5)}
+                        </button>
+                      ))}
+                    </div>
                   ) : (
-                    profile?.firstName?.charAt(0)
+                    <p className="text-slate-500">Bu tarihte müsait saat bulunamadı</p>
                   )}
                 </div>
+              )}
+
+              {/* Ders Seçimi */}
+              {teacher.subjects && teacher.subjects.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="font-semibold text-navy-900 mb-4">Ders Seçin</h3>
+                  <select
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
+                    value={selectedSubject}
+                    onChange={(e) => setSelectedSubject(e.target.value)}
+                  >
+                    <option value="">Ders seçin...</option>
+                    {teacher.subjects.map((subject, i) => (
+                      <option key={i} value={subject}>{subject}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Özet */}
+              <div className="bg-slate-50 rounded-2xl p-6 mb-6">
+                <h3 className="font-semibold text-navy-900 mb-4">Ödeme Özeti</h3>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-600">1 Saatlik Ders</span>
+                  <span className="text-2xl font-bold text-navy-900">₺{price.toLocaleString('tr-TR')}</span>
+                </div>
+              </div>
+
+              {/* Butonlar */}
+              <div className="flex gap-4">
+                <button onClick={() => setIsBookingOpen(false)} className="flex-1 py-3 border-2 border-slate-200 rounded-xl font-semibold text-slate-700 hover:bg-slate-50">
+                  İptal
+                </button>
                 <button
-                  type="button"
-                  className="px-4 py-2 bg-navy-600 text-white rounded-lg hover:bg-navy-700 transition-colors"
+                  onClick={handleBooking}
+                  disabled={!selectedTime || isSubmitting}
+                  className="flex-1 py-3 bg-gradient-to-r from-navy-900 to-navy-700 text-white rounded-xl font-semibold hover:from-navy-800 hover:to-navy-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Fotoğraf Yükle
+                  {isSubmitting ? 'İşleniyor...' : 'Ödemeye Geç'}
                 </button>
               </div>
             </div>
-
-            <div className="card p-6">
-              <label className="block font-medium text-navy-900 mb-4">
-                Tanıtım Videosu
-              </label>
-              <button
-                type="button"
-                className="w-full px-4 py-3 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 hover:border-navy-500 hover:text-navy-600 transition-colors"
-              >
-                <svg className="w-8 h-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-                Video Yükle
-              </button>
-            </div>
           </div>
-
-          {/* Submit Button */}
-          <div className="flex justify-end gap-4">
-            <button
-              type="button"
-              onClick={fetchProfile}
-              className="px-6 py-3 text-slate-600 hover:text-navy-900 transition-colors"
-            >
-              İptal
-            </button>
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="px-8 py-3 bg-navy-600 text-white rounded-xl hover:bg-navy-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSaving ? 'Kaydediliyor...' : 'Kaydet'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        </div>
+      )}
+    </>
   );
 }
