@@ -90,7 +90,7 @@ const HeroSection = () => (
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-fade-up delay-300">
-          <Link href="/register" className="btn-primary text-lg px-8 py-4">
+          <Link href="/student/register" className="btn-primary text-lg px-8 py-4">
             Hemen Başla
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -611,7 +611,7 @@ const CTASection = () => (
         Uzman öğretmenlerimiz öğrencinizi bekliyor.
       </p>
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <Link href="/register" className="btn-gold text-lg px-8 py-4">
+        <Link href="/student/register" className="btn-gold text-lg px-8 py-4">
           Ücretsiz Kayıt Ol
         </Link>
         <Link href="/teachers" className="btn-secondary text-lg px-8 py-4 !bg-white/10 !text-white !border-white/20 hover:!bg-white/20">
