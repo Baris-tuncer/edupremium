@@ -190,13 +190,14 @@ export default function TeacherDetailPage() {
                     const val = e.target.value;
                     const lower = val.toLowerCase().replace(/\s+/g, '');
                     const badWords = ["salak","aptal","gerizekalı","mal","dangalak","ahmak","budala","hıyar","öküz","eşek","enayi","gerizekalı","pislik","şerefsiz","namussuz","ahlaksız","terbiyesiz","siktir","amk","aq","orospu","piç","yavşak","göt","sikik","yarrak","kaltak","fahişe","ibne","pezevenk","puşt","gavat"];
-                    const contactWords = ["whatsapp","whatsap","wp","telegram","instagram","insta","facebook","twitter","tiktok","snapchat","discord","skype","zoom","facetime","signal","viber","messenger","mesenger","linkedin","youtube","gmail","hotmail","outlook","yahoo","mail","e-posta","eposta","telefon","numara","numaramı","numaranı","numaranız","telefonum","arayin","arayın","mesajat","mesajyaz","dm","özeldenya","iletisim","iletişim","banaulaş","banaulas","platformdışı","platformdisi","dışarıda","dışarida","direktiletişim","direkiletişim","kendiaramızda"];
+                    const contactWords = ["whatsapp","whatsap","wp","telegram","instagram","insta","facebook","twitter","tiktok","snapchat","discord","skype","zoom","facetime","signal","viber","messenger","mesenger","linkedin","youtube","gmail","hotmail","outlook","yahoo","mail","e-posta","eposta","telefon","numara","numaramı","numaranı","numaranız","telefonum","arayin","arayın","mesajat","mesajyaz","dm","özeldenya","iletisim","iletişim","banaulaş","banaulas","platformdışı","platformdisi","dışarıda","dışarida","direktiletişim","direkiletişim","kendiaramızda","telno","telnoya","telnoyaz","telnum","cepno","ceptel","gsm","noyaz","nover","noyazar","noyazarmisin","noverirmisin","numaraver","numarayaz","noistiyorum","yazno","verno","telefonno","telefonnumara","instayaz","wpyaz","wpden","wpnumarası","wpnum","wpdenyaz","whatsaptan","whatsapptan","instadan","telegramdan","discorddan","aramızda","özelden","birebir","dışarı","dısarı","harici","haricinde","kanaldan","başkakanal","başkayerden","basyerden"];
                     const hasBadWord = badWords.some(w => lower.includes(w));
                     const hasContact = contactWords.some(w => lower.includes(w));
                     const hasPhone = /05\d{8,}|5\d{9}|\+90/.test(val.replace(/\s/g, ''));
                     const hasEmail = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(val);
+                    const shortContactPatterns = /\btel\b|\bno\s*yaz|\bno\s*ver|\bno\s*ist|\bnumaran|\bnumaram|\btel\s*no|\bcep\s*no|\bgsm\s*no|\bnon[ıiu]\s*yaz|\bnon[ıiu]\s*ver|\barayal[ıi]m|\barayay[ıi]m|\bbeni\s*ara|\bseni\s*ara/i.test(val);
                     if (hasBadWord) { setNoteError("Uygunsuz ifade tespit edildi. Lütfen düzeltin."); }
-                    else if (hasContact || hasPhone || hasEmail) { setNoteError("Güvenliğiniz için kişisel iletişim bilgisi paylaşımına izin verilmemektedir."); }
+                    else if (hasContact || hasPhone || hasEmail || shortContactPatterns) { setNoteError("Güvenliğiniz için kişisel iletişim bilgisi paylaşımına izin verilmemektedir."); }
                     else { setNoteError(""); }
                     setLessonNote(val);
                   }}
