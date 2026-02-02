@@ -14,14 +14,28 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user: authUser } } = await supabase.auth.getUser();
       
-      if (!user) {
+      if (!authUser) {
         router.push('/login');
         return;
       }
 
-      setUser(user);
+      const { data: profile } = await supabase
+        .from('teacher_profiles')
+        .select('full_name, avatar_url')
+        .eq('id', authUser.id)
+        .single();
+
+      const nameParts = (profile?.full_name || '').split(' ');
+      
+      setUser({
+        ...authUser,
+        firstName: nameParts[0] || '',
+        lastName: nameParts.slice(1).join(' ') || '',
+        fullName: profile?.full_name || '',
+        avatarUrl: profile?.avatar_url || null,
+      });
       setIsLoading(false);
     };
 
