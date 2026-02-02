@@ -371,3 +371,151 @@ export function getLessonReminderEmail(data: {
 </html>
   `;
 }
+// Bu fonksiyonu email-templates.ts dosyasının SONUNA ekle
+
+export function getInvitationCodeEmail(data: {
+  recipientEmail: string;
+  invitationCode: string;
+  expiresAt: string;
+  personalMessage?: string;
+}) {
+  const expiryDate = new Date(data.expiresAt).toLocaleDateString('tr-TR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  const messageSection = data.personalMessage ? `
+        <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 10px 40px 20px 40px;">
+          <tr>
+            <td>
+              <table width="100%" cellspacing="0" cellpadding="0" style="background: #fffbeb; border-radius: 12px; padding: 20px 24px; border-left: 4px solid #d4af37;">
+                <tr>
+                  <td>
+                    <p style="color: #92400e; margin: 0 0 4px 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">📝 Size Özel Mesaj</p>
+                    <p style="color: #78350f; margin: 0; font-size: 14px; line-height: 1.6;">${data.personalMessage}</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+  ` : '';
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f5f5f5;">
+  <table width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <tr>
+      <td>
+        <!-- Header -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #1e3a5f 0%, #0d1b2a 100%); border-radius: 20px 20px 0 0; padding: 50px 40px;">
+          <tr>
+            <td align="center">
+              <p style="color: #d4af37; margin: 0 0 8px 0; font-size: 12px; letter-spacing: 3px; text-transform: uppercase;">Özel Davet</p>
+              <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 300; letter-spacing: 1px;">EduPremium</h1>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Welcome -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 50px 40px 30px 40px;">
+          <tr>
+            <td align="center">
+              <div style="width: 90px; height: 90px; background: linear-gradient(135deg, #d4af37 0%, #b8960c 100%); border-radius: 50%; display: inline-block; line-height: 90px;">
+                <span style="font-size: 40px;">🎓</span>
+              </div>
+              <h2 style="color: #0d1b2a; margin: 28px 0 12px 0; font-size: 26px; font-weight: 600;">EduPremium'a Davetlisiniz!</h2>
+              <p style="color: #64748b; margin: 0; font-size: 16px; line-height: 1.6;">Türkiye'nin premium online eğitim platformunda öğretmen olarak yerinizi alın.</p>
+            </td>
+          </tr>
+        </table>
+
+        ${messageSection}
+
+        <!-- Invitation Code Box -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 10px 40px 30px 40px;">
+          <tr>
+            <td>
+              <table width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #0d1b2a 0%, #1e3a5f 100%); border-radius: 16px; padding: 36px;">
+                <tr>
+                  <td align="center">
+                    <p style="color: #d4af37; margin: 0 0 16px 0; font-size: 13px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;">🔑 Davet Kodunuz</p>
+                    <div style="background: rgba(212, 175, 55, 0.15); border: 2px dashed #d4af37; border-radius: 12px; padding: 20px 40px; display: inline-block;">
+                      <p style="color: #d4af37; margin: 0; font-size: 36px; font-weight: 700; letter-spacing: 6px; font-family: 'Courier New', monospace;">${data.invitationCode}</p>
+                    </div>
+                    <p style="color: #8b9dc3; margin: 16px 0 0 0; font-size: 13px;">Son kullanma tarihi: <strong style="color: #d4af37;">${expiryDate}</strong></p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- How to Use -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 10px 40px 30px 40px;">
+          <tr>
+            <td>
+              <table width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 16px; padding: 30px; border-left: 4px solid #d4af37;">
+                <tr>
+                  <td>
+                    <h3 style="color: #0d1b2a; margin: 0 0 20px 0; font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;">📋 Nasıl Kayıt Olurum?</h3>
+                    <table width="100%" cellspacing="0" cellpadding="10">
+                      <tr>
+                        <td style="color: #d4af37; font-size: 20px; font-weight: 700; width: 40px; vertical-align: top;">1</td>
+                        <td style="color: #334155; font-size: 14px; line-height: 1.6; border-bottom: 1px solid #e2e8f0; padding-bottom: 14px;">
+                          <strong>visserr.com</strong> adresine gidin ve "Öğretmen Olarak Kayıt Ol" butonuna tıklayın
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="color: #d4af37; font-size: 20px; font-weight: 700; width: 40px; vertical-align: top;">2</td>
+                        <td style="color: #334155; font-size: 14px; line-height: 1.6; border-bottom: 1px solid #e2e8f0; padding-bottom: 14px;">
+                          Kayıt formunda <strong>"Davet Kodu"</strong> alanına yukarıdaki kodu girin
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="color: #d4af37; font-size: 20px; font-weight: 700; width: 40px; vertical-align: top;">3</td>
+                        <td style="color: #334155; font-size: 14px; line-height: 1.6;">
+                          Profilinizi doldurun, diploma/sertifikanızı yükleyin ve admin onayını bekleyin
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- CTA Button -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 10px 40px 50px 40px;">
+          <tr>
+            <td align="center">
+              <a href="https://www.visserr.com/kayit" style="display: inline-block; background: linear-gradient(135deg, #d4af37 0%, #b8960c 100%); color: #0d1b2a; text-decoration: none; padding: 16px 48px; border-radius: 8px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">Hemen Kayıt Ol</a>
+              <p style="color: #94a3b8; margin: 16px 0 0 0; font-size: 12px;">Bu davet kodu size özeldir. Lütfen başkalarıyla paylaşmayınız.</p>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Footer -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #0d1b2a 0%, #1e3a5f 100%); border-radius: 0 0 20px 20px; padding: 40px;">
+          <tr>
+            <td align="center">
+              <p style="color: #8b9dc3; margin: 0 0 12px 0; font-size: 13px;">Sorularınız mı var?</p>
+              <a href="mailto:destek@visserr.com" style="color: #d4af37; text-decoration: none; font-size: 14px; font-weight: 500;">destek@visserr.com</a>
+              <p style="color: #4a5568; margin: 24px 0 0 0; font-size: 11px;">© 2026 EduPremium. Tüm hakları saklıdır.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+}

@@ -23,9 +23,17 @@ export default function AdminInvitationsPage() {
   const [formData, setFormData] = useState({
     email: '',
     phone: '',
-    expiresInDays: 7
+    expiresInDays: 7,
+    sendEmail: true,
+    personalMessage: ''
   });
   const [creating, setCreating] = useState(false);
+
+  // Email gonderme modal
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [selectedInvitation, setSelectedInvitation] = useState<InvitationCode | null>(null);
+  const [emailForm, setEmailForm] = useState({ email: '', personalMessage: '' });
+  const [sendingEmail, setSendingEmail] = useState(false);
 
   useEffect(() => {
     loadInvitations();
@@ -40,7 +48,6 @@ export default function AdminInvitationsPage() {
 
       if (error) throw error;
 
-      // Kullanilan kodlar icin ogretmen isimlerini al
       const usedCodes = data?.filter(d => d.used_by) || [];
       const teacherIds = usedCodes.map(c => c.used_by);
 
@@ -76,12 +83,34 @@ export default function AdminInvitationsPage() {
     return code;
   };
 
+  const sendInvitationEmail = async (email: string, code: string, expiresAt: string, personalMessage?: string) => {
+    try {
+      const response = await fetch('/api/invitation/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code, expiresAt, personalMessage: personalMessage || '' })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Email gönderilemedi');
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Email send error:', error);
+      throw error;
+    }
+  };
+
   const createInvitation = async () => {
     setCreating(true);
     try {
       const code = generateCode();
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + formData.expiresInDays);
+      const expiresAtStr = expiresAt.toISOString();
 
       const { error } = await supabase
         .from('invitation_codes')
@@ -90,25 +119,80 @@ export default function AdminInvitationsPage() {
           status: 'ACTIVE',
           assigned_email: formData.email || null,
           assigned_phone: formData.phone || null,
-          expires_at: expiresAt.toISOString(),
+          expires_at: expiresAtStr,
           created_at: new Date().toISOString()
         });
 
       if (error) throw error;
 
+      // Email gonder (checkbox isaretliyse ve email varsa)
+      if (formData.sendEmail && formData.email) {
+        try {
+          await sendInvitationEmail(formData.email, code, expiresAtStr, formData.personalMessage);
+          alert(`✅ Kod oluşturuldu ve email gönderildi!\n\nKod: ${code}\nEmail: ${formData.email}`);
+        } catch (emailError) {
+          alert(`⚠️ Kod oluşturuldu ama email gönderilemedi!\n\nKod: ${code}\nHata: ${emailError instanceof Error ? emailError.message : 'Bilinmeyen hata'}`);
+        }
+      } else {
+        alert(`✅ Kod oluşturuldu: ${code}`);
+      }
+
       setShowModal(false);
-      setFormData({ email: '', phone: '', expiresInDays: 7 });
+      setFormData({ email: '', phone: '', expiresInDays: 7, sendEmail: true, personalMessage: '' });
       loadInvitations();
     } catch (error) {
       console.error('Error:', error);
-      alert('Kod olusturulamadi! Hata: ' + (error instanceof Error ? error.message : JSON.stringify(error)));
+      alert('Kod oluşturulamadı! Hata: ' + (error instanceof Error ? error.message : JSON.stringify(error)));
     } finally {
       setCreating(false);
     }
   };
 
+  const openEmailModal = (inv: InvitationCode) => {
+    setSelectedInvitation(inv);
+    setEmailForm({
+      email: inv.assigned_email || '',
+      personalMessage: ''
+    });
+    setShowEmailModal(true);
+  };
+
+  const handleSendEmail = async () => {
+    if (!selectedInvitation || !emailForm.email) {
+      alert('Email adresi zorunludur');
+      return;
+    }
+
+    setSendingEmail(true);
+    try {
+      await sendInvitationEmail(
+        emailForm.email,
+        selectedInvitation.code,
+        selectedInvitation.expires_at || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        emailForm.personalMessage
+      );
+
+      // Eger assigned_email bos ise guncelle
+      if (!selectedInvitation.assigned_email && emailForm.email) {
+        await supabase
+          .from('invitation_codes')
+          .update({ assigned_email: emailForm.email })
+          .eq('id', selectedInvitation.id);
+      }
+
+      alert(`✅ Email başarıyla gönderildi!\n\n${emailForm.email} adresine ${selectedInvitation.code} kodu gönderildi.`);
+      setShowEmailModal(false);
+      setSelectedInvitation(null);
+      loadInvitations();
+    } catch (error) {
+      alert('❌ Email gönderilemedi! Hata: ' + (error instanceof Error ? error.message : 'Bilinmeyen hata'));
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
   const revokeCode = async (id: string) => {
-    if (!confirm('Bu kodu iptal etmek istediginize emin misiniz?')) return;
+    if (!confirm('Bu kodu iptal etmek istediğinize emin misiniz?')) return;
 
     try {
       const { error } = await supabase
@@ -125,7 +209,7 @@ export default function AdminInvitationsPage() {
 
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code);
-    alert('Kod kopyalandi: ' + code);
+    alert('Kod kopyalandı: ' + code);
   };
 
   const filteredInvitations = invitations.filter(inv => {
@@ -139,9 +223,8 @@ export default function AdminInvitationsPage() {
   const formatDate = (d: string | null) => d ? new Date(d).toLocaleDateString('tr-TR') : '-';
 
   const getStatusBadge = (status: string, expiresAt: string | null) => {
-    // Suresi dolmus mu kontrol et
     if (status === 'ACTIVE' && expiresAt && new Date(expiresAt) < new Date()) {
-      return <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">Suresi Dolmus</span>;
+      return <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">Süresi Dolmuş</span>;
     }
 
     const styles: Record<string, string> = {
@@ -152,9 +235,9 @@ export default function AdminInvitationsPage() {
     };
     const labels: Record<string, string> = {
       'ACTIVE': 'Aktif',
-      'USED': 'Kullanildi',
-      'EXPIRED': 'Suresi Doldu',
-      'REVOKED': 'Iptal Edildi'
+      'USED': 'Kullanıldı',
+      'EXPIRED': 'Süresi Doldu',
+      'REVOKED': 'İptal Edildi'
     };
     return (
       <span className={`px-3 py-1 text-xs font-medium rounded-full ${styles[status] || 'bg-slate-100'}`}>
@@ -175,8 +258,8 @@ export default function AdminInvitationsPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Davet Kodlari</h1>
-          <p className="text-slate-600 mt-1">Ogretmen kayit kodlarini yonetin</p>
+          <h1 className="text-2xl font-bold text-slate-900">Davet Kodları</h1>
+          <p className="text-slate-600 mt-1">Öğretmen kayıt kodlarını yönetin ve email ile gönderin</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
@@ -185,7 +268,7 @@ export default function AdminInvitationsPage() {
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          Yeni Kod Olustur
+          Yeni Kod Oluştur
         </button>
       </div>
 
@@ -200,11 +283,11 @@ export default function AdminInvitationsPage() {
           <p className="text-2xl font-bold text-green-700">{invitations.filter(i => i.status === 'ACTIVE').length}</p>
         </div>
         <div className="bg-blue-50 rounded-xl border border-blue-200 p-4">
-          <p className="text-sm text-blue-600">Kullanildi</p>
+          <p className="text-sm text-blue-600">Kullanıldı</p>
           <p className="text-2xl font-bold text-blue-700">{invitations.filter(i => i.status === 'USED').length}</p>
         </div>
         <div className="bg-gray-50 rounded-xl border border-gray-200 p-4">
-          <p className="text-sm text-gray-600">Suresi Dolmus</p>
+          <p className="text-sm text-gray-600">Süresi Dolmuş</p>
           <p className="text-2xl font-bold text-gray-700">{invitations.filter(i => i.status === 'EXPIRED' || i.status === 'REVOKED').length}</p>
         </div>
       </div>
@@ -212,10 +295,10 @@ export default function AdminInvitationsPage() {
       {/* Filtreler */}
       <div className="flex gap-2 mb-6">
         {[
-          { value: 'all', label: 'Tumu' },
+          { value: 'all', label: 'Tümü' },
           { value: 'ACTIVE', label: 'Aktif' },
-          { value: 'USED', label: 'Kullanilmis' },
-          { value: 'EXPIRED', label: 'Suresi Dolmus' }
+          { value: 'USED', label: 'Kullanılmış' },
+          { value: 'EXPIRED', label: 'Süresi Dolmuş' }
         ].map(f => (
           <button
             key={f.value}
@@ -240,17 +323,17 @@ export default function AdminInvitationsPage() {
               <th className="text-left py-4 px-6 font-medium text-slate-600">Durum</th>
               <th className="text-left py-4 px-6 font-medium text-slate-600">Email</th>
               <th className="text-left py-4 px-6 font-medium text-slate-600">Telefon</th>
-              <th className="text-left py-4 px-6 font-medium text-slate-600">Olusturulma</th>
+              <th className="text-left py-4 px-6 font-medium text-slate-600">Oluşturulma</th>
               <th className="text-left py-4 px-6 font-medium text-slate-600">Son Kullanma</th>
               <th className="text-left py-4 px-6 font-medium text-slate-600">Kullanan</th>
-              <th className="text-center py-4 px-6 font-medium text-slate-600">Islemler</th>
+              <th className="text-center py-4 px-6 font-medium text-slate-600">İşlemler</th>
             </tr>
           </thead>
           <tbody>
             {filteredInvitations.length === 0 ? (
               <tr>
                 <td colSpan={8} className="py-12 text-center text-slate-500">
-                  Davet kodu bulunamadi
+                  Davet kodu bulunamadı
                 </td>
               </tr>
             ) : (
@@ -278,7 +361,8 @@ export default function AdminInvitationsPage() {
                     {inv.used_by_name || '-'}
                   </td>
                   <td className="py-4 px-6 text-center">
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center justify-center gap-1">
+                      {/* Kopyala */}
                       <button
                         onClick={() => copyCode(inv.code)}
                         className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg"
@@ -288,11 +372,24 @@ export default function AdminInvitationsPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                         </svg>
                       </button>
+                      {/* Email Gonder */}
+                      {inv.status === 'ACTIVE' && !(inv.expires_at && new Date(inv.expires_at) < new Date()) && (
+                        <button
+                          onClick={() => openEmailModal(inv)}
+                          className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg"
+                          title="Email ile Gönder"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                        </button>
+                      )}
+                      {/* Iptal Et */}
                       {inv.status === 'ACTIVE' && (
                         <button
                           onClick={() => revokeCode(inv.id)}
                           className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg"
-                          title="Iptal Et"
+                          title="İptal Et"
                         >
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -308,7 +405,7 @@ export default function AdminInvitationsPage() {
         </table>
       </div>
 
-      {/* Modal */}
+      {/* Yeni Kod Olustur Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6">
@@ -338,18 +435,49 @@ export default function AdminInvitationsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Gecerlilik Suresi</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Geçerlilik Süresi</label>
                 <select
                   value={formData.expiresInDays}
                   onChange={(e) => setFormData({ ...formData, expiresInDays: Number(e.target.value) })}
                   className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
                 >
-                  <option value={7}>7 gun</option>
-                  <option value={14}>14 gun</option>
-                  <option value={30}>30 gun</option>
-                  <option value={90}>90 gun</option>
+                  <option value={7}>7 gün</option>
+                  <option value={14}>14 gün</option>
+                  <option value={30}>30 gün</option>
+                  <option value={90}>90 gün</option>
                 </select>
               </div>
+
+              {/* Email Gonder Checkbox */}
+              {formData.email && (
+                <>
+                  <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl border border-blue-200">
+                    <input
+                      type="checkbox"
+                      id="sendEmail"
+                      checked={formData.sendEmail}
+                      onChange={(e) => setFormData({ ...formData, sendEmail: e.target.checked })}
+                      className="w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+                    />
+                    <label htmlFor="sendEmail" className="text-sm text-blue-800 font-medium cursor-pointer">
+                      📧 Oluşturulunca email ile gönder
+                    </label>
+                  </div>
+
+                  {formData.sendEmail && (
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Kişisel Mesaj (Opsiyonel)</label>
+                      <textarea
+                        value={formData.personalMessage}
+                        onChange={(e) => setFormData({ ...formData, personalMessage: e.target.value })}
+                        placeholder="Merhaba, sizi platformumuza davet etmekten mutluluk duyuyoruz..."
+                        rows={3}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none resize-none"
+                      />
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
             <div className="flex gap-3 mt-6">
@@ -357,14 +485,99 @@ export default function AdminInvitationsPage() {
                 onClick={() => setShowModal(false)}
                 className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-colors"
               >
-                Iptal
+                İptal
               </button>
               <button
                 onClick={createInvitation}
                 disabled={creating}
                 className="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl transition-colors disabled:opacity-50"
               >
-                {creating ? 'Olusturuluyor...' : 'Olustur'}
+                {creating ? 'Oluşturuluyor...' : (formData.sendEmail && formData.email ? 'Oluştur ve Gönder' : 'Oluştur')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Email Gonder Modal */}
+      {showEmailModal && selectedInvitation && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">Davet Kodu Gönder</h2>
+                <p className="text-slate-500 text-sm">Kodu email ile gönderin</p>
+              </div>
+            </div>
+
+            {/* Kod Bilgisi */}
+            <div className="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">Davet Kodu</p>
+                  <p className="font-mono text-lg font-bold text-slate-900">{selectedInvitation.code}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-slate-500 mb-1">Son Kullanma</p>
+                  <p className="text-sm font-medium text-slate-700">{formatDate(selectedInvitation.expires_at)}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Email Adresi *</label>
+                <input
+                  type="email"
+                  value={emailForm.email}
+                  onChange={(e) => setEmailForm({ ...emailForm, email: e.target.value })}
+                  placeholder="ornek@email.com"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Kişisel Mesaj (Opsiyonel)</label>
+                <textarea
+                  value={emailForm.personalMessage}
+                  onChange={(e) => setEmailForm({ ...emailForm, personalMessage: e.target.value })}
+                  placeholder="Merhaba, sizi platformumuza davet etmekten mutluluk duyuyoruz..."
+                  rows={3}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => { setShowEmailModal(false); setSelectedInvitation(null); }}
+                className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-colors"
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleSendEmail}
+                disabled={sendingEmail || !emailForm.email}
+                className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {sendingEmail ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Gönderiliyor...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                    Email Gönder
+                  </>
+                )}
               </button>
             </div>
           </div>
