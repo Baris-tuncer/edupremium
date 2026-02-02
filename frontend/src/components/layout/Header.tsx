@@ -60,7 +60,7 @@ export default function Header() {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-1">
             <NavLink href="/teachers">Öğretmenler</NavLink>
-            <NavLink href="/subjects">Dersler</NavLink>
+            <NavLink href="/dersler">Dersler</NavLink>
             <NavLink href="/about">Hakkımızda</NavLink>
             <NavLink href="/contact">İletişim</NavLink>
           </div>
@@ -98,7 +98,7 @@ export default function Header() {
               <Link href="/teachers" className="px-4 py-3 text-slate-600 hover:text-navy-900 hover:bg-slate-50 rounded-lg transition-colors">
                 Öğretmenler
               </Link>
-              <Link href="/subjects" className="px-4 py-3 text-slate-600 hover:text-navy-900 hover:bg-slate-50 rounded-lg transition-colors">
+              <Link href="/dersler" className="px-4 py-3 text-slate-600 hover:text-navy-900 hover:bg-slate-50 rounded-lg transition-colors">
                 Dersler
               </Link>
               <Link href="/about" className="px-4 py-3 text-slate-600 hover:text-navy-900 hover:bg-slate-50 rounded-lg transition-colors">
