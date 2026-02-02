@@ -39,6 +39,8 @@ export default function TeacherDetailPage() {
   const [selectedSubject, setSelectedSubject] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
+  const [lessonNote, setLessonNote] = useState('');
+  const [noteError, setNoteError] = useState('');
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [studentProfile, setStudentProfile] = useState<any>(null);
 
@@ -83,6 +85,8 @@ export default function TeacherDetailPage() {
     if (!currentUser) { toast.error('Lütfen önce giriş yapın'); router.push('/student/login'); return; }
     if (!selectedSlot) { toast.error('Lütfen bir saat seçin'); return; }
     if (!selectedSubject) { toast.error('Lütfen bir ders seçin'); return; }
+    if (!lessonNote.trim()) { toast.error('Lütfen ders konusunu belirtin'); return; }
+    if (noteError) { toast.error('Lütfen nottaki uygunsuz ifadeyi düzeltin'); return; }
 
     setPurchasing(true);
     try {
@@ -100,6 +104,7 @@ export default function TeacherDetailPage() {
           availabilityId: selectedSlot.id,
           subject: selectedSubject,
           scheduledAt: selectedSlot.start_time,
+          note: lessonNote,
         }),
       });
 
@@ -172,12 +177,40 @@ export default function TeacherDetailPage() {
                 )}
               </div>
 
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Ders Konusu <span className="text-red-500">*</span></label>
+                <p className="text-xs text-slate-500 mb-2">Almak istediğiniz ders konusunu belirtiniz.</p>
+                <textarea
+                  className={`w-full px-4 py-3 border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none ${noteError ? "border-red-400" : "border-slate-200"}`}
+                  rows={3}
+                  maxLength={500}
+                  placeholder="Örn: Matematik dersinde türev konusunda destek almak istiyorum..."
+                  value={lessonNote}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const lower = val.toLowerCase().replace(/\s+/g, '');
+                    const badWords = ["salak","aptal","gerizekalı","mal","dangalak","ahmak","budala","hıyar","öküz","eşek","enayi","gerizekalı","pislik","şerefsiz","namussuz","ahlaksız","terbiyesiz","siktir","amk","aq","orospu","piç","yavşak","göt","sikik","yarrak","kaltak","fahişe","ibne","pezevenk","puşt","gavat"];
+                    const contactWords = ["whatsapp","whatsap","wp","telegram","instagram","insta","facebook","twitter","tiktok","snapchat","discord","skype","zoom","facetime","signal","viber","messenger","mesenger","linkedin","youtube","gmail","hotmail","outlook","yahoo","mail","e-posta","eposta","telefon","numara","numaramı","numaranı","numaranız","telefonum","arayin","arayın","mesajat","mesajyaz","dm","özeldenya","iletisim","iletişim","banaulaş","banaulas","platformdışı","platformdisi","dışarıda","dışarida","direktiletişim","direkiletişim","kendiaramızda"];
+                    const hasBadWord = badWords.some(w => lower.includes(w));
+                    const hasContact = contactWords.some(w => lower.includes(w));
+                    const hasPhone = /05\d{8,}|5\d{9}|\+90/.test(val.replace(/\s/g, ''));
+                    const hasEmail = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(val);
+                    if (hasBadWord) { setNoteError("Uygunsuz ifade tespit edildi. Lütfen düzeltin."); }
+                    else if (hasContact || hasPhone || hasEmail) { setNoteError("Güvenliğiniz için kişisel iletişim bilgisi paylaşımına izin verilmemektedir."); }
+                    else { setNoteError(""); }
+                    setLessonNote(val);
+                  }}
+                />
+                {noteError && <p className="text-red-500 text-xs mt-1">{noteError}</p>}
+                <p className="text-xs text-slate-400 mt-1 text-right">{lessonNote.length}/500</p>
+              </div>
+
               <div className="border-t pt-4 mb-4"><div className="flex justify-between items-center"><span className="text-slate-600">Ders Ücreti</span><span className="text-2xl font-bold">{formatPrice(displayPrice)}</span></div></div>
 
               <div className="bg-green-50 border border-green-200 rounded-xl p-3 mb-4"><div className="flex items-start gap-2"><span>🛡️</span><div className="text-sm"><p className="font-medium text-green-800">EduPremium Güvencesi</p><p className="text-green-700">Ödemeniz güvence altındadır.</p></div></div></div>
 
               {currentUser ? (
-                <button onClick={handlePurchase} disabled={!selectedSlot || purchasing || availabilities.length === 0} className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                <button onClick={handlePurchase} disabled={!selectedSlot || purchasing || availabilities.length === 0 || !lessonNote.trim() || !!noteError} className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
                   {purchasing ? 'İşleniyor...' : 'Ödemeye Geç'}
                 </button>
               ) : (
