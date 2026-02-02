@@ -70,7 +70,7 @@ export default function Header() {
             <Link href="/login" className="btn-ghost">
               Giriş Yap
             </Link>
-            <Link href="/register" className="btn-primary">
+            <Link href="/kayit" className="btn-primary">
               Kayıt Ol
             </Link>
           </div>
