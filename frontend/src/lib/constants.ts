@@ -127,3 +127,4 @@ export function getDisplayName(subject: string): string {
 }
 
 export const LEVEL_KEYS = Object.keys(EDUCATION_LEVELS) as LevelKey[];
+
