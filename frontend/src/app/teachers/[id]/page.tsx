@@ -197,7 +197,11 @@ export default function TeacherProfilePage() {
     );
   }
 
-  const price = teacher.base_price || 0;
+ const basePrice = teacher.base_price || 0;
+  const commission = basePrice * 0.20;
+  const subtotal = basePrice + commission;
+  const tax = subtotal * 0.20;
+  const price = Math.round((subtotal + tax) / 100) * 100;
 
   return (
     <>
