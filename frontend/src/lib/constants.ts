@@ -6,10 +6,11 @@ export const EDUCATION_LEVELS = {
     subjects: [
       'Türkçe',
       'Matematik',
+      'Hayat Bilgisi',
       'Fen Bilimleri',
       'Sosyal Bilgiler',
-      'Din Kültürü ve Ahlak Bilgisi',
       'İngilizce',
+      'Din Kültürü ve Ahlak Bilgisi',
     ],
   },
   ortaokul: {
@@ -19,22 +20,43 @@ export const EDUCATION_LEVELS = {
       'Türkçe',
       'Fen Bilimleri',
       'Sosyal Bilgiler',
-      'Din Kültürü',
       'İngilizce',
+      'Din Kültürü',
+      'T.C. İnkılap Tarihi',
+      'Bilişim Teknolojileri',
     ],
   },
   lise: {
     label: 'Lise (9-12)',
     subjects: [
-      'Türk Dili ve Edebiyatı',
       'Matematik',
+      'Geometri',
       'Fizik',
       'Kimya',
       'Biyoloji',
-      'Coğrafya',
+      'Türk Dili ve Edebiyatı',
       'Tarih',
-      'Geometri',
+      'Coğrafya',
+      'Felsefe',
+      'Psikoloji',
+      'Sosyoloji',
       'Din Kültürü',
+      'İngilizce',
+      'Almanca',
+    ],
+  },
+  sinav_hazirlik: {
+    label: 'Sınav Hazırlık',
+    subjects: [
+      'LGS',
+      'TYT',
+      'AYT (Sayısal)',
+      'AYT (Eşit Ağırlık)',
+      'AYT (Sözel)',
+      'AYT (Dil)',
+      'KPSS',
+      'DGS',
+      'ALES',
     ],
   },
   yabanci_dil: {
@@ -47,19 +69,10 @@ export const EDUCATION_LEVELS = {
       'Rusça',
       'İtalyanca',
       'Arapça',
-      'Flamenkçe',
       'Portekizce',
-    ],
-  },
-  sinav_hazirlik: {
-    label: 'Sınav Hazırlık',
-    subjects: [
-      'TYT',
-      'AYT (Sayısal)',
-      'AYT (Eşit Ağırlık)',
-      'AYT (Sözel)',
-      'AYT (Dil)',
-      'LGS',
+      'Japonca',
+      'Korece',
+      'Çince',
     ],
   },
   dil_sinavlari: {
@@ -69,10 +82,12 @@ export const EDUCATION_LEVELS = {
       'IELTS',
       'YDS',
       'YÖKDİL',
+      'PTE',
+      'Cambridge',
+      'Goethe',
     ],
   },
 } as const;
-
 export type LevelKey = keyof typeof EDUCATION_LEVELS;
 
 export function parseSubject(subject: string): { level: string; name: string } | null {
