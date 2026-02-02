@@ -13,7 +13,7 @@ interface Teacher {
   full_name: string;
   profile_photo_url: string | null;
   bio: string | null;
-  hourly_rate: number;
+  base_price: number;
   subjects: string[];
   education_levels: string[];
   experience_years: number | null;
@@ -112,7 +112,7 @@ export default function TeacherProfilePage() {
     try {
       const scheduledAt = `${selectedTime.date}T${selectedTime.start_time}`;
       const subject = selectedSubject || teacher.subjects?.[0] || 'Ders';
-      const amount = teacher.hourly_rate || 500;
+      const amount = teacher.base_price || 500;
 
       // Paratika ödeme session oluştur
       const { data: studentProfile } = await supabase
@@ -197,7 +197,7 @@ export default function TeacherProfilePage() {
     );
   }
 
-  const price = teacher.hourly_rate || 0;
+  const price = teacher.base_price || 0;
 
   return (
     <>
