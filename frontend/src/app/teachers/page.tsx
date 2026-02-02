@@ -270,7 +270,7 @@ function TeachersContent() {
       let query = supabase
         .from('teacher_profiles')
         .select('*')
-        .eq('is_verified', true);
+        .eq('is_verified', true).eq('is_approved', true);
 
       const { data, error } = await query;
 

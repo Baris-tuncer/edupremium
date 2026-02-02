@@ -13,15 +13,19 @@ interface Teacher {
   commission_rate: number;
   completed_lessons_count: number;
   is_verified: boolean;
+  is_approved: boolean;
   updated_at: string;
   avatar_url: string | null;
+  bio: string | null;
+  video_url: string | null;
+  diploma_url: string | null;
 }
 
 export default function AdminTeachersPage() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<'all' | 'verified' | 'unverified'>('all');
+  const [filter, setFilter] = useState<'all' | 'verified' | 'unverified' | 'pending_approval' | 'approved'>('all');
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
 
   useEffect(() => {
@@ -32,7 +36,7 @@ export default function AdminTeachersPage() {
     try {
       const { data, error: fetchError } = await supabase
         .from('teacher_profiles')
-        .select('id, full_name, email, phone, subjects, base_price, commission_rate, completed_lessons_count, is_verified, updated_at, avatar_url')
+        .select('id, full_name, email, phone, subjects, base_price, commission_rate, completed_lessons_count, is_verified, is_approved, updated_at, avatar_url, bio, video_url, diploma_url')
         .order('updated_at', { ascending: false });
 
       if (fetchError) {
@@ -63,9 +67,25 @@ export default function AdminTeachersPage() {
     }
   };
 
+  const toggleApproval = async (teacherId: string, approve: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('teacher_profiles')
+        .update({ is_approved: approve })
+        .eq('id', teacherId);
+      if (error) throw error;
+      loadTeachers();
+      setSelectedTeacher(null);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
   const filteredTeachers = teachers.filter(t => {
     if (filter === 'verified') return t.is_verified;
     if (filter === 'unverified') return !t.is_verified;
+    if (filter === 'pending_approval') return !t.is_approved;
+    if (filter === 'approved') return t.is_approved;
     return true;
   });
 
@@ -117,19 +137,21 @@ export default function AdminTeachersPage() {
 
       {/* Filtreler */}
       <div className="flex gap-2 mb-6">
-        {(['all', 'verified', 'unverified'] as const).map(f => (
+        {(['all', 'pending_approval', 'approved', 'verified', 'unverified'] as const).map(f => (
           <button
             key={f}
             onClick={() => setFilter(f)}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               filter === f
-                ? 'bg-red-500 text-white'
+                ? f === 'pending_approval' ? 'bg-orange-500 text-white' : 'bg-red-500 text-white'
                 : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
             }`}
           >
-            {f === 'all' ? 'Tumu' : f === 'verified' ? 'Onaylilar' : 'Onaysizlar'}
+            {f === 'all' ? 'Tümü' : f === 'pending_approval' ? '⏳ Onay Bekleyen' : f === 'approved' ? '✅ Onaylı' : f === 'verified' ? 'Doğrulanmış' : 'Doğrulanmamış'}
             <span className="ml-2 text-xs">
               ({f === 'all' ? teachers.length : 
+                f === 'pending_approval' ? teachers.filter(t => !t.is_approved).length :
+                f === 'approved' ? teachers.filter(t => t.is_approved).length :
                 f === 'verified' ? teachers.filter(t => t.is_verified).length :
                 teachers.filter(t => !t.is_verified).length})
             </span>
@@ -204,15 +226,16 @@ export default function AdminTeachersPage() {
                     {teacher.completed_lessons_count || 0}
                   </td>
                   <td className="py-4 px-6 text-center">
-                    {teacher.is_verified ? (
-                      <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-                        Onayli
-                      </span>
-                    ) : (
-                      <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">
-                        Bekliyor
-                      </span>
-                    )}
+                    <div className="flex flex-col items-center gap-1">
+                      {teacher.is_approved ? (
+                        <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Onaylı</span>
+                      ) : (
+                        <span className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-full">Onay Bekliyor</span>
+                      )}
+                      {teacher.is_verified && (
+                        <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">Doğrulanmış</span>
+                      )}
+                    </div>
                   </td>
                   <td className="py-4 px-6 text-center">
                     <button
@@ -297,25 +320,72 @@ export default function AdminTeachersPage() {
                 </div>
               </div>
 
+              
+              {/* Profil İnceleme */}
+              {selectedTeacher.bio && (
+                <div className="mt-4 p-4 bg-slate-50 rounded-xl">
+                  <h4 className="font-semibold text-slate-900 mb-2">Hakkında</h4>
+                  <p className="text-sm text-slate-600 whitespace-pre-wrap">{selectedTeacher.bio}</p>
+                </div>
+              )}
+
+              {selectedTeacher.video_url && (
+                <div className="mt-4 p-4 bg-slate-50 rounded-xl">
+                  <h4 className="font-semibold text-slate-900 mb-2">Tanıtım Videosu</h4>
+                  <video src={selectedTeacher.video_url} controls className="w-full max-h-48 rounded-lg" />
+                </div>
+              )}
+
+              {selectedTeacher.diploma_url && (
+                <div className="mt-4 p-4 bg-slate-50 rounded-xl">
+                  <h4 className="font-semibold text-slate-900 mb-2">Diploma / Sertifika</h4>
+                  <img src={selectedTeacher.diploma_url} alt="Diploma" className="w-full rounded-lg cursor-pointer" onClick={() => window.open(selectedTeacher.diploma_url!, '_blank')} />
+                </div>
+              )}
+
+              {/* Onay Durumu */}
+              <div className={`mt-4 p-4 rounded-xl border-2 ${selectedTeacher.is_approved ? 'border-green-200 bg-green-50' : 'border-orange-200 bg-orange-50'}`}>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg">{selectedTeacher.is_approved ? '✅' : '⏳'}</span>
+                  <h4 className="font-semibold">{selectedTeacher.is_approved ? 'Profil Onaylı' : 'Onay Bekliyor'}</h4>
+                </div>
+                <p className="text-sm text-slate-600">{selectedTeacher.is_approved ? 'Bu öğretmen sitede görünüyor.' : 'Bu öğretmen henüz sitede görünmüyor.'}</p>
+              </div>
+
               <div className="flex gap-3 mt-6 pt-6 border-t">
+                {selectedTeacher.is_approved ? (
+                  <button
+                    onClick={() => toggleApproval(selectedTeacher.id, false)}
+                    className="flex-1 px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl transition-colors"
+                  >
+                    ⏸ Onayı Kaldır
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => toggleApproval(selectedTeacher.id, true)}
+                    className="flex-1 px-4 py-3 bg-green-500 hover:bg-green-600 text-white font-medium rounded-xl transition-colors"
+                  >
+                    ✅ Profili Onayla
+                  </button>
+                )}
                 {selectedTeacher.is_verified ? (
                   <button
                     onClick={() => toggleVerification(selectedTeacher.id, true)}
                     className="flex-1 px-4 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-xl transition-colors"
                   >
-                    Onayi Kaldir
+                    Doğrulamayı Kaldır
                   </button>
                 ) : (
                   <button
                     onClick={() => toggleVerification(selectedTeacher.id, false)}
-                    className="flex-1 px-4 py-3 bg-green-500 hover:bg-green-600 text-white font-medium rounded-xl transition-colors"
+                    className="flex-1 px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-xl transition-colors"
                   >
-                    Onayla
+                    ✓ Doğrula
                   </button>
                 )}
                 <button
                   onClick={() => setSelectedTeacher(null)}
-                  className="flex-1 px-4 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-xl transition-colors"
+                  className="px-4 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-xl transition-colors"
                 >
                   Kapat
                 </button>
