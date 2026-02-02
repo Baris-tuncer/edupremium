@@ -544,6 +544,12 @@ export default function TeacherProfilePage() {
                 </div>
               </div>
 
+              {/* Kayıt Bildirimi */}
+              <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl mb-6">
+                <span className="text-red-500 shrink-0">🔴</span>
+                <p className="text-xs text-amber-800">Bu ders, tarafların ve platformun hukuki haklarını korumak amacıyla ses ve görüntü olarak kaydedilecektir.</p>
+              </div>
+
               {/* Butonlar */}
               <div className="flex gap-4">
                 <button onClick={() => setIsBookingOpen(false)} className="flex-1 py-3 border-2 border-slate-200 rounded-xl font-semibold text-slate-700 hover:bg-slate-50">
