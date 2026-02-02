@@ -48,6 +48,8 @@ export default function TeacherProfilePage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<AvailabilitySlot | null>(null);
   const [selectedSubject, setSelectedSubject] = useState('');
+  const [lessonNote, setLessonNote] = useState('');
+  const [noteError, setNoteError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -136,6 +138,7 @@ export default function TeacherProfilePage() {
           scheduledAt,
           amount,
           availabilityId: selectedTime.id,
+          note: lessonNote,
         }),
       });
 
@@ -469,6 +472,69 @@ export default function TeacherProfilePage() {
                 </div>
               )}
 
+              
+              {/* Ders Konusu */}
+              <div className="mb-8">
+                <h3 className="font-semibold text-navy-900 mb-2">Ders Konusu <span className="text-red-500">*</span></h3>
+                <p className="text-sm text-slate-500 mb-3">Almak istediğiniz ders konusunu belirtiniz.</p>
+                <textarea
+                  className={`w-full px-4 py-3 border rounded-xl text-sm focus:ring-2 focus:ring-navy-500 focus:border-navy-500 resize-none ${noteError ? "border-red-400" : "border-slate-200"}`}
+                  rows={3}
+                  maxLength={500}
+                  placeholder="Örn: Matematik dersinde türev konusunda destek almak istiyorum..."
+                  value={lessonNote}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const lower = val.toLowerCase().replace(/\s+/g, '');
+                    
+                    // Küfür ve hakaret filtreleri
+                    const badWords = [
+                      "salak","aptal","gerizekalı","mal","dangalak","ahmak","budala",
+                      "hıyar","öküz","eşek","enayi","geri zekalı","pislik","şerefsiz",
+                      "namussuz","ahlaksız","terbiyesiz","hayvan","köpek","domuz",
+                      "siktir","amk","aq","orospu","piç","yavşak","göt","sikik",
+                      "yarrak","meme","kaltak","fahişe","ibne","pezevenk","puşt","gavat"
+                    ];
+                    
+                    // İletişim bilgisi filtreleri
+                    const contactWords = [
+                      "whatsapp","whats app","wp","telegram","instagram","insta",
+                      "facebook","twitter","tiktok","snapchat","discord","skype",
+                      "zoom","facetime","signal","viber","mesenger","messenger",
+                      "linkedin","youtube","gmail","hotmail","outlook","yahoo",
+                      "mail","e-posta","eposta","telefon","numara","numer",
+                      "numaramı","numaranı","numaranız","telefonum","arayin",
+                      "arayın","mesaj at","mesaj yaz","dm","özelden yaz",
+                      "iletisim","iletişim","bana ulaş","bana ulas",
+                      "platformdışı","platform dışı","dışarıda","dışarida",
+                      "direkt iletişim","direk iletişim","kendi aramızda"
+                    ];
+
+                    const hasBadWord = badWords.some(w => lower.includes(w.replace(/\s+/g, '')));
+                    const hasContact = contactWords.some(w => lower.includes(w.replace(/\s+/g, '')));
+                    
+                    // Telefon numarası pattern (05xx, +90, 0xxx gibi)
+                    const phonePattern = /0\s*5\s*\d{2}|\+\s*9\s*0|05\d{8,}|5\d{9}|\d{3}[\s.-]\d{3}[\s.-]\d{2}[\s.-]\d{2}/;
+                    const hasPhone = phonePattern.test(val.replace(/\s/g, '')) || phonePattern.test(val);
+                    
+                    // Email pattern
+                    const emailPattern = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+                    const hasEmail = emailPattern.test(val);
+                    
+                    if (hasBadWord) {
+                      setNoteError("Uygunsuz ifade tespit edildi. Lütfen düzeltin.");
+                    } else if (hasContact || hasPhone || hasEmail) {
+                      setNoteError("Güvenliğiniz için kişisel iletişim bilgisi paylaşımına izin verilmemektedir.");
+                    } else {
+                      setNoteError("");
+                    }
+                    setLessonNote(val);
+                  }}
+                />
+                {noteError && <p className="text-red-500 text-xs mt-1">{noteError}</p>}
+                <p className="text-xs text-slate-400 mt-1 text-right">{lessonNote.length}/500</p>
+              </div>
+
               {/* Özet */}
               <div className="bg-slate-50 rounded-2xl p-6 mb-6">
                 <h3 className="font-semibold text-navy-900 mb-4">Ödeme Özeti</h3>
@@ -485,7 +551,7 @@ export default function TeacherProfilePage() {
                 </button>
                 <button
                   onClick={handleBooking}
-                  disabled={!selectedTime || isSubmitting}
+                  disabled={!selectedTime || isSubmitting || !lessonNote.trim() || !!noteError}
                   className="flex-1 py-3 bg-gradient-to-r from-navy-900 to-navy-700 text-white rounded-xl font-semibold hover:from-navy-800 hover:to-navy-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? 'İşleniyor...' : 'Ödemeye Geç'}
