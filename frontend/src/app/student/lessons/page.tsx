@@ -14,9 +14,13 @@ export default function StudentLessonsPage() {
   const [filter, setFilter] = useState<'upcoming' | 'completed' | 'all'>('upcoming');
   const [currentTime, setCurrentTime] = useState(new Date());
 
+  // Kayıt onay modalı
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [consentChecked, setConsentChecked] = useState(false);
+  const [pendingMeetingLink, setPendingMeetingLink] = useState<string | null>(null);
+
   useEffect(() => {
     checkAuthAndLoadData();
-    // Her dakika güncelle (buton durumu için)
     const interval = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(interval);
   }, []);
@@ -36,12 +40,12 @@ export default function StudentLessonsPage() {
       .single();
 
     if (!studentProfile) {
-      toast.error('Ogrenci profili bulunamadi');
+      toast.error('Öğrenci profili bulunamadı');
       router.push('/student/login');
       return;
     }
 
-    setStudentName(studentProfile.full_name || 'Ogrenci');
+    setStudentName(studentProfile.full_name || 'Öğrenci');
     await fetchLessons(user.id);
     setIsLoading(false);
   };
@@ -114,7 +118,6 @@ export default function StudentLessonsPage() {
     return date.toLocaleDateString('tr-TR', { weekday: 'long' });
   };
 
-  // Derse Katıl butonu: ders başlangıcından 15 dk öncesinden, başlangıçtan 15 dk sonrasına kadar göster
   const canJoinMeeting = (lesson: any) => {
     if (!lesson.meeting_link) return false;
     if (lesson.status === 'COMPLETED' || lesson.status === 'CANCELLED') return false;
@@ -126,19 +129,35 @@ export default function StudentLessonsPage() {
     return currentTime >= fifteenMinsBefore && currentTime <= fifteenMinsAfter;
   };
 
+  // Derse katıl butonuna tıklandığında önce onay modalı göster
+  const handleJoinClick = (meetingLink: string) => {
+    setPendingMeetingLink(meetingLink);
+    setConsentChecked(false);
+    setShowConsentModal(true);
+  };
+
+  // Onay verildikten sonra derse katıl
+  const handleConsentAndJoin = () => {
+    if (!consentChecked || !pendingMeetingLink) return;
+    window.open(pendingMeetingLink, '_blank', 'noopener,noreferrer');
+    setShowConsentModal(false);
+    setPendingMeetingLink(null);
+    setConsentChecked(false);
+  };
+
   const getStatusBadge = (status: string, scheduledAt: string) => {
     const lessonDate = new Date(scheduledAt);
     
     if (status === 'COMPLETED') {
-      return <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Tamamlandi</span>;
+      return <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Tamamlandı</span>;
     }
     if (status === 'CANCELLED') {
-      return <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full">Iptal Edildi</span>;
+      return <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full">İptal Edildi</span>;
     }
     if (lessonDate < currentTime) {
       return <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">Beklemede</span>;
     }
-    return <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">Onaylandi</span>;
+    return <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">Onaylandı</span>;
   };
 
   const filteredLessons = lessons.filter((lesson) => {
@@ -177,17 +196,17 @@ export default function StudentLessonsPage() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">EduPremium</h1>
-            <p className="text-sm text-slate-600">Hos geldin, {studentName}</p>
+            <p className="text-sm text-slate-600">Hoş geldin, {studentName}</p>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/student/dashboard" className="px-4 py-2 text-slate-600 hover:text-slate-900 font-medium">
-              Ogretmenler
+              Öğretmenler
             </Link>
             <Link href="/student/lessons" className="px-4 py-2 text-blue-600 font-medium">
               Derslerim
             </Link>
             <button onClick={handleLogout} className="px-4 py-2 text-slate-600 hover:text-slate-900 font-medium">
-              Cikis Yap
+              Çıkış Yap
             </button>
           </div>
         </div>
@@ -197,11 +216,11 @@ export default function StudentLessonsPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl font-bold text-slate-900">Derslerim</h2>
-            <p className="text-slate-600">Satin aldiginiz dersleri goruntuleyın</p>
+            <p className="text-slate-600">Satın aldığınız dersleri görüntüleyin</p>
           </div>
         </div>
 
-        {/* Filtre Butonlari */}
+        {/* Filtre Butonları */}
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => setFilter('upcoming')}
@@ -215,14 +234,14 @@ export default function StudentLessonsPage() {
             className={'px-4 py-2 rounded-xl font-medium transition-colors ' + 
               (filter === 'completed' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50')}
           >
-            Gecmis Dersler ({completedCount})
+            Geçmiş Dersler ({completedCount})
           </button>
           <button
             onClick={() => setFilter('all')}
             className={'px-4 py-2 rounded-xl font-medium transition-colors ' + 
               (filter === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50')}
           >
-            Tumu ({lessons.length})
+            Tümü ({lessons.length})
           </button>
         </div>
 
@@ -248,7 +267,7 @@ export default function StudentLessonsPage() {
                     </div>
                     <div>
                       <h3 className="font-bold text-lg text-slate-900">
-                        {lesson.teacher?.full_name || 'Ogretmen'}
+                        {lesson.teacher?.full_name || 'Öğretmen'}
                       </h3>
                       <p className="text-sm text-slate-600">{lesson.subject}</p>
                     </div>
@@ -272,27 +291,25 @@ export default function StudentLessonsPage() {
                       <div className="font-medium text-slate-900">{formatTime(lesson.scheduled_at)}</div>
                     </div>
                     <div>
-                      <div className="text-xs text-slate-500">Sure</div>
+                      <div className="text-xs text-slate-500">Süre</div>
                       <div className="font-medium text-slate-900">{lesson.duration_minutes} dakika</div>
                     </div>
                   </div>
                   
                   <div className="text-right">
-                    <div className="text-xs text-slate-500">Ucret</div>
+                    <div className="text-xs text-slate-500">Ücret</div>
                     <div className="font-bold text-lg text-slate-900">{lesson.price} TL</div>
                   </div>
                 </div>
 
                 {canJoinMeeting(lesson) && (
                   <div className="mt-4 pt-4 border-t border-slate-100">
-                    <a 
-                      href={lesson.meeting_link} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
+                    <button 
+                      onClick={() => handleJoinClick(lesson.meeting_link)}
                       className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-medium rounded-xl hover:bg-green-700 transition-colors"
                     >
-                      🎥 Derse Katil
-                    </a>
+                      🎥 Derse Katıl
+                    </button>
                   </div>
                 )}
               </div>
@@ -302,18 +319,89 @@ export default function StudentLessonsPage() {
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
             <p className="text-slate-500 mb-4">
               {filter === 'upcoming' && 'Gelecek dersiniz bulunmuyor'}
-              {filter === 'completed' && 'Gecmis dersiniz bulunmuyor'}
-              {filter === 'all' && 'Henuz ders satin almadiniz'}
+              {filter === 'completed' && 'Geçmiş dersiniz bulunmuyor'}
+              {filter === 'all' && 'Henüz ders satın almadınız'}
             </p>
             <Link 
               href="/student/dashboard" 
               className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors"
             >
-              Ogretmenlere Goz At
+              Öğretmenlere Göz At
             </Link>
           </div>
         )}
       </main>
+
+      {/* Kayıt Onay Modalı */}
+      {showConsentModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <span className="text-2xl">🔴</span>
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">Güvenlik Bildirimi</h2>
+                <p className="text-sm text-slate-500">Derse katılmadan önce lütfen okuyun</p>
+              </div>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+              <p className="text-amber-800 text-sm leading-relaxed">
+                Bu online ders, <strong>tarafların ve platformun hukuki haklarını korumak amacıyla</strong> ses ve görüntü olarak kaydedilmektedir.
+              </p>
+            </div>
+
+            <div className="space-y-3 mb-6 text-sm text-slate-600">
+              <div className="flex items-start gap-2">
+                <span className="text-green-500 mt-0.5">✓</span>
+                <span>Kayıtlar yalnızca güvenlik ve hukuki süreçler için kullanılır</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-green-500 mt-0.5">✓</span>
+                <span>Kayıtlar 7 gün süreyle saklanır, ardından otomatik silinir</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-green-500 mt-0.5">✓</span>
+                <span>Üçüncü taraflarla paylaşılmaz (yasal zorunluluk hariç)</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-green-500 mt-0.5">✓</span>
+                <span>KVKK kapsamında korunur</span>
+              </div>
+            </div>
+
+            <label className="flex items-start gap-3 p-4 bg-slate-50 rounded-xl cursor-pointer mb-6 border-2 border-transparent hover:border-slate-200 transition-colors">
+              <input
+                type="checkbox"
+                checked={consentChecked}
+                onChange={(e) => setConsentChecked(e.target.checked)}
+                className="w-5 h-5 mt-0.5 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+              />
+              <span className="text-slate-700 text-sm">
+                Bu dersin ses ve görüntü olarak kaydedileceğini okudum, anladım ve <strong>kabul ediyorum</strong>.
+              </span>
+            </label>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowConsentModal(false); setPendingMeetingLink(null); }}
+                className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-colors"
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleConsentAndJoin}
+                disabled={!consentChecked}
+                className="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <span>🎥</span>
+                Kabul Et ve Derse Katıl
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
