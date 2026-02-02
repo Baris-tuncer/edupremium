@@ -101,7 +101,7 @@ export default function AdminInvitationsPage() {
       loadInvitations();
     } catch (error) {
       console.error('Error:', error);
-      alert('Kod olusturulamadi!');
+      alert('Kod olusturulamadi! Hata: ' + (error instanceof Error ? error.message : JSON.stringify(error)));
     } finally {
       setCreating(false);
     }
