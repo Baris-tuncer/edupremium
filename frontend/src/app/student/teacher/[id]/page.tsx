@@ -242,12 +242,25 @@ export default function TeacherDetailPage() {
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4"><div className="flex items-start gap-2"><span className="text-red-500">🔴</span><p className="text-xs text-amber-800">Bu ders, tarafların ve platformun hukuki haklarını korumak amacıyla ses ve görüntü olarak kaydedilecektir.</p></div></div>
 
               {currentUser ? (
-                <button onClick={handlePurchase} disabled={!selectedSlot || purchasing || availabilities.length === 0 || !lessonNote.trim() || !!noteError} className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                <button
+                  onClick={async () => {
+                    // Session Guard - Oturum geçerliliğini kontrol et
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session) {
+                      toast.error('Oturumunuz sona erdi. Lütfen tekrar giriş yapın.');
+                      router.push(`/login?redirect=/student/teacher/${teacherId}`);
+                      return;
+                    }
+                    handlePurchase();
+                  }}
+                  disabled={!selectedSlot || purchasing || availabilities.length === 0 || !lessonNote.trim() || !!noteError}
+                  className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   {purchasing ? 'İşleniyor...' : 'Ödemeye Geç'}
                 </button>
               ) : (
                 <button
-                  onClick={() => router.push('/student/login')}
+                  onClick={() => router.push(`/login?redirect=/student/teacher/${teacherId}`)}
                   className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700"
                 >
                   Satın Almak İçin Giriş Yap
