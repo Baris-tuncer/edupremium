@@ -1,4 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -8,12 +9,11 @@ export async function GET(request: NextRequest) {
   const type = requestUrl.searchParams.get('type');
 
   if (code) {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    // Cookie-based client - Session'ı cookie'ye yazar
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
 
-    // Code exchange - Supabase otomatik olarak session oluşturur
+    // Code exchange - Session cookie'ye yazılır
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {

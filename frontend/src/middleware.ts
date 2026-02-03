@@ -34,6 +34,16 @@ const noVerificationPaths = [
   '/api',
 ];
 
+// Cookie'leri bir response'tan diğerine kopyalayan yardımcı fonksiyon
+function copyResponseCookies(source: NextResponse, destination: NextResponse): NextResponse {
+  source.cookies.getAll().forEach((cookie) => {
+    destination.cookies.set(cookie.name, cookie.value, {
+      ...cookie,
+    });
+  });
+  return destination;
+}
+
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
   const pathname = request.nextUrl.pathname;
@@ -63,6 +73,8 @@ export async function middleware(request: NextRequest) {
 
   try {
     const supabase = createMiddlewareClient({ req: request, res: response });
+
+    // getSession çağrısı cookie'leri günceller (refresh token kullanır)
     const { data: { session } } = await supabase.auth.getSession();
 
     // Kullanıcı giriş yapmamış
@@ -74,7 +86,9 @@ export async function middleware(request: NextRequest) {
       // Korumalı sayfaya erişmeye çalışıyor - login'e yönlendir
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(loginUrl);
+      const redirectResponse = NextResponse.redirect(loginUrl);
+      // Cookie'leri kopyala (refresh token güncellemesi için)
+      return copyResponseCookies(response, redirectResponse);
     }
 
     // Kullanıcı giriş yapmış - email doğrulama kontrolü
@@ -84,14 +98,14 @@ export async function middleware(request: NextRequest) {
     // Email onaylanmamış ve verification gerektiren sayfa
     // GEÇİCİ OLARAK DEVRE DIŞI - DEBUG AMAÇLI
     // if (!emailConfirmed && !isNoVerificationPath) {
-    //   // verify-email sayfasına yönlendir
-    //   return NextResponse.redirect(new URL('/verify-email', request.url));
+    //   const redirectResponse = NextResponse.redirect(new URL('/verify-email', request.url));
+    //   return copyResponseCookies(response, redirectResponse);
     // }
 
     // Email onaylanmış kullanıcı verify-email sayfasına girmeye çalışıyor
     if (emailConfirmed && pathname === '/verify-email') {
-      // Ana sayfaya veya dashboard'a yönlendir
-      return NextResponse.redirect(new URL('/', request.url));
+      const redirectResponse = NextResponse.redirect(new URL('/', request.url));
+      return copyResponseCookies(response, redirectResponse);
     }
 
     // Giriş yapmış ve onaylanmış kullanıcı login/register sayfalarına gitmeye çalışıyor
@@ -105,7 +119,8 @@ export async function middleware(request: NextRequest) {
         .single();
 
       if (studentProfile) {
-        return NextResponse.redirect(new URL('/student/dashboard', request.url));
+        const redirectResponse = NextResponse.redirect(new URL('/student/dashboard', request.url));
+        return copyResponseCookies(response, redirectResponse);
       }
 
       // Teacher profile kontrolü
@@ -116,7 +131,8 @@ export async function middleware(request: NextRequest) {
         .single();
 
       if (teacherProfile) {
-        return NextResponse.redirect(new URL('/teacher/dashboard', request.url));
+        const redirectResponse = NextResponse.redirect(new URL('/teacher/dashboard', request.url));
+        return copyResponseCookies(response, redirectResponse);
       }
     }
 
