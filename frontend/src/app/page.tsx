@@ -577,7 +577,7 @@ const SubjectsSection = () => {
             </span>
             <h2>Tüm Dersler İçin Uzman Öğretmenler</h2>
           </div>
-          <Link href="/dersler" className="btn-ghost mt-4 lg:mt-0">
+          <Link href="/courses" className="btn-ghost mt-4 lg:mt-0">
             Tüm Branşları Gör
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

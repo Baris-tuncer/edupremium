@@ -86,7 +86,7 @@ export default function Footer() {
             title="Destek"
             links={[
               { label: 'Yardım Merkezi', href: '#' },
-              { label: 'SSS', href: '#' },
+              { label: 'SSS', href: '/faq' },
               { label: 'Gizlilik Politikası', href: '/privacy' },
               { label: 'Kullanım Şartları', href: '/terms' },
             ]}
