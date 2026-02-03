@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { supabase } from '@/lib/supabase';
@@ -152,6 +153,7 @@ const VerifiedBadge = () => (
 );
 
 const TeacherCard = ({ teacher, index }: { teacher: FeaturedTeacher; index: number }) => {
+  const router = useRouter();
   const [hovered, setHovered] = useState(false);
   const initials = teacher.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2) || '??';
   const avatarGradients = [
@@ -245,8 +247,16 @@ const TeacherCard = ({ teacher, index }: { teacher: FeaturedTeacher; index: numb
           </div>
 
           {/* CTA */}
-          <Link
-            href={'/teachers/' + teacher.id}
+          <button
+            onClick={async () => {
+              // Session kontrolü - giriş yapmadan randevu/profil engelle
+              const { data: { session } } = await supabase.auth.getSession();
+              if (!session) {
+                router.push('/login?redirect=/teachers/' + teacher.id);
+              } else {
+                router.push('/teachers/' + teacher.id);
+              }
+            }}
             className={`w-full py-3.5 rounded-xl text-center text-sm font-bold transition-all duration-300 block ${
               hovered
                 ? 'bg-gradient-to-r from-gold-500 to-gold-400 text-navy-900'
@@ -254,7 +264,7 @@ const TeacherCard = ({ teacher, index }: { teacher: FeaturedTeacher; index: numb
             }`}
           >
             {hovered ? 'Randevu Al' : 'Profili İncele'}
-          </Link>
+          </button>
         </div>
       </div>
     </div>

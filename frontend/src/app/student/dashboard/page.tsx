@@ -10,6 +10,7 @@ import { EDUCATION_LEVELS, LevelKey, parseSubject } from '@/lib/constants';
 export default function StudentDashboardPage() {
   const router = useRouter();
   const [teachers, setTeachers] = useState<any[]>([]);
+  const [featuredTeachers, setFeaturedTeachers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [studentName, setStudentName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,7 +52,12 @@ export default function StudentDashboardPage() {
       console.error('Error:', error);
       return;
     }
-    setTeachers(data || []);
+    const allData = data || [];
+    // Featured olanları ayır
+    const now = new Date().toISOString();
+    const featured = allData.filter(t => t.is_featured === true && t.featured_until && t.featured_until >= now);
+    setFeaturedTeachers(featured);
+    setTeachers(allData);
   };
 
   const handleLogout = async () => {
@@ -221,7 +227,61 @@ export default function StudentDashboardPage() {
           </div>
         </div>
 
+        {/* Editörün Seçimi Bölümü */}
+        {featuredTeachers.length > 0 && !searchQuery && !selectedLevel && !priceRange && (
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b8960c" strokeWidth="2">
+                  <path d="M6 3h12l4 6-10 13L2 9z" fill="#d4af37" fillOpacity="0.15" />
+                  <path d="M6 3h12l4 6-10 13L2 9z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-slate-900">Editorun Secimi</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredTeachers.map((teacher) => (
+                <div key={teacher.id} className="bg-white rounded-2xl shadow-sm border-2 border-amber-200 overflow-hidden hover:shadow-md transition-shadow relative">
+                  <div className="absolute top-3 right-3 bg-amber-100 text-amber-700 text-xs font-bold px-2 py-1 rounded-full">
+                    Seckin
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        {teacher.avatar_url ? (
+                          <img src={teacher.avatar_url} alt="" className="w-16 h-16 rounded-full object-cover" />
+                        ) : (
+                          <span className="text-2xl font-bold text-amber-600">{teacher.full_name?.charAt(0) || '?'}</span>
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-lg text-slate-900 truncate">{teacher.full_name}</h3>
+                        <p className="text-sm text-slate-600 truncate">{teacher.title || 'Ogretmen'}</p>
+                      </div>
+                    </div>
+                    {teacher.featured_headline && (
+                      <p className="text-sm text-amber-700 italic mb-4 border-l-2 border-amber-400 pl-3">&ldquo;{teacher.featured_headline}&rdquo;</p>
+                    )}
+                    <div className="mb-4">{displaySubjects(teacher.subjects)}</div>
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                      <div>
+                        <span className="text-2xl font-bold text-slate-900">{teacher.hourly_rate_display || teacher.price_per_hour || '—'}</span>
+                        <span className="text-slate-600 text-sm"> TL/saat</span>
+                      </div>
+                      <Link href={'/student/teacher/' + teacher.id} className="px-4 py-2 bg-amber-500 text-white font-medium rounded-xl hover:bg-amber-600 transition-colors">
+                        Incele
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tüm Öğretmenler Bölümü */}
         <div className="mb-4">
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Tum Ogretmenler</h2>
           <p className="text-slate-600">
             <span className="font-bold text-slate-900">{filteredTeachers.length}</span> ogretmen bulundu
           </p>
