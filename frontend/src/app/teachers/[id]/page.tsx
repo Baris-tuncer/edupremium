@@ -125,9 +125,20 @@ export default function TeacherProfilePage() {
         .eq('id', user.id)
         .single();
 
+      // Auth token al
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        toast.error('Oturum hatası. Lütfen tekrar giriş yapın.');
+        router.push('/login');
+        return;
+      }
+
       const response = await fetch('/api/payment/create-session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({
           teacherId: teacher.id,
           studentId: user.id,

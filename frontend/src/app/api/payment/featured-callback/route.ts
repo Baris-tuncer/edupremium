@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { verifyParatikaCallback } from '@/lib/paratika';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -36,6 +37,12 @@ export async function POST(request: NextRequest) {
     });
 
     console.log('Featured Callback Data:', JSON.stringify(data));
+
+    // HASH doğrulaması - Sahte callback'leri engelle
+    if (!verifyParatikaCallback(data)) {
+      console.error('Featured callback HASH doğrulaması başarısız - olası sahte istek!');
+      return htmlRedirect(`${baseUrl}/teacher/one-cik?error=guvenlik_hatasi`);
+    }
 
     const responseCode = data.responseCode;
     const merchantPaymentId = data.merchantPaymentId;

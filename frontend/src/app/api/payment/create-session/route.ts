@@ -9,6 +9,27 @@ const supabase = createClient(
 
 export async function POST(request: NextRequest) {
   try {
+    // AUTH KONTROLÜ - Giriş yapmamış kullanıcılar ödeme başlatamaz
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: 'Oturum açmanız gerekiyor' },
+        { status: 401 }
+      );
+    }
+
+    // Token ile kullanıcıyı doğrula
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { success: false, error: 'Geçersiz oturum. Lütfen tekrar giriş yapın.' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const {
       teacherId,
@@ -21,6 +42,12 @@ export async function POST(request: NextRequest) {
       amount,
       availabilityId
     } = body;
+
+    // Kullanıcının kendi adına ödeme yaptığını doğrula (opsiyonel güvenlik)
+    if (user.id !== studentId) {
+      console.warn(`Auth mismatch: user ${user.id} trying to pay for student ${studentId}`);
+      // İzin veriyoruz ama logluyoruz - veli öğrenci adına ödeme yapabilir
+    }
 
     const orderId = `EDU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.visserr.com';

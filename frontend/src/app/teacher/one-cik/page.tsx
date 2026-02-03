@@ -91,15 +91,23 @@ export default function OneCikPage() {
         setSubmitted(true);
         fetchData();
       } else {
-        // Paratika ile ödeme
+        // Paratika ile ödeme - Auth token al
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) {
+          alert('Oturum hatası. Lütfen tekrar giriş yapın.');
+          return;
+        }
+
         const response = await fetch('/api/payment/featured-session', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
           body: JSON.stringify({
             teacherId: user.id,
             category,
             headline,
-            amount: 4500,
           }),
         });
 

@@ -7,10 +7,45 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+// Sabit fiyat - client manipülasyonunu engeller
+const FEATURED_PRICE = 4500;
+
 export async function POST(request: NextRequest) {
   try {
+    // AUTH KONTROLÜ - Sadece giriş yapmış öğretmenler featured satın alabilir
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: 'Oturum açmanız gerekiyor' },
+        { status: 401 }
+      );
+    }
+
+    // Token ile kullanıcıyı doğrula
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { success: false, error: 'Geçersiz oturum. Lütfen tekrar giriş yapın.' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
-    const { teacherId, category, headline, amount } = body;
+    const { teacherId, category, headline } = body;
+
+    // Öğretmenin kendi hesabı için satın aldığını doğrula
+    if (user.id !== teacherId) {
+      return NextResponse.json(
+        { success: false, error: 'Sadece kendi hesabınız için featured satın alabilirsiniz' },
+        { status: 403 }
+      );
+    }
+
+    // Fiyat her zaman server tarafından belirlenir
+    const amount = FEATURED_PRICE;
 
     // Öğretmen bilgilerini al
     const { data: teacher } = await supabase

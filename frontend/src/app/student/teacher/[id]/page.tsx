@@ -90,11 +90,22 @@ export default function TeacherDetailPage() {
 
     setPurchasing(true);
     try {
+      // Auth token al
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        toast.error('Oturum hatası. Lütfen tekrar giriş yapın.');
+        router.push('/student/login');
+        return;
+      }
+
       const displayPrice = teacher?.hourly_rate_display || calculateDisplayPrice(teacher?.base_price || 0, teacher?.commission_rate || 0.25);
 
       const response = await fetch('/api/payment/create-session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({
           amount: displayPrice,
           teacherId: teacher?.id,

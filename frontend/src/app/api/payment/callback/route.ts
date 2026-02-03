@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
-import { 
-  getStudentPaymentConfirmationEmail, 
-  getTeacherNewLessonEmail 
+import {
+  getStudentPaymentConfirmationEmail,
+  getTeacherNewLessonEmail
 } from '@/lib/email-templates';
 import { createDailyRoom } from '@/lib/daily';
+import { verifyParatikaCallback } from '@/lib/paratika';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -147,6 +148,12 @@ export async function POST(request: NextRequest) {
     });
 
     console.log('Paratika Callback Data:', JSON.stringify(data));
+
+    // HASH doğrulaması - Sahte callback'leri engelle
+    if (!verifyParatikaCallback(data)) {
+      console.error('Paratika callback HASH doğrulaması başarısız - olası sahte istek!');
+      return htmlRedirect(`${baseUrl}/payment/fail?error=Guvenlik_hatasi`);
+    }
 
     const responseCode = data.responseCode;
     const merchantPaymentId = data.merchantPaymentId;
