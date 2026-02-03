@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
 export default function AdminLoginPage() {
@@ -9,7 +8,6 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,8 +40,8 @@ export default function AdminLoginPage() {
         return;
       }
 
-      router.refresh();
-      router.push('/admin/dashboard');
+      // Hard navigation - çerez senkronizasyonu için
+      window.location.href = '/admin/dashboard';
     } catch (err) {
       setError('Bir hata olustu');
       setLoading(false);

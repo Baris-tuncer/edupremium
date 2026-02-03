@@ -2,13 +2,10 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Loader2, AlertCircle, CheckCircle, ArrowRight } from 'lucide-react'
 
 export default function Register() {
-  const router = useRouter()
-
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -88,10 +85,9 @@ export default function Register() {
 
       setSuccess(true)
       
-      // 6. ADIM: Yönlendirme
+      // 6. ADIM: Yönlendirme (Hard navigation)
       setTimeout(() => {
-        router.refresh()
-        router.push('/teacher/profile')
+        window.location.href = '/teacher/profile'
       }, 1500)
 
     } catch (err: any) {
