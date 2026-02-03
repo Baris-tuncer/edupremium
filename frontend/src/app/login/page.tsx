@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 
 export default function LoginPage() {
@@ -101,13 +102,12 @@ export default function LoginPage() {
               </div>
               
               <div className="flex items-center justify-end">
-                <button
-                  type="button"
-                  onClick={() => setShowForgotPassword(true)}
-                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                <Link
+                  href="/forgot-password"
+                  className="text-sm font-medium text-blue-600 hover:text-blue-500"
                 >
-                  Sifremi Unuttum
-                </button>
+                  Sifremi Unuttum?
+                </Link>
               </div>
               
               <button 

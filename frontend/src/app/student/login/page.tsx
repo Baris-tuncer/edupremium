@@ -116,13 +116,12 @@ export default function StudentLoginPage() {
               </div>
 
               <div className="flex items-center justify-end">
-                <button
-                  type="button"
-                  onClick={() => setShowForgotPassword(true)}
-                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                <Link
+                  href="/forgot-password"
+                  className="text-sm font-medium text-blue-600 hover:text-blue-500"
                 >
-                  Sifremi Unuttum
-                </button>
+                  Sifremi Unuttum?
+                </Link>
               </div>
 
               <button
