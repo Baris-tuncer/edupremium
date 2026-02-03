@@ -1,12 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { Loader2, AlertCircle, CheckCircle, ArrowRight } from 'lucide-react'
 
 export default function Register() {
-  const supabase = createClientComponentClient()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
