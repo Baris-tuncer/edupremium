@@ -1,14 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { getLessonReminderEmail } from '@/lib/email-templates';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// Prevent static generation - this route requires runtime env vars
+export const dynamic = 'force-dynamic';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Build time'da değil, runtime'da oluşturulacak
+let supabase: SupabaseClient;
+let resend: Resend;
+
+function getClients() {
+  if (!supabase) {
+    supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+  }
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return { supabase, resend };
+}
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
@@ -31,6 +44,9 @@ function formatTime(dateString: string): string {
 }
 
 export async function GET(request: NextRequest) {
+  // Client'ları runtime'da oluştur
+  const { supabase, resend } = getClients();
+
   // Vercel Cron güvenlik kontrolü
   const authHeader = request.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {

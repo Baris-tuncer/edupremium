@@ -3,14 +3,20 @@ import { Resend } from 'resend';
 import { createClient } from '@supabase/supabase-js';
 import { getInvitationCodeEmail } from '@/lib/email-templates';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 export async function POST(request: NextRequest) {
+  const supabase = getSupabase();
+  const resend = getResend();
   try {
     // AUTH KONTROLÜ - Sadece admin kullanıcılar davet gönderebilir
     const authHeader = request.headers.get('authorization');

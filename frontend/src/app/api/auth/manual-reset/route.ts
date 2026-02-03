@@ -2,26 +2,27 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
-// Yeni Anahtarin Yuklendiginden Emin Olalim
-const resendApiKey = process.env.RESEND_API_KEY;
-if (!resendApiKey) {
-  console.error('CRITICAL: RESEND_API_KEY is missing');
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY)
 }
 
-const resend = new Resend(resendApiKey)
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
+function getSupabaseAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
     }
-  }
-)
+  )
+}
 
 export async function POST(request: Request) {
+  const resend = getResend()
+  const supabaseAdmin = getSupabaseAdmin()
+
   try {
     const body = await request.json()
     const email = body.email

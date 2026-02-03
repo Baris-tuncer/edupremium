@@ -2,15 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PARATIKA_CONFIG, getApiUrl, getPaymentPageUrl } from '@/lib/paratika';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
 
 // Sabit fiyat - client manipülasyonunu engeller
 const FEATURED_PRICE = 4500;
 
 export async function POST(request: NextRequest) {
+  const supabase = getSupabase();
+
   try {
     // AUTH KONTROLÜ - Sadece giriş yapmış öğretmenler featured satın alabilir
     const authHeader = request.headers.get('authorization');

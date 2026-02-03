@@ -8,12 +8,16 @@ import {
 import { createDailyRoom } from '@/lib/daily';
 import { verifyParatikaCallback } from '@/lib/paratika';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 function htmlRedirect(url: string) {
   const html = `
@@ -54,7 +58,7 @@ function formatTime(dateString: string): string {
   });
 }
 
-async function sendEmails(pendingPayment: any, orderId: string, meetingLink: string | null) {
+async function sendEmails(pendingPayment: any, orderId: string, meetingLink: string | null, supabase: any, resend: any) {
   try {
     console.log('sendEmails started for order:', orderId);
 
@@ -139,7 +143,9 @@ async function sendEmails(pendingPayment: any, orderId: string, meetingLink: str
 
 export async function POST(request: NextRequest) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.visserr.com';
-  
+  const supabase = getSupabase();
+  const resend = getResend();
+
   try {
     const formData = await request.formData();
     const data: Record<string, string> = {};
@@ -224,7 +230,7 @@ export async function POST(request: NextRequest) {
         console.log('Pending Payment Updated');
 
         // Email gönder (meeting link ile)
-        await sendEmails(pendingPayment, merchantPaymentId, meetingLink);
+        await sendEmails(pendingPayment, merchantPaymentId, meetingLink, supabase, resend);
       }
 
       return htmlRedirect(`${baseUrl}/payment/success?orderId=${merchantPaymentId}`);
