@@ -50,21 +50,26 @@ export default function TeacherDetailPage() {
 
   const loadData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUser(user);
+      // Önce öğretmen bilgisini al (public - auth gerekmez)
+      const { data: teacherData, error: teacherError } = await supabase
+        .from('teacher_profiles')
+        .select('*')
+        .eq('id', teacherId)
+        .single();
 
-      if (user) {
-        const { data: profile } = await supabase.from('student_profiles').select('*').eq('id', user.id).single();
-        setStudentProfile(profile);
+      if (teacherError) {
+        console.error('Teacher fetch error:', teacherError);
       }
-
-      const { data: teacherData } = await supabase.from('teacher_profiles').select('*').eq('id', teacherId).single();
-      if (!teacherData) return;
+      if (!teacherData) {
+        setLoading(false);
+        return;
+      }
       setTeacher(teacherData);
       if (teacherData.subjects?.length > 0) setSelectedSubject(teacherData.subjects[0]);
 
+      // Müsaitlikleri al (public - auth gerekmez)
       const now = new Date().toISOString();
-      const { data: availData } = await supabase
+      const { data: availData, error: availError } = await supabase
         .from('availabilities')
         .select('*')
         .eq('teacher_id', teacherId)
@@ -73,7 +78,20 @@ export default function TeacherDetailPage() {
         .gte('start_time', now)
         .order('start_time', { ascending: true })
         .limit(20);
+
+      if (availError) {
+        console.error('Availability fetch error:', availError);
+      }
       setAvailabilities(availData || []);
+
+      // Kullanıcı bilgisini al (opsiyonel)
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user);
+
+      if (user) {
+        const { data: profile } = await supabase.from('student_profiles').select('*').eq('id', user.id).single();
+        setStudentProfile(profile);
+      }
     } catch (error) {
       console.error('Load error:', error);
     } finally {
@@ -228,7 +246,12 @@ export default function TeacherDetailPage() {
                   {purchasing ? 'İşleniyor...' : 'Ödemeye Geç'}
                 </button>
               ) : (
-                <Link href="/student/login" className="block w-full py-3 bg-blue-600 text-white font-semibold rounded-xl text-center hover:bg-blue-700">Satın Almak İçin Giriş Yap</Link>
+                <button
+                  onClick={() => router.push('/student/login')}
+                  className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700"
+                >
+                  Satın Almak İçin Giriş Yap
+                </button>
               )}
             </div>
           </div>
