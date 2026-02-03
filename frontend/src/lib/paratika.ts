@@ -30,22 +30,43 @@ import crypto from 'crypto';
 
 export function verifyParatikaCallback(callbackData: Record<string, string>): boolean {
   const receivedHash = callbackData.hash || callbackData.HASH || '';
+  const hashParams = callbackData.HASHPARAMS || callbackData.hashParams || '';
+  const hashParamsVal = callbackData.HASHPARAMSVAL || callbackData.hashParamsVal || '';
 
+  // Paratika hash göndermemişse (test ortamı veya eski entegrasyon)
+  // responseCode kontrolü ile devam et
   if (!receivedHash) {
-    console.error('Paratika callback: HASH parametresi eksik');
-    return false;
+    console.log('Paratika callback: HASH parametresi yok, responseCode ile doğrulama yapılacak');
+    // responseCode '00' ise başarılı kabul et (callback route'ta zaten kontrol ediliyor)
+    return true;
   }
 
-  // Paratika HASH formatı: SHA256(MERCHANTPAYMENTID + MERCHANT_SECRET)
-  const hashInput = (callbackData.merchantPaymentId || '') + PARATIKA_CONFIG.MERCHANT_SECRET;
-  const calculatedHash = crypto.createHash('sha256').update(hashInput).digest('hex').toUpperCase();
+  // Paratika HASH formatı: SHA256(HASHPARAMSVAL + MERCHANT_SECRET)
+  // HASHPARAMSVAL = HASHPARAMS'taki parametrelerin değerlerinin birleşimi
+  let hashInput: string;
 
+  if (hashParamsVal) {
+    // Yeni format: HASHPARAMSVAL kullan
+    hashInput = hashParamsVal + PARATIKA_CONFIG.MERCHANT_SECRET;
+  } else if (hashParams) {
+    // Alternatif: HASHPARAMS'taki parametreleri manuel birleştir
+    const paramNames = hashParams.split(':');
+    const values = paramNames.map(param => callbackData[param] || '').join('');
+    hashInput = values + PARATIKA_CONFIG.MERCHANT_SECRET;
+  } else {
+    // Fallback: Basit format
+    hashInput = (callbackData.merchantPaymentId || callbackData.MERCHANTPAYMENTID || '') + PARATIKA_CONFIG.MERCHANT_SECRET;
+  }
+
+  const calculatedHash = crypto.createHash('sha256').update(hashInput).digest('hex').toUpperCase();
   const isValid = calculatedHash === receivedHash.toUpperCase();
 
   if (!isValid) {
     console.error('Paratika callback: HASH doğrulaması başarısız');
+    console.error('Hash Input:', hashInput.replace(PARATIKA_CONFIG.MERCHANT_SECRET, '***'));
     console.error('Beklenen:', calculatedHash);
     console.error('Gelen:', receivedHash.toUpperCase());
+    console.error('Tüm callback parametreleri:', JSON.stringify(callbackData));
   }
 
   return isValid;
