@@ -62,34 +62,34 @@ export default function Footer() {
           </div>
 
           {/* Links */}
-          <FooterSection 
-            title="Platform" 
+          <FooterSection
+            title="Platform"
             links={[
               { label: 'Öğretmenler', href: '/teachers' },
-              { label: 'Dersler', href: '/dersler' },
-              { label: 'Nasıl Çalışır?', href: '/nasil-calisir' },
-              { label: 'Fiyatlandırma', href: '/fiyatlandirma' },
-            ]} 
+              { label: 'Dersler', href: '/courses' },
+              { label: 'Nasıl Çalışır?', href: '#' },
+              { label: 'Fiyatlandırma', href: '#' },
+            ]}
           />
 
-          <FooterSection 
-            title="Kurumsal" 
+          <FooterSection
+            title="Kurumsal"
             links={[
-              { label: 'Hakkımızda', href: '/hakkimizda' },
-              { label: 'Kariyer', href: '/kariyer' },
-              { label: 'İletişim', href: '/iletisim' },
-              { label: 'Blog', href: '/blog' },
-            ]} 
+              { label: 'Hakkımızda', href: '/about' },
+              { label: 'Kariyer', href: '#' },
+              { label: 'İletişim', href: '/contact' },
+              { label: 'Blog', href: '#' },
+            ]}
           />
 
-          <FooterSection 
-            title="Destek" 
+          <FooterSection
+            title="Destek"
             links={[
-              { label: 'Yardım Merkezi', href: '/yardim' },
-              { label: 'SSS', href: '/sss' },
-              { label: 'Gizlilik Politikası', href: '/gizlilik-politikasi' },
-              { label: 'Kullanım Şartları', href: '/kullanim-sartlari' },
-            ]} 
+              { label: 'Yardım Merkezi', href: '#' },
+              { label: 'SSS', href: '#' },
+              { label: 'Gizlilik Politikası', href: '/privacy' },
+              { label: 'Kullanım Şartları', href: '/terms' },
+            ]}
           />
         </div>
       </div>
