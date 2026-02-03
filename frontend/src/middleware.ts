@@ -10,7 +10,7 @@ export async function middleware(req: NextRequest) {
   const { data: { session } } = await supabase.auth.getSession()
   const path = req.nextUrl.pathname
 
-  // --- 1. ADMIN YÖNLENDİRMESİ (YENİ) ---
+  // --- 1. ADMIN YÖNLENDİRMESİ (MEVCUT KORUNDU) ---
   if (path.startsWith('/admin')) {
     // Admin login sayfasına gidiyorsa ve zaten giriş yapmışsa -> Panele at
     if (path === '/admin/login' && session) {
@@ -20,15 +20,17 @@ export async function middleware(req: NextRequest) {
     if (path !== '/admin/login' && !session) {
         return NextResponse.redirect(new URL('/admin/login', req.url))
     }
-    // Diğer admin durumlarında izin ver
     return res
   }
 
-  // --- 2. STANDART AYARLAR (MEVCUT KORUNDU) ---
+  // --- 2. HERKESE AÇIK SAYFALAR (YENİ EKLENENLER VAR) ---
   const isPublic =
     path === '/' ||
     path === '/login' ||
     path === '/register' ||
+    path === '/forgot-password' ||   // ✅ EKLENDİ: Şifre sıfırlama talebi
+    path === '/update-password' ||   // ✅ EKLENDİ: Yeni şifre belirleme
+    path === '/verify-email' ||      // ✅ EKLENDİ: Email doğrulama
     path.startsWith('/teachers') ||
     path.startsWith('/auth') ||
     path.startsWith('/api') ||
