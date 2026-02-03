@@ -1,11 +1,52 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import { createClient } from '@supabase/supabase-js';
 import { getInvitationCodeEmail } from '@/lib/email-templates';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
 export async function POST(request: NextRequest) {
   try {
+    // AUTH KONTROLÜ - Sadece admin kullanıcılar davet gönderebilir
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Yetkilendirme gerekli' },
+        { status: 401 }
+      );
+    }
+
+    // Token ile kullanıcıyı doğrula
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Geçersiz oturum' },
+        { status: 401 }
+      );
+    }
+
+    // Admin kontrolü
+    const { data: profile } = await supabase
+      .from('teacher_profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile?.is_admin) {
+      return NextResponse.json(
+        { error: 'Bu işlem için admin yetkisi gerekli' },
+        { status: 403 }
+      );
+    }
+
     const { email, code, expiresAt, personalMessage } = await request.json();
 
     if (!email || !code) {

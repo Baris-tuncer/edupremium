@@ -85,9 +85,18 @@ export default function AdminInvitationsPage() {
 
   const sendInvitationEmail = async (email: string, code: string, expiresAt: string, personalMessage?: string) => {
     try {
+      // Auth token al
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('Oturum bulunamadı');
+      }
+
       const response = await fetch('/api/invitation/send-email', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
         body: JSON.stringify({ email, code, expiresAt, personalMessage: personalMessage || '' })
       });
 
