@@ -44,6 +44,21 @@ export default function TeacherDetailPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [studentProfile, setStudentProfile] = useState<any>(null);
 
+  // ========================================
+  // MERKEZI GÜVENLİK KAPISI - ÖDEME İŞLEMİ
+  // Tüm ödeme işlemleri bu fonksiyondan geçmeli
+  // ========================================
+  const handleSecurePurchase = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast.error('Oturumunuz sona erdi. Lütfen tekrar giriş yapın.');
+      router.push(`/login?redirect=/student/teacher/${params.id}`);
+      return;
+    }
+    // Session geçerli, ödeme işlemine devam et
+    handlePurchase();
+  };
+
   useEffect(() => {
     loadData();
   }, [teacherId]);
@@ -243,16 +258,7 @@ export default function TeacherDetailPage() {
 
               {currentUser ? (
                 <button
-                  onClick={async () => {
-                    // Session Guard - Oturum geçerliliğini kontrol et
-                    const { data: { session } } = await supabase.auth.getSession();
-                    if (!session) {
-                      toast.error('Oturumunuz sona erdi. Lütfen tekrar giriş yapın.');
-                      router.push(`/login?redirect=/student/teacher/${teacherId}`);
-                      return;
-                    }
-                    handlePurchase();
-                  }}
+                  onClick={handleSecurePurchase}
                   disabled={!selectedSlot || purchasing || availabilities.length === 0 || !lessonNote.trim() || !!noteError}
                   className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >

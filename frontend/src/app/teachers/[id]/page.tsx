@@ -52,6 +52,21 @@ export default function TeacherProfilePage() {
   const [noteError, setNoteError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // ========================================
+  // MERKEZI GÜVENLİK KAPISI - MODAL AÇMA
+  // Tüm setIsBookingOpen(true) çağrıları bu fonksiyondan geçmeli
+  // ========================================
+  const handleOpenBooking = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      // Giriş yoksa login'e yönlendir, geri dönüş URL'i ayarla
+      router.push(`/login?redirect=/teachers/${params.id}`);
+      return;
+    }
+    // Giriş varsa modalı aç
+    setIsBookingOpen(true);
+  };
+
   useEffect(() => {
     if (teacherId) fetchTeacher();
   }, [teacherId]);
@@ -376,15 +391,7 @@ export default function TeacherProfilePage() {
                 </div>
 
                 <button
-                  onClick={async () => {
-                    // Session Guard - Giriş yapmadan randevu engelle
-                    const { data: { session } } = await supabase.auth.getSession();
-                    if (!session) {
-                      router.push(`/login?redirect=/teachers/${teacherId}`);
-                      return;
-                    }
-                    setIsBookingOpen(true);
-                  }}
+                  onClick={handleOpenBooking}
                   className="w-full bg-gradient-to-r from-navy-900 to-navy-700 text-white py-4 rounded-xl text-lg font-semibold hover:from-navy-800 hover:to-navy-600 transition-all mb-4"
                 >
                   Randevu Al
