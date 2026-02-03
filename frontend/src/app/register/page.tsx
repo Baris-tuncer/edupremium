@@ -1,222 +1,67 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
-import Link from 'next/link'
-import { Loader2, AlertCircle, CheckCircle, ArrowRight } from 'lucide-react'
+import Link from 'next/link';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 
-export default function Register() {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
-
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-    phone: '',
-    inviteCode: ''
-  })
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-
-    try {
-      // 1. ADIM: Davet Kodu Kontrolü
-      const { data: codeData, error: codeError } = await supabase
-        .from('invitation_codes')
-        .select('*')
-        .eq('code', formData.inviteCode.trim())
-        .eq('is_used', false)
-        .single()
-
-      if (codeError || !codeData) {
-        throw new Error('Geçersiz veya kullanılmış davet kodu!')
-      }
-
-      // 2. ADIM: Kayıt Ol (Sign Up)
-      const { data: signUpData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: formData.fullName,
-            phone: formData.phone,
-          },
-        },
-      })
-
-      if (authError) throw authError
-
-      // 3. ADIM: Otomatik Giriş
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      })
-
-      if (signInError) throw signInError
-
-      // 4. ADIM: Teacher Profile Oluştur
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      if (user) {
-        const { error: profileError } = await supabase
-          .from('teacher_profiles')
-          .upsert({
-            id: user.id,
-            full_name: formData.fullName,
-            email: formData.email,
-            phone: formData.phone,
-            title: 'Eğitmen',
-          })
-        
-        if (profileError) {
-          console.error('Profil oluşturma hatası:', profileError)
-        }
-      }
-
-      // 5. ADIM: Davet Kodunu Yak
-      await supabase
-        .from('invitation_codes')
-        .update({ is_used: true })
-        .eq('id', codeData.id)
-
-      setSuccess(true)
-      
-      // 6. ADIM: Yönlendirme (Hard navigation)
-      setTimeout(() => {
-        window.location.href = '/teacher/profile'
-      }, 1500)
-
-    } catch (err: any) {
-      console.error('İşlem Hatası:', err)
-      setError(err.message || 'Beklenmeyen bir hata oluştu.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
+export default function RegisterPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f8f9fc] p-4 font-sans">
-      <div className="bg-white w-full max-w-[480px] p-8 rounded-2xl shadow-xl border border-gray-100">
-        
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-[#1a237e] tracking-tight">EduPremium</h1>
-          <p className="text-gray-500 mt-2 text-sm font-medium">Seçkin Eğitmen Başvuru Formu</p>
-        </div>
+    <>
+      <Header />
+      <main className="min-h-screen bg-slate-50 pt-24 pb-16 flex items-center justify-center">
+        <div className="max-w-3xl mx-auto px-6 text-center">
+          <h1 className="text-4xl font-bold text-navy-900 mb-4">Hesap Oluştur</h1>
+          <p className="text-lg text-slate-600 mb-12">Nasıl devam etmek istersiniz?</p>
 
-        {success ? (
-          <div className="text-center py-12 animate-in fade-in zoom-in duration-300">
-            <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="w-10 h-10" />
-            </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">Başarıyla Katıldınız!</h3>
-            <p className="text-gray-600 mb-6">Profiliniz oluşturuluyor, yönlendiriliyorsunuz...</p>
-            <div className="h-1 w-32 bg-gray-100 rounded-full mx-auto overflow-hidden">
-              <div className="h-full bg-green-500 animate-pulse w-full"></div>
-            </div>
-          </div>
-        ) : (
-          <form onSubmit={handleRegister} className="space-y-5">
-            
-            {error && (
-              <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm flex items-start gap-3 border border-red-100 shadow-sm">
-                <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
-                <span className="font-medium">{error}</span>
-              </div>
-            )}
-
-            <div className="grid gap-5">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">Ad Soyad</label>
-                <input
-                  type="text"
-                  required
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1a237e] focus:border-transparent transition-all outline-none text-gray-800 placeholder-gray-400"
-                  placeholder="Örn: Dr. Barış Tuncer"
-                  value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">E-posta</label>
-                <input
-                  type="email"
-                  required
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1a237e] focus:border-transparent transition-all outline-none text-gray-800 placeholder-gray-400"
-                  placeholder="ornek@email.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">Şifre</label>
-                <input
-                  type="password"
-                  required
-                  minLength={6}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1a237e] focus:border-transparent transition-all outline-none text-gray-800 placeholder-gray-400"
-                  placeholder="En az 6 karakter"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">Telefon</label>
-                <input
-                  type="tel"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1a237e] focus:border-transparent transition-all outline-none text-gray-800 placeholder-gray-400"
-                  placeholder="05..."
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                />
-              </div>
-
-              <div className="pt-2">
-                <label className="block text-sm font-bold text-[#1a237e] mb-2">Öğretmen Davet Kodu</label>
-                <input
-                  type="text"
-                  required
-                  className="w-full px-4 py-3 border-2 border-dashed border-[#1a237e]/40 rounded-xl focus:ring-2 focus:ring-[#1a237e] focus:border-transparent transition-all outline-none bg-blue-50/30 font-mono text-center tracking-[0.2em] uppercase text-lg text-[#1a237e]"
-                  placeholder="KODU GİRİN"
-                  value={formData.inviteCode}
-                  onChange={(e) => setFormData({ ...formData, inviteCode: e.target.value.toUpperCase() })}
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[#1a237e] text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-900 active:scale-[0.98] transition-all shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2 mt-4"
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Veli / Öğrenci */}
+            <Link
+              href="/student/register"
+              className="group bg-white rounded-2xl shadow-sm border-2 border-slate-200 hover:border-navy-500 p-8 transition-all hover:shadow-lg"
             >
-              {loading ? (
-                <>
-                  <Loader2 className="animate-spin w-5 h-5" />
-                  İşleniyor...
-                </>
-              ) : (
-                <>
-                  Başvuruyu Tamamla
-                  <ArrowRight className="w-5 h-5" />
-                </>
-              )}
-            </button>
+              <div className="w-16 h-16 bg-navy-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-navy-100 transition-colors">
+                <svg className="w-8 h-8 text-navy-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-navy-900 mb-3">Veli / Öğrenci</h2>
+              <p className="text-slate-500">Çocuğunuz için uzman öğretmenlerden birebir ders almak istiyorsanız</p>
+              <div className="mt-6 inline-flex items-center gap-2 text-navy-600 font-semibold group-hover:gap-3 transition-all">
+                Kayıt Ol
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </Link>
 
-            <div className="text-center text-sm text-gray-500 mt-6">
-              Zaten hesabın var mı?{' '}
-              <Link href="/login" className="text-[#1a237e] font-bold hover:underline">
-                Giriş Yap
-              </Link>
-            </div>
-          </form>
-        )}
-      </div>
-    </div>
-  )
+            {/* Öğretmen */}
+            <Link
+              href="/teacher/register"
+              className="group bg-white rounded-2xl shadow-sm border-2 border-slate-200 hover:border-gold-500 p-8 transition-all hover:shadow-lg"
+            >
+              <div className="w-16 h-16 bg-gold-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-gold-100 transition-colors">
+                <svg className="w-8 h-8 text-gold-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-navy-900 mb-3">Öğretmen</h2>
+              <p className="text-slate-500">Platformumuzda ders vermek ve öğrencilere ulaşmak istiyorsanız</p>
+              <div className="mt-6 inline-flex items-center gap-2 text-gold-600 font-semibold group-hover:gap-3 transition-all">
+                Başvuru Yap
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </Link>
+          </div>
+
+          <p className="mt-8 text-slate-500">
+            Zaten hesabınız var mı?{' '}
+            <Link href="/login" className="text-navy-600 font-semibold hover:underline">Giriş Yap</Link>
+          </p>
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
 }
