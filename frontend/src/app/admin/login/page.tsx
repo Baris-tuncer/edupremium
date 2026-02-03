@@ -42,6 +42,7 @@ export default function AdminLoginPage() {
         return;
       }
 
+      router.refresh();
       router.push('/admin/dashboard');
     } catch (err) {
       setError('Bir hata olustu');

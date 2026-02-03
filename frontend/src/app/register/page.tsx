@@ -90,8 +90,8 @@ export default function Register() {
       
       // 6. ADIM: Yönlendirme
       setTimeout(() => {
-        router.push('/teacher/profile')
         router.refresh()
+        router.push('/teacher/profile')
       }, 1500)
 
     } catch (err: any) {

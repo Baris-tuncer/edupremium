@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 
 export default function StudentLoginPage() {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -39,7 +41,8 @@ export default function StudentLoginPage() {
         throw new Error('Bu hesap bir ogrenci hesabi degil.');
       }
 
-      window.location.href = '/student/dashboard';
+      router.refresh();
+      router.push('/student/dashboard');
     } catch (err: any) {
       setError(err.message || 'Giris yapilamadi.');
     } finally {

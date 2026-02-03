@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -26,7 +28,8 @@ export default function LoginPage() {
       });
 
       if (authError) throw new Error(authError.message);
-      window.location.href = '/teacher/profile';
+      router.refresh();
+      router.push('/teacher/profile');
     } catch (err: any) {
       setError(err.message || 'Giris yapilamadi.');
     } finally {
