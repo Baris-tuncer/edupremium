@@ -1,152 +1,65 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { Eye, EyeOff } from 'lucide-react'
+import Link from 'next/link';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
-  const supabase = createClientComponentClient()
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (error) {
-        throw error
-      }
-
-      // Başarılı giriş sonrası yönlendirme kontrolü
-      // (Middleware zaten koruyor ama burada da UX için yönlendiriyoruz)
-      const { data: { session } } = await supabase.auth.getSession()
-
-      if (session) {
-        // Hızlı bir yenileme ile router'ı tazeleyelim
-        router.refresh()
-
-        // Kullanıcı tipine göre veya varsayılan yönlendirme
-        // Not: Genelde middleware halleder ama manuel push güvenlidir
-        router.push('/teachers')
-      }
-
-    } catch (err: any) {
-      setError('Giriş başarısız. Lütfen bilgilerinizi kontrol edin.')
-      console.error('Login error:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900 font-serif">
-            Ogretmen Girisi
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            EduPremium hesabiniza giris yapin
+    <>
+      <Header />
+      <main className="min-h-screen bg-slate-50 pt-24 pb-16 flex items-center justify-center">
+        <div className="max-w-3xl mx-auto px-6 text-center">
+          <h1 className="text-4xl font-bold text-navy-900 mb-4">Giriş Yap</h1>
+          <p className="text-lg text-slate-600 mb-12">Hesap türünüzü seçin</p>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <Link
+              href="/student/login"
+              className="group bg-white rounded-2xl shadow-sm border-2 border-slate-200 hover:border-navy-500 p-8 transition-all hover:shadow-lg"
+            >
+              <div className="w-16 h-16 bg-navy-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-navy-100 transition-colors">
+                <svg className="w-8 h-8 text-navy-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-navy-900 mb-3">Veli / Öğrenci</h2>
+              <p className="text-slate-500">Ders almak için giriş yapın</p>
+              <div className="mt-6 inline-flex items-center gap-2 text-navy-600 font-semibold group-hover:gap-3 transition-all">
+                Giriş Yap
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </Link>
+
+            <Link
+              href="/teacher/login"
+              className="group bg-white rounded-2xl shadow-sm border-2 border-slate-200 hover:border-gold-500 p-8 transition-all hover:shadow-lg"
+            >
+              <div className="w-16 h-16 bg-gold-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-gold-100 transition-colors">
+                <svg className="w-8 h-8 text-gold-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-navy-900 mb-3">Öğretmen</h2>
+              <p className="text-slate-500">Ders vermek için giriş yapın</p>
+              <div className="mt-6 inline-flex items-center gap-2 text-gold-600 font-semibold group-hover:gap-3 transition-all">
+                Giriş Yap
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </Link>
+          </div>
+
+          <p className="mt-8 text-slate-500">
+            Hesabınız yok mu?{' '}
+            <Link href="/register" className="text-navy-600 font-semibold hover:underline">Kayıt Ol</Link>
           </p>
         </div>
-
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          {error && (
-            <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm text-center">
-              {error}
-            </div>
-          )}
-
-          <div className="rounded-md shadow-sm space-y-4">
-            <div>
-              <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1">
-                E-posta
-              </label>
-              <input
-                id="email-address"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="ornek@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Sifre
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
-                  required
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm pr-10"
-                  placeholder="********"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-end">
-            <div className="text-sm">
-              <Link href="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
-                Sifremi Unuttum?
-              </Link>
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Giriş Yapılıyor...' : 'Giris Yap'}
-            </button>
-          </div>
-
-          <div className="text-center mt-4">
-            <p className="text-sm text-gray-600">
-              Hesabiniz yok mu?{' '}
-              <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
-                Kayit Olun
-              </Link>
-            </p>
-          </div>
-        </form>
-      </div>
-    </div>
-  )
+      </main>
+      <Footer />
+    </>
+  );
 }
