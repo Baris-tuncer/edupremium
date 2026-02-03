@@ -13,9 +13,10 @@ const CATEGORIES = [
 ];
 
 const BANK_INFO = {
-  bankName: 'Ziraat Bankası',
-  accountHolder: 'EduPremium Eğitim Teknolojileri',
-  iban: 'TR00 0000 0000 0000 0000 0000 00',
+  bankName: 'AKBANK',
+  accountHolder: 'Mac Elt Özel Eğitim Yayıncılık Dağ. Paz. ve Tic. Ltd. Şti.',
+  iban: 'TR06 0004 6000 2088 8000 5930 60',
+  ibanRaw: 'TR0600046000208880005930 60', // Kopyalama için boşluksuz
   description: 'Editörün Seçimi - [İsminiz]',
 };
 
@@ -212,26 +213,38 @@ export default function OneCikPage() {
           <h2 className="text-xl font-bold text-navy-900 mb-2">Başvurunuz Alındı!</h2>
           <p className="text-slate-600 mb-6">Aşağıdaki hesaba havale/EFT yaptıktan sonra başvurunuz onaylanacaktır.</p>
 
-          <div className="bg-white rounded-xl p-5 text-left space-y-3 border border-slate-200">
-            <div className="flex justify-between">
+          <div className="bg-white rounded-xl p-5 text-left space-y-4 border border-slate-200">
+            <div className="flex justify-between items-center">
               <span className="text-slate-500">Banka</span>
-              <span className="font-semibold">{BANK_INFO.bankName}</span>
+              <span className="font-semibold text-navy-900">{BANK_INFO.bankName}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">Hesap Sahibi</span>
-              <span className="font-semibold">{BANK_INFO.accountHolder}</span>
+            <div className="flex flex-col gap-1">
+              <span className="text-slate-500 text-sm">Hesap Sahibi</span>
+              <span className="font-semibold text-navy-900 text-sm leading-tight">{BANK_INFO.accountHolder}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">IBAN</span>
-              <span className="font-mono font-semibold text-sm">{BANK_INFO.iban}</span>
+            <div className="flex flex-col gap-1">
+              <span className="text-slate-500 text-sm">IBAN</span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono font-semibold text-navy-900 tracking-wide">{BANK_INFO.iban}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(BANK_INFO.iban.replace(/\s/g, ''));
+                    alert('IBAN kopyalandı!');
+                  }}
+                  className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1 rounded transition-colors"
+                >
+                  Kopyala
+                </button>
+              </div>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center pt-2 border-t border-slate-100">
               <span className="text-slate-500">Tutar</span>
-              <span className="font-bold text-navy-900">4.500 ₺</span>
+              <span className="font-bold text-navy-900 text-lg">4.500 ₺</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">Açıklama</span>
-              <span className="font-semibold">{BANK_INFO.description}</span>
+            <div className="flex flex-col gap-1">
+              <span className="text-slate-500 text-sm">Açıklama</span>
+              <span className="font-semibold text-navy-900 text-sm">{BANK_INFO.description}</span>
             </div>
           </div>
         </div>
@@ -351,12 +364,37 @@ export default function OneCikPage() {
 
         {/* Havale bilgileri */}
         {paymentMethod === 'havale' && (
-          <div className="bg-slate-50 rounded-xl p-4 space-y-2 text-sm">
+          <div className="bg-slate-50 rounded-xl p-4 space-y-3 text-sm">
             <p className="font-semibold text-slate-700 mb-2">Havale Bilgileri:</p>
-            <div className="flex justify-between"><span className="text-slate-500">Banka</span><span className="font-medium">{BANK_INFO.bankName}</span></div>
-            <div className="flex justify-between"><span className="text-slate-500">Hesap Sahibi</span><span className="font-medium">{BANK_INFO.accountHolder}</span></div>
-            <div className="flex justify-between"><span className="text-slate-500">IBAN</span><span className="font-mono font-medium">{BANK_INFO.iban}</span></div>
-            <div className="flex justify-between"><span className="text-slate-500">Tutar</span><span className="font-bold text-navy-900">4.500 ₺</span></div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-500">Banka</span>
+              <span className="font-semibold text-navy-900">{BANK_INFO.bankName}</span>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-slate-500">Hesap Sahibi</span>
+              <span className="font-medium text-navy-900 text-xs leading-tight">{BANK_INFO.accountHolder}</span>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-slate-500">IBAN</span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono font-medium text-navy-900">{BANK_INFO.iban}</span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigator.clipboard.writeText(BANK_INFO.iban.replace(/\s/g, ''));
+                    alert('IBAN kopyalandı!');
+                  }}
+                  className="text-xs bg-white hover:bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 transition-colors"
+                >
+                  Kopyala
+                </button>
+              </div>
+            </div>
+            <div className="flex justify-between items-center pt-2 border-t border-slate-200">
+              <span className="text-slate-500">Tutar</span>
+              <span className="font-bold text-navy-900">4.500 ₺</span>
+            </div>
           </div>
         )}
 
