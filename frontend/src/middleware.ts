@@ -16,7 +16,12 @@ const publicPaths = [
   '/teachers',
   '/privacy',
   '/terms',
-  '/faq'
+  '/faq',
+  '/pricing',
+  '/career',
+  '/blog',
+  '/help',
+  '/how-it-works'
 ]
 
 export async function middleware(req: NextRequest) {
