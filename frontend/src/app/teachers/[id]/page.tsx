@@ -376,7 +376,15 @@ export default function TeacherProfilePage() {
                 </div>
 
                 <button
-                  onClick={async () => { const { data: { user } } = await supabase.auth.getUser(); if (!user) { router.push("/student/register"); return; } setIsBookingOpen(true); }}
+                  onClick={async () => {
+                    // Session Guard - Giriş yapmadan randevu engelle
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session) {
+                      router.push(`/login?redirect=/teachers/${teacherId}`);
+                      return;
+                    }
+                    setIsBookingOpen(true);
+                  }}
                   className="w-full bg-gradient-to-r from-navy-900 to-navy-700 text-white py-4 rounded-xl text-lg font-semibold hover:from-navy-800 hover:to-navy-600 transition-all mb-4"
                 >
                   Randevu Al
