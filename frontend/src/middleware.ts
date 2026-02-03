@@ -1,12 +1,13 @@
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-// HERKESE AÇIK SAYFALAR LİSTESİ (KİMLİK SORULMAZ)
+// 1. HERKESE AÇIK YOLLAR (Whitelist)
 const publicPaths = [
   '/',
   '/login',
   '/register',
-  '/student/register', // <-- İşte sorunu çözen satır (Öğrenci Kaydı)
+  '/student/register', // <-- Kritik düzeltmemiz burada
   '/forgot-password',
   '/verify-email',
   '/about',
@@ -17,48 +18,33 @@ const publicPaths = [
   '/terms'
 ]
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
+export async function middleware(req: NextRequest) {
+  const res = NextResponse.next()
 
-  // 1. Eğer gidilen yol "Public" listesindeyse, hiçbir şey yapma, devam et.
-  // (Ayrıca /teachers/123 gibi alt sayfaları da otomatik kabul et)
-  if (publicPaths.some(path => pathname === path || pathname.startsWith(path + '/'))) {
-    return NextResponse.next()
+  // 2. Supabase ile oturumu kontrol et (Eski sağlam yöntem)
+  const supabase = createMiddlewareClient({ req, res })
+  const { data: { session } } = await supabase.auth.getSession()
+
+  const path = req.nextUrl.pathname
+
+  // 3. EĞER Gidilen yol "Public" listesindeyse VEYA statik dosyaysa -> KARIŞMA
+  if (publicPaths.some(p => path === p || path.startsWith(p + '/')) ||
+      path.startsWith('/_next') ||
+      path.startsWith('/api') ||
+      path.startsWith('/static') ||
+      path.includes('.')) {
+    return res
   }
 
-  // 2. Eğer resim, css, api veya statik dosyaysa karışma
-  if (pathname.startsWith('/_next') ||
-      pathname.startsWith('/api') ||
-      pathname.startsWith('/static') ||
-      pathname.includes('.')) {
-    return NextResponse.next()
+  // 4. EĞER Public değilse ve OTURUM YOKSA -> Login'e at
+  if (!session) {
+    return NextResponse.redirect(new URL('/login', req.url))
   }
 
-  // 3. Admin sayfaları için özel koruma (Gelecekte lazım olur)
-  const token = request.cookies.get('auth_token')?.value
-  if (pathname.startsWith('/admin') && !token) {
-    return NextResponse.redirect(new URL('/admin/login', request.url))
-  }
-
-  // 4. DİĞER HER ŞEY İÇİN: Eğer giriş yapmamışsa Login'e at
-  // (Ama listedekileri yukarıda geçirdik, o yüzden artık sorun çıkmaz)
-  if (!token) {
-    // Burası sadece gerçekten gizli olması gereken profil sayfaları için çalışacak
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
-
-  return NextResponse.next()
+  // 5. Oturum varsa devam et
+  return res
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Aşağıdakiler HARİÇ tüm yolları kontrol et:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 }
