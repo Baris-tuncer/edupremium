@@ -67,10 +67,10 @@ export default function Header() {
 
           {/* Auth Buttons */}
           <div className="hidden lg:flex items-center gap-3">
-            <Link href="/login" className="btn-ghost">
+            <Link href="/giris" className="btn-ghost">
               Giriş Yap
             </Link>
-            <Link href="/register" className="btn-primary">
+            <Link href="/kayit" className="btn-primary">
               Kayıt Ol
             </Link>
           </div>
@@ -108,7 +108,7 @@ export default function Header() {
                 İletişim
               </Link>
               <div className="divider my-2" />
-              <Link href="/login" className="btn-secondary w-full">
+              <Link href="/giris" className="btn-secondary w-full">
                 Giriş Yap
               </Link>
               <Link href="/register" className="btn-primary w-full">
