@@ -82,10 +82,11 @@ export async function middleware(request: NextRequest) {
     const emailConfirmed = user.email_confirmed_at !== null && user.email_confirmed_at !== undefined;
 
     // Email onaylanmamış ve verification gerektiren sayfa
-    if (!emailConfirmed && !isNoVerificationPath) {
-      // verify-email sayfasına yönlendir
-      return NextResponse.redirect(new URL('/verify-email', request.url));
-    }
+    // GEÇİCİ OLARAK DEVRE DIŞI - DEBUG AMAÇLI
+    // if (!emailConfirmed && !isNoVerificationPath) {
+    //   // verify-email sayfasına yönlendir
+    //   return NextResponse.redirect(new URL('/verify-email', request.url));
+    // }
 
     // Email onaylanmış kullanıcı verify-email sayfasına girmeye çalışıyor
     if (emailConfirmed && pathname === '/verify-email') {
