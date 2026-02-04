@@ -2,7 +2,7 @@ import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-// 1. HERKESE AÇIK YOLLAR (Whitelist)
+// Herkese açık sayfalar listesi (Login gerektirmeyenler)
 const publicPaths = [
   '/',
   '/login',
@@ -13,30 +13,36 @@ const publicPaths = [
   '/teacher/register',
   '/forgot-password',
   '/verify-email',
+  '/auth/callback',
+  '/teachers',
+  '/courses',
+  '/subjects',
   '/about',
   '/contact',
-  '/courses',
-  '/teachers',
   '/privacy',
   '/terms',
   '/faq',
   '/pricing',
   '/career',
+  '/careers',
   '/blog',
   '/help',
-  '/how-it-works'
+  '/how-it-works',
+  '/kvkk',
+  '/become-tutor',
+  '/success-stories'
 ]
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
 
-  // 2. Supabase ile oturumu kontrol et (Eski sağlam yöntem)
+  // Supabase ile oturumu kontrol et
   const supabase = createMiddlewareClient({ req, res })
   const { data: { session } } = await supabase.auth.getSession()
 
   const path = req.nextUrl.pathname
 
-  // 3. EĞER Gidilen yol "Public" listesindeyse VEYA statik dosyaysa -> KARIŞMA
+  // Eğer gidilen yol public listesindeyse veya statik dosyaysa -> izin ver
   if (publicPaths.some(p => path === p || path.startsWith(p + '/')) ||
       path.startsWith('/_next') ||
       path.startsWith('/api') ||
@@ -45,12 +51,12 @@ export async function middleware(req: NextRequest) {
     return res
   }
 
-  // 4. EĞER Public değilse ve OTURUM YOKSA -> Login'e at
+  // Eğer public değilse ve oturum yoksa -> Login'e yönlendir
   if (!session) {
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
-  // 5. Oturum varsa devam et
+  // Oturum varsa devam et
   return res
 }
 
