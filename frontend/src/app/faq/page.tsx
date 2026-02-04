@@ -1,10 +1,7 @@
-'use client';
+import PageHeader from '@/components/shared/PageHeader';
+import { ContentSection } from '@/components/shared/ContentSection';
 
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import PageHero from '@/components/layout/PageHero';
-
-export default function SSSPage() {
+export default function FAQPage() {
   const sorular = [
     { soru: "Nasıl kayıt olabilirim?", cevap: "Ana sayfadaki Kayıt Ol butonuna tıklayarak ücretsiz hesap oluşturabilirsiniz." },
     { soru: "Ödeme yöntemleri nelerdir?", cevap: "Kredi kartı ve banka havalesi ile ödeme yapabilirsiniz." },
@@ -13,25 +10,21 @@ export default function SSSPage() {
   ];
 
   return (
-    <>
-      <Header />
-      <PageHero
-        title="Sıkça Sorulan Sorular"
-        subtitle="Merak ettiğiniz tüm soruların cevapları"
-      />
-      <main className="bg-slate-50 pb-16">
-        <div className="max-w-4xl mx-auto px-6 py-12">
-          <div className="space-y-6">
-            {sorular.map((item) => (
-              <div key={item.soru} className="bg-white p-6 rounded-2xl shadow-card">
-                <h3 className="font-semibold text-lg text-navy-900 mb-2">{item.soru}</h3>
-                <p className="text-slate-600">{item.cevap}</p>
-              </div>
-            ))}
-          </div>
+    <main className="w-full">
+      <PageHeader title="Sıkça Sorulan Sorular" subtitle="Merak Ettikleriniz" />
+      <ContentSection>
+        <div className="space-y-4">
+           {sorular.map((item, i) => (
+             <details key={i} className="group border-b border-slate-200 pb-4">
+               <summary className="font-bold text-lg cursor-pointer list-none flex justify-between items-center py-4 hover:text-[#D4AF37] transition-colors">
+                 {item.soru}
+                 <span className="text-[#D4AF37] group-open:rotate-45 transition-transform">+</span>
+               </summary>
+               <p className="text-slate-600 pb-4 pl-4">{item.cevap}</p>
+             </details>
+           ))}
         </div>
-      </main>
-      <Footer />
-    </>
+      </ContentSection>
+    </main>
   );
 }
