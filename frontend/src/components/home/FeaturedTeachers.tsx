@@ -8,13 +8,11 @@ async function getFeaturedTeachers() {
   const supabase = createClient();
   const now = new Date().toISOString();
 
-  // 1. ESKİ (ÇALIŞAN) TABLODAN VERİYİ ÇEKİYORUZ
+  // Teacher Profiles tablosundan veriyi çek
   const { data: profiles, error } = await supabase
     .from('teacher_profiles')
     .select('*')
     .eq('is_verified', true)
-    // Eğer featured_until sütunu varsa süresi dolanları gizle
-    // Yoksa bu satırı silebilirsin: .gte('featured_until', now);
     .gte('featured_until', now);
 
   if (error) {
@@ -22,38 +20,42 @@ async function getFeaturedTeachers() {
     return [];
   }
 
-  // 2. ESKİ VERİYİ YENİ KARTA UYUMLU HALE GETİRİYORUZ
+  // VERİYİ GARANTİYE ALAN DÖNÜŞÜM (Mapping)
   const mappedTeachers = (profiles || []).map(p => {
+    // 1. DERSLERİ BUL (subjects, tags veya lesson_types olabilir)
+    let finalSubjects = [];
+    if (p.subjects && p.subjects.length > 0) finalSubjects = p.subjects;
+    else if (p.tags && p.tags.length > 0) finalSubjects = p.tags;
+    else if (p.featured_category) finalSubjects = [p.featured_category];
+    else finalSubjects = ['Genel'];
 
-    // Konu Etiketlerini (Matematik, Fizik) Ayarla
-    let displayBranches = [];
-    if (p.subjects && Array.isArray(p.subjects) && p.subjects.length > 0) {
-      // Eski tablodaki 'subjects' dizisini al
-      displayBranches = p.subjects.map((s: string) => ({ branch: { name: s } }));
-    } else {
-      // Yoksa kategoriyi kullan
-      displayBranches = [{ branch: { name: p.featured_category || 'Genel' } }];
-    }
+    // 2. FİYATI BUL (hourly_rate, base_price, price veya rate olabilir)
+    const finalPrice = p.hourly_rate || p.base_price || p.price || p.rate || 0;
+
+    // 3. ÜNİVERSİTEYİ BUL
+    const finalUniversity = p.university || p.school || p.university_name || null;
 
     return {
       id: p.id,
       user_id: p.user_id,
-      name: p.full_name, // İsim
+      name: p.full_name,
       surname: '',
-      // KARTTAKİ TURUNCU SÖZ (HEADLINE) BURAYA GELİYOR
-      title: p.featured_headline || 'Eğitmen',
+      title: p.featured_headline || p.title || 'Eğitmen',
       biography: p.biography,
       image_url: p.avatar_url,
-      hourly_rate: p.hourly_rate,
+
+      // --- FİYAT DÜZELTMESİ ---
+      hourly_rate: finalPrice,
+
       rating: p.rating,
       review_count: p.review_count || 0,
       location: p.location,
-      experience_years: p.experience_years, // Deneyim Yılı
+      experience_years: p.experience_years,
 
-      // --- ESKİ KARTTAKİ KRİTİK BİLGİLER ---
-      university: p.university, // Üniversite Bilgisi
-      branches: displayBranches, // Ders Etiketleri (Matematik, Fizik...)
-      // ------------------------------------
+      // --- BİLGİ DÜZELTMESİ ---
+      university: finalUniversity,
+      // CategoryShowcase ve TeacherCard için branches formatı
+      branches: finalSubjects.map((s: string) => ({ branch: { name: s } })),
 
       verified: p.is_verified,
       slug: p.slug || p.id,
@@ -82,7 +84,6 @@ const FeaturedTeachers = async () => {
           <p className="text-slate-300 text-lg font-light">Seçkin eğitmenlerimizi branşlarına göre inceleyin.</p>
         </div>
 
-        {/* KATEGORİLİ GÖSTERİM (NETFLIX MODELİ) */}
         <CategoryShowcase teachers={teachers} />
 
         <div className="text-center mt-24">
