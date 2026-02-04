@@ -7,6 +7,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { supabase } from '@/lib/supabase';
 import { EDUCATION_LEVELS, LevelKey } from '@/lib/constants';
+import FeaturedTeachers from '@/components/home/FeaturedTeachers';
 
 // ============================================
 // FEATURED CATEGORIES & ICONS
@@ -642,6 +643,7 @@ export default function LandingPage() {
       <main>
         <HeroSection />
         <EditorsChoiceSection />
+        <FeaturedTeachers />
         <FeaturesSection />
         <HowItWorksSection />
         <SubjectsSection />
