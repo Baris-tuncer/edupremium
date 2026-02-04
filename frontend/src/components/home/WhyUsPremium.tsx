@@ -44,10 +44,10 @@ const WhyUsPremium = () => {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
           style={{ backgroundImage: `url('https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=2672&auto=format&fit=crop')` }}
         />
-        {/* Beyaz Perde (Yazıların okunması için) */}
-        <div className="absolute inset-0 bg-white/90 backdrop-blur-[2px]"></div>
-        {/* Hafif Altın Geçiş */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white/80"></div>
+        {/* DÜZELTİLEN KISIM: Beyaz Perde İnceltildi (%90 -> %60) */}
+        <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px]"></div>
+        {/* Hafif Geçiş (Gradient) de inceltildi */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-transparent to-white/80"></div>
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
@@ -55,10 +55,10 @@ const WhyUsPremium = () => {
         {/* BAŞLIK (Orijinal Metin & Renk) */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="text-[#D4AF37] font-bold tracking-widest text-xs uppercase mb-3 block">NEDEN BİZ?</span>
-          <h2 className="text-4xl md:text-5xl font-bold text-[#0F172A] font-serif mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold text-[#0F172A] font-serif mb-6 drop-shadow-sm">
             Eğitimde Fark Yaratan Özellikler
           </h2>
-          <p className="text-slate-600 text-lg">
+          <p className="text-slate-800 text-lg font-medium">
             Geleneksel özel ders deneyimini modern teknoloji ile birleştirerek eğitimde yeni bir standart belirliyoruz.
           </p>
         </div>
