@@ -31,17 +31,41 @@ const FeaturedTeachers = () => {
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
-        const { data, error } = await supabase
-          .from('teachers')
-          .select(`
-            id, user_id, name, surname, title, biography, image_url, hourly_rate, rating, review_count, location, experience_years, verified, slug,
-            branches:teacher_branches(branch:branches(name))
-          `)
-          .eq('is_featured', true)
-          .order('rating', { ascending: false });
+        const now = new Date().toISOString();
 
-        if (error) { console.error('Error:', error); return; }
-        setTeachers(data || []);
+        // KRİTİK: teacher_profiles tablosundan çekiyoruz
+        const { data: profiles, error } = await supabase
+          .from('teacher_profiles')
+          .select('*')
+          .eq('is_verified', true)
+          .gte('featured_until', now);
+
+        if (error) {
+          console.error('Veri Hatası:', error);
+          return;
+        }
+
+        // VERİ DÖNÜŞÜMÜ (Mapping)
+        const mappedTeachers: Teacher[] = (profiles || []).map((p: any) => ({
+          id: p.id,
+          user_id: p.user_id,
+          name: p.full_name,
+          surname: '',
+          title: p.featured_headline || p.title || 'Eğitmen',
+          biography: p.biography,
+          image_url: p.avatar_url,
+          hourly_rate: p.hourly_rate,
+          rating: p.rating,
+          review_count: p.review_count || 0,
+          location: p.location,
+          experience_years: p.experience_years,
+          verified: p.is_verified,
+          slug: p.slug || p.id,
+          // KATEGORİ AYARI: featured_category alanını kullanıyoruz
+          branches: [{ branch: { name: p.featured_category || 'Genel' } }]
+        }));
+
+        setTeachers(mappedTeachers);
       } catch (error) {
         console.error('Error fetching teachers:', error);
       } finally {
@@ -55,6 +79,7 @@ const FeaturedTeachers = () => {
 
   return (
     <section className="relative py-24 overflow-hidden">
+      {/* ARKA PLAN */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed" style={{ backgroundImage: `url('/hero-library.jpg')` }} />
         <div className="absolute inset-0 bg-[#0F172A]/90 backdrop-blur-[2px]"></div>
@@ -66,7 +91,7 @@ const FeaturedTeachers = () => {
             <Award className="w-4 h-4" /> Özel Koleksiyon
           </div>
           <h2 className="text-4xl md:text-6xl font-bold text-white font-serif mb-6">Akademik <span className="text-[#D4AF37]">Kadro</span></h2>
-          <p className="text-slate-300 text-lg font-light">Branşlara göre en iyi eğitmenlerimizi keşfedin.</p>
+          <p className="text-slate-300 text-lg font-light">Seçkin eğitmenlerimizi branşlarına göre inceleyin.</p>
         </div>
 
         {loading ? (
