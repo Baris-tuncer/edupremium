@@ -5,7 +5,7 @@ import HeroSection from '@/components/home/HeroSection';
 import FeaturedTeachers from '@/components/home/FeaturedTeachers';
 import WhyUsPremium from '@/components/home/WhyUsPremium';
 import HowItWorksPremium from '@/components/home/HowItWorksPremium';
-import SubjectsSection from '@/components/home/SubjectsSection';
+import SubjectCategoriesPremium from '@/components/home/SubjectCategoriesPremium';
 
 // ============================================
 // CTA SECTION
@@ -52,7 +52,7 @@ export default function LandingPage() {
         {/* 3. Diğer Bölümler */}
         <WhyUsPremium />
         <HowItWorksPremium />
-        <SubjectsSection />
+        <SubjectCategoriesPremium />
         <CTASection />
       </main>
       <Footer />
