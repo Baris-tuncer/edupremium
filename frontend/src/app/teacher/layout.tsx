@@ -14,8 +14,14 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     const checkAuth = async () => {
+      // /teacher/register ve /teacher/login için auth kontrolü yapma
+      if (pathname === '/teacher/register' || pathname === '/teacher/login') {
+        setIsLoading(false);
+        return;
+      }
+
       const { data: { user: authUser } } = await supabase.auth.getUser();
-      
+
       if (!authUser) {
         router.push('/login');
         return;
@@ -40,7 +46,7 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
     };
 
     checkAuth();
-  }, [router]);
+  }, [router, pathname]);
 
   if (isLoading) {
     return (
@@ -51,6 +57,11 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
         </div>
       </div>
     );
+  }
+
+  // Auth gerektirmeyen sayfalar için sadece children döndür
+  if (pathname === '/teacher/register' || pathname === '/teacher/login') {
+    return <>{children}</>;
   }
 
   const activeItem = pathname.split('/')[2] || 'dashboard';
