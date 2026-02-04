@@ -65,98 +65,84 @@ const FEATURED_CATEGORIES = [
 // HERO SECTION - Premium Dark Academia Style
 // ============================================
 const HeroSection = () => (
-  <section className="relative min-h-screen bg-white flex items-center justify-center p-4 md:p-8">
+  <section className="relative min-h-screen bg-[#1a1a2e] flex items-center justify-center p-3 pt-20">
     {/* Grid Pattern Background */}
     <div
-      className="absolute inset-0 opacity-[0.4]"
+      className="absolute inset-0 opacity-30"
       style={{
-        backgroundImage: `radial-gradient(circle, #e5e7eb 1px, transparent 1px)`,
-        backgroundSize: '24px 24px',
+        backgroundImage: `linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)`,
+        backgroundSize: '32px 32px',
       }}
     />
 
     {/* Floating Hero Card */}
-    <div className="relative w-full max-w-7xl min-h-[85vh] rounded-[2.5rem] overflow-hidden shadow-2xl">
-      {/* Background Image */}
+    <div className="relative w-full h-[calc(100vh-5rem)] rounded-[2rem] overflow-hidden shadow-2xl">
+      {/* Background Image - Library/Study Room */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1507842217121-9e691b2d0941?q=80&w=2574&auto=format&fit=crop')`,
+          backgroundImage: `url('https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=2940&auto=format&fit=crop')`,
         }}
       />
 
-      {/* Cream Gradient Overlay - Left to Right fade */}
+      {/* Subtle Cream Overlay - More transparent to show image */}
       <div
         className="absolute inset-0"
         style={{
-          background: `linear-gradient(to right, #FDFBF7 0%, #FDFBF7 35%, rgba(253,251,247,0.85) 50%, rgba(253,251,247,0.4) 70%, transparent 100%)`,
+          background: `radial-gradient(ellipse at center, rgba(253,251,247,0.88) 0%, rgba(253,251,247,0.7) 50%, rgba(253,251,247,0.4) 100%)`,
         }}
       />
 
-      {/* Content Container */}
-      <div className="relative z-10 h-full min-h-[85vh] flex flex-col justify-center px-8 md:px-16 lg:px-24 py-16">
-        {/* Logo */}
-        <div className="flex items-center gap-3 mb-12">
-          <div className="w-12 h-12 bg-[#0F172A] rounded-xl flex items-center justify-center">
-            <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      {/* Content Container - CENTERED */}
+      <div className="relative z-10 h-full flex flex-col items-center justify-center px-8 text-center">
+        {/* Logo - Top Center */}
+        <div className="flex items-center gap-3 mb-8">
+          <div className="w-10 h-10 bg-[#0F172A] rounded-lg flex items-center justify-center">
+            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
             </svg>
           </div>
-          <div>
-            <span className="text-xl font-bold text-[#0F172A] tracking-tight">EduPremium</span>
-            <span className="block text-xs text-slate-500 uppercase tracking-widest">Özel Ders Platformu</span>
-          </div>
+          <span className="text-xl font-bold text-[#0F172A] tracking-tight">EduPremium</span>
         </div>
 
-        {/* Main Content */}
-        <div className="max-w-xl">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full mb-8 border border-slate-200/50">
-            <span className="w-2 h-2 bg-[#D4AF37] rounded-full animate-pulse" />
-            <span className="text-sm font-medium text-[#0F172A]">Türkiye&apos;nin Premium Eğitim Platformu</span>
-          </div>
+        {/* Headline - Centered */}
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#0F172A] mb-6 font-serif leading-[1.15] tracking-tight max-w-3xl">
+          Eğitimde<br />
+          Mükemmelliğe<br />
+          Giden Yol
+        </h1>
 
-          {/* Headline */}
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-[#0F172A] mb-6 font-serif leading-[1.1] tracking-tight">
-            Eğitimde<br />
-            <span className="text-[#D4AF37]">Mükemmelliğe</span><br />
-            Giden Yol
-          </h1>
+        {/* Subtext - Centered */}
+        <p className="text-base md:text-lg text-slate-600 mb-8 leading-relaxed max-w-lg">
+          Alanında uzman, titizlikle seçilmiş öğretmenlerle birebir online ders deneyimi.
+          Çocuğunuzun akademik başarısı için en doğru adım.
+        </p>
 
-          {/* Subtext */}
-          <p className="text-lg md:text-xl text-slate-600 mb-10 leading-relaxed max-w-md">
-            Alanında uzman, titizlikle seçilmiş öğretmenlerle birebir online ders deneyimi.
-            Çocuğunuzun akademik başarısı için en doğru adım.
-          </p>
-
-          {/* Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Link
-              href="/register"
-              className="inline-flex items-center justify-center gap-2 bg-[#0F172A] text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-[#1E293B] transition-all duration-300 shadow-lg shadow-[#0F172A]/25 hover:shadow-xl hover:shadow-[#0F172A]/30 active:scale-[0.98]"
-            >
-              Hemen Başla
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </Link>
-            <Link
-              href="/teachers"
-              className="inline-flex items-center justify-center gap-2 bg-transparent text-[#0F172A] px-8 py-4 rounded-xl text-lg font-semibold border-2 border-[#0F172A] hover:bg-[#0F172A] hover:text-white transition-all duration-300 active:scale-[0.98]"
-            >
-              Öğretmenleri Keşfet
-            </Link>
-          </div>
+        {/* Buttons - Centered */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+          <Link
+            href="/register"
+            className="inline-flex items-center justify-center gap-2 bg-[#0F172A] text-white px-8 py-3.5 rounded-lg text-base font-semibold hover:bg-[#1E293B] transition-all duration-300 shadow-lg shadow-[#0F172A]/20 active:scale-[0.98]"
+          >
+            Hemen Başla
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </Link>
+          <Link
+            href="/teachers"
+            className="inline-flex items-center justify-center gap-2 bg-white/80 backdrop-blur-sm text-[#0F172A] px-8 py-3.5 rounded-lg text-base font-semibold border border-[#0F172A]/20 hover:bg-white hover:border-[#0F172A]/40 transition-all duration-300 active:scale-[0.98]"
+          >
+            Öğretmenleri Keşfet
+          </Link>
         </div>
 
         {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce">
-          <span className="text-xs font-semibold text-[#0F172A]/60 uppercase tracking-widest">Keşfet</span>
-          <div className="w-10 h-10 rounded-full border-2 border-[#0F172A]/30 flex items-center justify-center bg-white/60 backdrop-blur-sm">
-            <svg className="w-5 h-5 text-[#0F172A]/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7" />
-            </svg>
-          </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-[#0F172A]/70 uppercase tracking-widest">Keşfet</span>
+          <svg className="w-4 h-4 text-[#0F172A]/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
         </div>
       </div>
     </div>
