@@ -8,13 +8,12 @@ const HeroSection = () => {
     <section className="relative w-full h-screen bg-[#FDFBF7] overflow-hidden flex items-center">
       
       {/* 2. ARKA PLAN FOTOĞRAFI (Tam Ekran) */}
-      <div className="absolute inset-0 z-0">
-        <img 
-          src="https://images.unsplash.com/photo-1507842217121-9e691b2d0941?q=80&w=2574&auto=format&fit=crop" 
-          alt="Library Background" 
-          className="w-full h-full object-cover"
-        />
-      </div>
+      <div
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1507842217121-9e691b2d0941?q=80&w=2574&auto=format&fit=crop')`
+        }}
+      />
 
       {/* 3. PERDE (GRADIENT) - Yazıların okunması için */}
       {/* Soldan sağa doğru: Tam Krem -> Yarı Saydam -> Şeffaf */}

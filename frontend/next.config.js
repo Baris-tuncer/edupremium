@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ['localhost', 'storage.googleapis.com', 'res.cloudinary.com'],
+    domains: ['localhost', 'storage.googleapis.com', 'res.cloudinary.com', 'images.unsplash.com'],
   },
   async redirects() {
     return [
