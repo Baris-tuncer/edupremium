@@ -1,65 +1,105 @@
-'use client';
-
+import React from 'react';
 import Link from 'next/link';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
+import { GraduationCap, Presentation, ArrowRight, Star } from 'lucide-react';
 
 export default function LoginPage() {
   return (
-    <>
-      <Header />
-      <main className="min-h-screen bg-slate-50 pt-24 pb-16 flex items-center justify-center">
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <h1 className="text-4xl font-bold text-navy-900 mb-4">Giriş Yap</h1>
-          <p className="text-lg text-slate-600 mb-12">Hesap türünüzü seçin</p>
+    <div className="min-h-screen relative flex items-center justify-center overflow-hidden bg-[#020617]">
 
-          <div className="grid md:grid-cols-2 gap-8">
-            <Link
-              href="/student/login"
-              className="group bg-white rounded-2xl shadow-sm border-2 border-slate-200 hover:border-navy-500 p-8 transition-all hover:shadow-lg"
-            >
-              <div className="w-16 h-16 bg-navy-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-navy-100 transition-colors">
-                <svg className="w-8 h-8 text-navy-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-              </div>
-              <h2 className="text-2xl font-bold text-navy-900 mb-3">Veli / Öğrenci</h2>
-              <p className="text-slate-500">Ders almak için giriş yapın</p>
-              <div className="mt-6 inline-flex items-center gap-2 text-navy-600 font-semibold group-hover:gap-3 transition-all">
-                Giriş Yap
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </Link>
+      {/* --- 1. ARKA PLAN KATMANI --- */}
+      <div className="absolute inset-0 z-0">
+        {/* Fotoğraf: Modern eğitim ortamı */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1544717305-2782549b5136?q=80&w=2670&auto=format&fit=crop')`
+          }}
+        ></div>
 
-            <Link
-              href="/teacher/login"
-              className="group bg-white rounded-2xl shadow-sm border-2 border-slate-200 hover:border-gold-500 p-8 transition-all hover:shadow-lg"
-            >
-              <div className="w-16 h-16 bg-gold-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-gold-100 transition-colors">
-                <svg className="w-8 h-8 text-gold-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-              <h2 className="text-2xl font-bold text-navy-900 mb-3">Öğretmen</h2>
-              <p className="text-slate-500">Ders vermek için giriş yapın</p>
-              <div className="mt-6 inline-flex items-center gap-2 text-gold-600 font-semibold group-hover:gap-3 transition-all">
-                Giriş Yap
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </Link>
+        {/* KRİTİK: Koyu Lacivert Perde (%85 Opaklık) - Yazılar net okunsun diye */}
+        <div className="absolute inset-0 bg-[#020617]/85 backdrop-blur-[2px]"></div>
+
+        {/* Işık Efektleri */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#D4AF37] opacity-[0.05] rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#D4AF37] opacity-[0.03] rounded-full blur-[120px]"></div>
+      </div>
+
+      {/* --- 2. İÇERİK KATMANI --- */}
+      <div className="relative z-10 container mx-auto px-4">
+
+        {/* BAŞLIK */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-bold uppercase tracking-widest mb-6 bg-[#D4AF37]/10 backdrop-blur-md">
+            <Star className="w-3 h-3 fill-current" /> EduPremium Giriş
           </div>
-
-          <p className="mt-8 text-slate-500">
-            Hesabınız yok mu?{' '}
-            <Link href="/register" className="text-navy-600 font-semibold hover:underline">Kayıt Ol</Link>
+          <h1 className="text-4xl md:text-6xl font-bold text-white font-serif mb-4 drop-shadow-lg">
+            Tekrar Hoş Geldiniz
+          </h1>
+          <p className="text-slate-400 text-lg font-light max-w-xl mx-auto">
+            Premium eğitim paneline erişmek için lütfen giriş tipini seçiniz.
           </p>
         </div>
-      </main>
-      <Footer />
-    </>
+
+        {/* SEÇİM KARTLARI */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+
+          {/* --- KART 1: ÖĞRENCİ / VELİ --- */}
+          <Link
+            href="/auth/login/student"
+            className="group relative h-80 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 flex flex-col items-center justify-center text-center hover:bg-white/10 hover:border-[#D4AF37]/50 transition-all duration-500 overflow-hidden"
+          >
+            {/* Hover Işığı */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#D4AF37]/0 to-[#D4AF37]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:border-[#D4AF37] transition-all duration-500 shadow-2xl">
+              <GraduationCap className="w-10 h-10 text-slate-300 group-hover:text-[#D4AF37] transition-colors" />
+            </div>
+
+            <h2 className="text-2xl font-bold text-white font-serif mb-2 group-hover:text-[#D4AF37] transition-colors">
+              Öğrenci / Veli
+            </h2>
+            <p className="text-slate-400 text-sm mb-8 px-4 group-hover:text-slate-200 transition-colors">
+              Ders takibi, ödevler ve gelişim raporları için giriş yapın.
+            </p>
+
+            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-500 group-hover:text-[#D4AF37] transition-colors">
+              Giriş Yap <ArrowRight className="w-4 h-4" />
+            </span>
+          </Link>
+
+          {/* --- KART 2: EĞİTMEN (SUNUM TAHTASI İKONU) --- */}
+          <Link
+            href="/auth/login/teacher"
+            className="group relative h-80 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 flex flex-col items-center justify-center text-center hover:bg-white/10 hover:border-[#D4AF37]/50 transition-all duration-500 overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-b from-[#D4AF37]/0 to-[#D4AF37]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:border-[#D4AF37] transition-all duration-500 shadow-2xl">
+              <Presentation className="w-10 h-10 text-slate-300 group-hover:text-[#D4AF37] transition-colors" />
+            </div>
+
+            <h2 className="text-2xl font-bold text-white font-serif mb-2 group-hover:text-[#D4AF37] transition-colors">
+              Eğitmen
+            </h2>
+            <p className="text-slate-400 text-sm mb-8 px-4 group-hover:text-slate-200 transition-colors">
+              Ders programı yönetimi ve öğrenci takibi için panelinize gidin.
+            </p>
+
+            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-500 group-hover:text-[#D4AF37] transition-colors">
+              Panelime Git <ArrowRight className="w-4 h-4" />
+            </span>
+          </Link>
+
+        </div>
+
+        {/* Alt Link */}
+        <div className="text-center mt-12">
+          <p className="text-slate-500 text-sm">
+            Henüz hesabınız yok mu? <Link href="/register" className="text-[#D4AF37] font-bold hover:underline">Hemen Kayıt Olun</Link>
+          </p>
+        </div>
+
+      </div>
+    </div>
   );
 }
