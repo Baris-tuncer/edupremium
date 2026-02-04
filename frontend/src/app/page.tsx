@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import FeaturedTeachers from '@/components/home/FeaturedTeachers';
 import { supabase } from '@/lib/supabase';
 import { EDUCATION_LEVELS, LevelKey } from '@/lib/constants';
 
@@ -643,7 +642,6 @@ export default function LandingPage() {
       <main>
         <HeroSection />
         <EditorsChoiceSection />
-        <FeaturedTeachers />
         <FeaturesSection />
         <HowItWorksSection />
         <SubjectsSection />
