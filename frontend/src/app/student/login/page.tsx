@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
+import { Mail, Lock, Eye, EyeOff, ArrowLeft, Star, ChevronRight } from 'lucide-react';
 
 export default function StudentLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [formData, setFormData] = useState({ email: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [isResetting, setIsResetting] = useState(false);
@@ -27,7 +29,6 @@ export default function StudentLoginPage() {
 
       if (authError) throw new Error(authError.message);
 
-      // Öğrenci mi kontrol et
       const { data: studentProfile } = await supabase
         .from('student_profiles')
         .select('id')
@@ -36,13 +37,12 @@ export default function StudentLoginPage() {
 
       if (!studentProfile) {
         await supabase.auth.signOut();
-        throw new Error('Bu hesap bir ogrenci hesabi degil.');
+        throw new Error('Bu hesap bir öğrenci hesabı değil.');
       }
 
-      // Hard navigation - çerez senkronizasyonu için
       window.location.href = '/student/dashboard';
     } catch (err: any) {
-      setError(err.message || 'Giris yapilamadi.');
+      setError(err.message || 'Giriş yapılamadı.');
     } finally {
       setIsLoading(false);
     }
@@ -60,141 +60,181 @@ export default function StudentLoginPage() {
       });
 
       if (error) throw new Error(error.message);
-      
-      setSuccess('Sifre sifirlama linki e-posta adresinize gonderildi. Lutfen e-postanizi kontrol edin.');
+
+      setSuccess('Şifre sıfırlama linki e-posta adresinize gönderildi.');
       setShowForgotPassword(false);
       setResetEmail('');
     } catch (err: any) {
-      setError(err.message || 'Sifre sifirlama basarisiz.');
+      setError(err.message || 'Şifre sıfırlama başarısız.');
     } finally {
       setIsResetting(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="max-w-md w-full p-8 bg-white rounded-2xl shadow-lg">
-        <h2 className="text-2xl font-bold text-center mb-2">Ogrenci Girisi</h2>
-        <p className="text-center text-gray-500 mb-8">EduPremium hesabiniza giris yapin</p>
-        
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-xl text-sm">
-            {error}
+    <div className="min-h-screen relative flex items-center justify-center bg-[#FDFBF7] overflow-hidden">
+
+      {/* --- ARKA PLAN --- */}
+      <div className="absolute inset-0 z-0">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2228&auto=format&fit=crop')`
+          }}
+        ></div>
+        <div className="absolute inset-0 bg-[#FDFBF7]/60 backdrop-blur-[6px]"></div>
+      </div>
+
+      <div className="relative z-10 container mx-auto px-4">
+
+        {/* Geri Dön */}
+        <div className="absolute top-8 left-4 md:left-8">
+          <Link href="/login" className="flex items-center gap-2 text-[#0F172A] font-bold text-sm hover:text-[#D4AF37] transition-colors bg-white/50 px-4 py-2 rounded-full backdrop-blur-md">
+            <ArrowLeft className="w-4 h-4" /> Geri Dön
+          </Link>
+        </div>
+
+        <div className="max-w-md mx-auto">
+
+          {/* Rozet */}
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#0F172A]/10 text-[#0F172A] text-xs font-bold uppercase tracking-widest bg-white/40 backdrop-blur-md shadow-sm">
+              <Star className="w-3 h-3 text-[#D4AF37] fill-current" /> Öğrenci Portalı
+            </div>
           </div>
-        )}
-        
-        {success && (
-          <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-xl text-sm">
-            {success}
+
+          {/* FORM KARTI */}
+          <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-8 md:p-10 shadow-2xl shadow-[#0F172A]/5">
+
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-[#0F172A] font-serif mb-2">Öğrenci Girişi</h1>
+              <p className="text-slate-500 text-sm">EduPremium hesabınıza erişin</p>
+            </div>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-sm font-medium">
+                {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="mb-4 p-3 bg-green-50 text-green-600 rounded-xl text-sm font-medium">
+                {success}
+              </div>
+            )}
+
+            {!showForgotPassword ? (
+              <>
+                <form onSubmit={handleSubmit} className="space-y-5">
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-[#0F172A] uppercase tracking-wider ml-1">E-Posta</label>
+                    <div className="relative">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                        <Mail className="w-5 h-5" />
+                      </div>
+                      <input
+                        type="email"
+                        required
+                        placeholder="ornek@email.com"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="w-full bg-white border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center ml-1">
+                      <label className="text-xs font-bold text-[#0F172A] uppercase tracking-wider">Şifre</label>
+                      <button type="button" onClick={() => setShowForgotPassword(true)} className="text-xs text-[#D4AF37] font-bold hover:underline">Şifremi Unuttum?</button>
+                    </div>
+                    <div className="relative">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                        <Lock className="w-5 h-5" />
+                      </div>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        required
+                        placeholder="••••••••"
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        className="w-full bg-white border border-slate-200 rounded-xl py-3.5 pl-12 pr-12 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#0F172A] transition-colors"
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-[#0F172A] text-white font-bold py-4 rounded-xl hover:bg-[#D4AF37] hover:text-[#0F172A] transition-all shadow-lg flex items-center justify-center gap-2 group mt-4 disabled:opacity-50"
+                  >
+                    {isLoading ? 'Giriş Yapılıyor...' : (
+                      <>Giriş Yap <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>
+                    )}
+                  </button>
+
+                </form>
+
+                <div className="mt-8 text-center pt-6 border-t border-slate-100">
+                  <p className="text-slate-500 text-sm">
+                    Hesabınız yok mu? <Link href="/student/register" className="text-[#0F172A] font-bold hover:text-[#D4AF37] transition-colors">Kayıt Olun</Link>
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="mb-6">
+                  <h3 className="text-lg font-bold text-[#0F172A] font-serif mb-2">Şifre Sıfırlama</h3>
+                  <p className="text-sm text-slate-500">E-posta adresinizi girin, size şifre sıfırlama linki gönderelim.</p>
+                </div>
+
+                <form onSubmit={handleForgotPassword} className="space-y-5">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-[#0F172A] uppercase tracking-wider ml-1">E-Posta</label>
+                    <div className="relative">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                        <Mail className="w-5 h-5" />
+                      </div>
+                      <input
+                        type="email"
+                        required
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        className="w-full bg-white border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300"
+                        placeholder="ornek@email.com"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isResetting}
+                    className="w-full bg-[#0F172A] text-white font-bold py-4 rounded-xl hover:bg-[#D4AF37] hover:text-[#0F172A] transition-all shadow-lg disabled:opacity-50"
+                  >
+                    {isResetting ? 'Gönderiliyor...' : 'Sıfırlama Linki Gönder'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => { setShowForgotPassword(false); setError(''); }}
+                    className="w-full py-3 bg-slate-100 text-[#0F172A] rounded-xl font-medium hover:bg-slate-200 transition-colors"
+                  >
+                    Girişe Geri Dön
+                  </button>
+                </form>
+              </>
+            )}
+
           </div>
-        )}
-
-        {!showForgotPassword ? (
-          <>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
-                <input
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  placeholder="ornek@email.com"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Sifre</label>
-                <input
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  placeholder="********"
-                />
-              </div>
-
-              <div className="flex items-center justify-end">
-                <Link
-                  href="/forgot-password"
-                  className="text-sm font-medium text-blue-600 hover:text-blue-500"
-                >
-                  Sifremi Unuttum?
-                </Link>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:opacity-50 transition-colors"
-              >
-                {isLoading ? 'Giris Yapiliyor...' : 'Giris Yap'}
-              </button>
-            </form>
-
-            <div className="mt-6 text-center">
-              <p className="text-gray-600 text-sm">
-                Hesabiniz yok mu?{' '}
-                <Link href="/student/register" className="text-blue-600 hover:text-blue-800 font-medium">
-                  Kayit Olun
-                </Link>
-              </p>
-            </div>
-            
-            <div className="mt-4 pt-4 border-t border-slate-200 text-center">
-              <p className="text-gray-500 text-sm">
-                Ogretmen misiniz?{' '}
-                <Link href="/login" className="text-blue-600 hover:text-blue-800 font-medium">
-                  Ogretmen Girisi
-                </Link>
-              </p>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="mb-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Sifre Sifirlama</h3>
-              <p className="text-sm text-gray-600">
-                E-posta adresinizi girin, size sifre sifirlama linki gonderelim.
-              </p>
-            </div>
-            
-            <form onSubmit={handleForgotPassword} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
-                <input 
-                  type="email" 
-                  required 
-                  value={resetEmail} 
-                  onChange={(e) => setResetEmail(e.target.value)} 
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" 
-                  placeholder="ornek@email.com" 
-                />
-              </div>
-              
-              <button 
-                type="submit" 
-                disabled={isResetting} 
-                className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:opacity-50 transition-colors"
-              >
-                {isResetting ? 'Gonderiliyor...' : 'Sifirlama Linki Gonder'}
-              </button>
-              
-              <button
-                type="button"
-                onClick={() => {
-                  setShowForgotPassword(false);
-                  setError('');
-                }}
-                className="w-full py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
-              >
-                Girişe Geri Dön
-              </button>
-            </form>
-          </>
-        )}
+        </div>
       </div>
     </div>
   );
