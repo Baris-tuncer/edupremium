@@ -65,23 +65,23 @@ const FEATURED_CATEGORIES = [
 // HERO SECTION - Premium Dark Academia Style
 // ============================================
 const HeroSection = () => (
-  <section className="relative min-h-screen bg-[#1a1a2e] flex items-center justify-center p-3 pt-20">
-    {/* Grid Pattern Background */}
+  <section className="relative min-h-screen bg-white flex items-center justify-center p-3 pt-20">
+    {/* Grid Pattern Background - Light gray */}
     <div
-      className="absolute inset-0 opacity-30"
+      className="absolute inset-0 opacity-40"
       style={{
-        backgroundImage: `linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)`,
+        backgroundImage: `linear-gradient(#e5e7eb 1px, transparent 1px), linear-gradient(90deg, #e5e7eb 1px, transparent 1px)`,
         backgroundSize: '32px 32px',
       }}
     />
 
     {/* Floating Hero Card */}
     <div className="relative w-full h-[calc(100vh-5rem)] rounded-[2rem] overflow-hidden shadow-2xl">
-      {/* Background Image - Library/Study Room */}
+      {/* Background Image - Students in Library */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=2940&auto=format&fit=crop')`,
+          backgroundImage: `url('https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?q=80&w=2940&auto=format&fit=crop')`,
         }}
       />
 
