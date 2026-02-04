@@ -80,7 +80,7 @@ const FeaturedTeachers = async () => {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-bold uppercase tracking-widest mb-6 bg-[#D4AF37]/5 backdrop-blur-sm">
             <Award className="w-4 h-4" /> Özel Koleksiyon
           </div>
-          <h2 className="text-4xl md:text-6xl font-bold text-white font-serif mb-6">Akademik <span className="text-[#D4AF37]">Kadro</span></h2>
+          <h2 className="text-4xl md:text-6xl font-bold text-white font-serif mb-6">Öne Çıkan <span className="text-[#D4AF37]">Eğitmenler</span></h2>
           <p className="text-slate-300 text-lg font-light">Seçkin eğitmenlerimizi branşlarına göre inceleyin.</p>
         </div>
 
