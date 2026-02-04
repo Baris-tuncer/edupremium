@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Star, ShieldCheck, Clock, ArrowRight } from 'lucide-react';
+import { Star, ShieldCheck, Clock, ArrowRight, GraduationCap } from 'lucide-react';
 
 interface Teacher {
   id: string;
@@ -18,6 +18,7 @@ interface Teacher {
   branches: { branch: { name: string } }[];
   verified: boolean | null;
   slug: string;
+  university?: string | null;
 }
 
 interface TeacherCardProps {
@@ -26,7 +27,17 @@ interface TeacherCardProps {
 
 const TeacherCard: React.FC<TeacherCardProps> = ({ teacher }) => {
   const fullName = `${teacher.name || ''} ${teacher.surname || ''}`.trim() || 'İsimsiz Eğitmen';
-  const mainBranch = teacher.branches?.[0]?.branch.name || 'Genel';
+
+  // Ders etiketlerini çıkar (ilk 3)
+  const subjectTags = teacher.branches
+    ?.map(b => {
+      const name = b.branch?.name || '';
+      // "lise:Matematik" formatından sadece "Matematik" al
+      const parts = name.split(':');
+      return parts.length > 1 ? parts[1] : name;
+    })
+    .filter(Boolean)
+    .slice(0, 3) || [];
 
   return (
     <div className="group relative w-full max-w-[360px] mx-auto mt-16 mb-8">
@@ -68,11 +79,11 @@ const TeacherCard: React.FC<TeacherCardProps> = ({ teacher }) => {
             {fullName}
           </h3>
           <p className="text-[#D4AF37] font-medium text-xs uppercase tracking-widest mb-4">
-            {teacher.title || mainBranch}
+            {teacher.title || 'Eğitmen'}
           </p>
 
-          {/* Puan & Tecrübe Hapları */}
-          <div className="flex justify-center gap-3 mb-6">
+          {/* Puan & Tecrübe & Üniversite */}
+          <div className="flex justify-center gap-2 mb-4 flex-wrap">
             <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-md border border-slate-100 shadow-sm">
               <Star className="w-3.5 h-3.5 text-[#D4AF37] fill-current" />
               <span className="font-bold text-sm text-[#0F172A]">{teacher.rating?.toFixed(1) || 'N/A'}</span>
@@ -83,7 +94,24 @@ const TeacherCard: React.FC<TeacherCardProps> = ({ teacher }) => {
                 <span className="font-bold text-sm text-[#0F172A]">{teacher.experience_years} Yıl</span>
               </div>
             )}
+            {teacher.university && (
+              <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-md border border-slate-100 shadow-sm">
+                <GraduationCap className="w-3.5 h-3.5 text-slate-400" />
+                <span className="font-bold text-xs text-[#0F172A] truncate max-w-[100px]">{teacher.university}</span>
+              </div>
+            )}
           </div>
+
+          {/* Ders Etiketleri */}
+          {subjectTags.length > 0 && (
+            <div className="flex justify-center gap-1.5 flex-wrap mb-4">
+              {subjectTags.map((tag, i) => (
+                <span key={i} className="bg-[#0F172A]/5 text-[#0F172A] text-xs font-medium px-2.5 py-1 rounded-full border border-[#0F172A]/10">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Alt Kısım: Fiyat & Buton */}
@@ -95,7 +123,6 @@ const TeacherCard: React.FC<TeacherCardProps> = ({ teacher }) => {
             </p>
           </div>
 
-          {/* MEVCUT LINK YAPISI KORUNDU */}
           <Link href={`/teachers/${teacher.slug}`} className="w-10 h-10 rounded-full bg-[#0F172A] text-white flex items-center justify-center hover:bg-[#D4AF37] hover:text-[#0F172A] transition-colors shadow-lg">
             <ArrowRight className="w-5 h-5" />
           </Link>
