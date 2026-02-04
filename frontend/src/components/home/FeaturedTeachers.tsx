@@ -1,85 +1,73 @@
-'use client';
-
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/utils/supabase/server';
 import CategoryShowcase from '@/components/home/CategoryShowcase';
 import { Award, ArrowRight } from 'lucide-react';
 
-interface Teacher {
-  id: string;
-  user_id: string;
-  name: string | null;
-  surname: string | null;
-  title: string | null;
-  biography: string | null;
-  image_url: string | null;
-  hourly_rate: number | null;
-  rating: number | null;
-  review_count: number | null;
-  location: string | null;
-  experience_years: number | null;
-  branches: { branch: { name: string } }[];
-  verified: boolean | null;
-  slug: string;
+async function getFeaturedTeachers() {
+  const supabase = createClient();
+  const now = new Date().toISOString();
+
+  // 1. ESKİ (ÇALIŞAN) TABLODAN VERİYİ ÇEKİYORUZ
+  const { data: profiles, error } = await supabase
+    .from('teacher_profiles')
+    .select('*')
+    .eq('is_verified', true)
+    // Eğer featured_until sütunu varsa süresi dolanları gizle
+    // Yoksa bu satırı silebilirsin: .gte('featured_until', now);
+    .gte('featured_until', now);
+
+  if (error) {
+    console.error('Veri Hatası:', error);
+    return [];
+  }
+
+  // 2. ESKİ VERİYİ YENİ KARTA UYUMLU HALE GETİRİYORUZ
+  const mappedTeachers = (profiles || []).map(p => {
+
+    // Konu Etiketlerini (Matematik, Fizik) Ayarla
+    let displayBranches = [];
+    if (p.subjects && Array.isArray(p.subjects) && p.subjects.length > 0) {
+      // Eski tablodaki 'subjects' dizisini al
+      displayBranches = p.subjects.map((s: string) => ({ branch: { name: s } }));
+    } else {
+      // Yoksa kategoriyi kullan
+      displayBranches = [{ branch: { name: p.featured_category || 'Genel' } }];
+    }
+
+    return {
+      id: p.id,
+      user_id: p.user_id,
+      name: p.full_name, // İsim
+      surname: '',
+      // KARTTAKİ TURUNCU SÖZ (HEADLINE) BURAYA GELİYOR
+      title: p.featured_headline || 'Eğitmen',
+      biography: p.biography,
+      image_url: p.avatar_url,
+      hourly_rate: p.hourly_rate,
+      rating: p.rating,
+      review_count: p.review_count || 0,
+      location: p.location,
+      experience_years: p.experience_years, // Deneyim Yılı
+
+      // --- ESKİ KARTTAKİ KRİTİK BİLGİLER ---
+      university: p.university, // Üniversite Bilgisi
+      branches: displayBranches, // Ders Etiketleri (Matematik, Fizik...)
+      // ------------------------------------
+
+      verified: p.is_verified,
+      slug: p.slug || p.id,
+    };
+  });
+
+  return mappedTeachers;
 }
 
-const FeaturedTeachers = () => {
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchTeachers = async () => {
-      try {
-        const now = new Date().toISOString();
-
-        // KRİTİK: teacher_profiles tablosundan çekiyoruz
-        const { data: profiles, error } = await supabase
-          .from('teacher_profiles')
-          .select('*')
-          .eq('is_verified', true)
-          .gte('featured_until', now);
-
-        if (error) {
-          console.error('Veri Hatası:', error);
-          return;
-        }
-
-        // VERİ DÖNÜŞÜMÜ (Mapping)
-        const mappedTeachers: Teacher[] = (profiles || []).map((p: any) => ({
-          id: p.id,
-          user_id: p.user_id,
-          name: p.full_name,
-          surname: '',
-          title: p.featured_headline || p.title || 'Eğitmen',
-          biography: p.biography,
-          image_url: p.avatar_url,
-          hourly_rate: p.hourly_rate,
-          rating: p.rating,
-          review_count: p.review_count || 0,
-          location: p.location,
-          experience_years: p.experience_years,
-          verified: p.is_verified,
-          slug: p.slug || p.id,
-          // KATEGORİ AYARI: featured_category alanını kullanıyoruz
-          branches: [{ branch: { name: p.featured_category || 'Genel' } }]
-        }));
-
-        setTeachers(mappedTeachers);
-      } catch (error) {
-        console.error('Error fetching teachers:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTeachers();
-  }, []);
-
-  if (!loading && teachers.length === 0) return null;
+const FeaturedTeachers = async () => {
+  const teachers = await getFeaturedTeachers();
 
   return (
     <section className="relative py-24 overflow-hidden">
-      {/* ARKA PLAN */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed" style={{ backgroundImage: `url('/hero-library.jpg')` }} />
         <div className="absolute inset-0 bg-[#0F172A]/90 backdrop-blur-[2px]"></div>
@@ -94,13 +82,8 @@ const FeaturedTeachers = () => {
           <p className="text-slate-300 text-lg font-light">Seçkin eğitmenlerimizi branşlarına göre inceleyin.</p>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center py-20">
-            <div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : (
-          <CategoryShowcase teachers={teachers} />
-        )}
+        {/* KATEGORİLİ GÖSTERİM (NETFLIX MODELİ) */}
+        <CategoryShowcase teachers={teachers} />
 
         <div className="text-center mt-24">
           <Link href="/teachers" className="inline-flex items-center gap-3 px-10 py-5 bg-[#D4AF37] text-[#0F172A] hover:bg-white transition-all duration-300 rounded-none text-sm font-bold uppercase tracking-widest shadow-lg">
