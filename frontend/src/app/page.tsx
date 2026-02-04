@@ -1,5 +1,5 @@
 import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
+import FooterPremium from '@/components/layout/FooterPremium';
 import HeroSection from '@/components/home/HeroSection';
 import FeaturedTeachers from '@/components/home/FeaturedTeachers';
 import WhyUsPremium from '@/components/home/WhyUsPremium';
@@ -19,7 +19,7 @@ export default function LandingPage() {
         <SubjectCategoriesPremium />
         <CtaPremium />
       </main>
-      <Footer />
+      <FooterPremium />
     </>
   );
 }
