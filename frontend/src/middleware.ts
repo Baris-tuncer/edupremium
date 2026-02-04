@@ -7,7 +7,10 @@ const publicPaths = [
   '/',
   '/login',
   '/register',
-  '/student/register', // <-- Kritik düzeltmemiz burada
+  '/student/login',
+  '/student/register',
+  '/teacher/login',
+  '/teacher/register',
   '/forgot-password',
   '/verify-email',
   '/about',
