@@ -65,85 +65,73 @@ const FEATURED_CATEGORIES = [
 // HERO SECTION - Premium Dark Academia Style
 // ============================================
 const HeroSection = () => (
-  <section className="relative min-h-screen bg-white flex items-center justify-center p-3 pt-20">
-    {/* Grid Pattern Background - Light gray */}
+  <section className="relative min-h-screen pt-16 overflow-hidden">
+    {/* Background Image - Library Books */}
     <div
-      className="absolute inset-0 opacity-40"
+      className="absolute inset-0 bg-cover bg-center bg-no-repeat"
       style={{
-        backgroundImage: `linear-gradient(#e5e7eb 1px, transparent 1px), linear-gradient(90deg, #e5e7eb 1px, transparent 1px)`,
-        backgroundSize: '32px 32px',
+        backgroundImage: `url('https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?q=80&w=2940&auto=format&fit=crop')`,
       }}
     />
 
-    {/* Floating Hero Card */}
-    <div className="relative w-full h-[calc(100vh-5rem)] rounded-[2rem] overflow-hidden shadow-2xl">
-      {/* Background Image - Students in Library */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?q=80&w=2940&auto=format&fit=crop')`,
-        }}
-      />
+    {/* Cream Overlay */}
+    <div
+      className="absolute inset-0"
+      style={{
+        background: `radial-gradient(ellipse at center, rgba(253,251,247,0.92) 0%, rgba(253,251,247,0.8) 50%, rgba(253,251,247,0.5) 100%)`,
+      }}
+    />
 
-      {/* Subtle Cream Overlay - More transparent to show image */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `radial-gradient(ellipse at center, rgba(253,251,247,0.88) 0%, rgba(253,251,247,0.7) 50%, rgba(253,251,247,0.4) 100%)`,
-        }}
-      />
-
-      {/* Content Container - CENTERED */}
-      <div className="relative z-10 h-full flex flex-col items-center justify-center px-8 text-center">
-        {/* Logo - Top Center */}
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 bg-[#0F172A] rounded-lg flex items-center justify-center">
-            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-            </svg>
-          </div>
-          <span className="text-xl font-bold text-[#0F172A] tracking-tight">EduPremium</span>
-        </div>
-
-        {/* Headline - Centered */}
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#0F172A] mb-6 font-serif leading-[1.15] tracking-tight max-w-3xl">
-          Eğitimde<br />
-          Mükemmelliğe<br />
-          Giden Yol
-        </h1>
-
-        {/* Subtext - Centered */}
-        <p className="text-base md:text-lg text-slate-600 mb-8 leading-relaxed max-w-lg">
-          Alanında uzman, titizlikle seçilmiş öğretmenlerle birebir online ders deneyimi.
-          Çocuğunuzun akademik başarısı için en doğru adım.
-        </p>
-
-        {/* Buttons - Centered */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-          <Link
-            href="/register"
-            className="inline-flex items-center justify-center gap-2 bg-[#0F172A] text-white px-8 py-3.5 rounded-lg text-base font-semibold hover:bg-[#1E293B] transition-all duration-300 shadow-lg shadow-[#0F172A]/20 active:scale-[0.98]"
-          >
-            Hemen Başla
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </Link>
-          <Link
-            href="/teachers"
-            className="inline-flex items-center justify-center gap-2 bg-white/80 backdrop-blur-sm text-[#0F172A] px-8 py-3.5 rounded-lg text-base font-semibold border border-[#0F172A]/20 hover:bg-white hover:border-[#0F172A]/40 transition-all duration-300 active:scale-[0.98]"
-          >
-            Öğretmenleri Keşfet
-          </Link>
-        </div>
-
-        {/* Scroll Indicator */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-[#0F172A]/70 uppercase tracking-widest">Keşfet</span>
-          <svg className="w-4 h-4 text-[#0F172A]/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+    {/* Content Container - CENTERED */}
+    <div className="relative z-10 min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center px-8 text-center">
+      {/* Logo - Top Center */}
+      <div className="flex items-center gap-3 mb-8">
+        <div className="w-10 h-10 bg-[#0F172A] rounded-lg flex items-center justify-center">
+          <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
           </svg>
         </div>
+        <span className="text-xl font-bold text-[#0F172A] tracking-tight">EduPremium</span>
+      </div>
+
+      {/* Headline - Centered */}
+      <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#0F172A] mb-6 font-serif leading-[1.15] tracking-tight max-w-3xl">
+        Eğitimde<br />
+        Mükemmelliğe<br />
+        Giden Yol
+      </h1>
+
+      {/* Subtext - Centered */}
+      <p className="text-base md:text-lg text-slate-600 mb-8 leading-relaxed max-w-lg">
+        Alanında uzman, titizlikle seçilmiş öğretmenlerle birebir online ders deneyimi.
+        Çocuğunuzun akademik başarısı için en doğru adım.
+      </p>
+
+      {/* Buttons - Centered */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+        <Link
+          href="/register"
+          className="inline-flex items-center justify-center gap-2 bg-[#0F172A] text-white px-8 py-3.5 rounded-lg text-base font-semibold hover:bg-[#1E293B] transition-all duration-300 shadow-lg shadow-[#0F172A]/20 active:scale-[0.98]"
+        >
+          Hemen Başla
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
+        </Link>
+        <Link
+          href="/teachers"
+          className="inline-flex items-center justify-center gap-2 bg-white/80 backdrop-blur-sm text-[#0F172A] px-8 py-3.5 rounded-lg text-base font-semibold border border-[#0F172A]/20 hover:bg-white hover:border-[#0F172A]/40 transition-all duration-300 active:scale-[0.98]"
+        >
+          Öğretmenleri Keşfet
+        </Link>
+      </div>
+
+      {/* Scroll Indicator */}
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-semibold text-[#0F172A]/70 uppercase tracking-widest">Keşfet</span>
+        <svg className="w-4 h-4 text-[#0F172A]/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+        </svg>
       </div>
     </div>
   </section>
