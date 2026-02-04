@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import PageHero from '@/components/layout/PageHero';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -17,14 +18,14 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
-      
+
       if (response.ok) {
         setSubmitted(true);
         setFormData({ name: '', email: '', subject: '', message: '' });
@@ -34,20 +35,20 @@ export default function ContactPage() {
     } catch (error) {
       alert('Bir hata oluştu. Lütfen tekrar deneyin.');
     }
-    
+
     setIsSubmitting(false);
   };
 
   return (
     <>
       <Header />
-      <main className="pt-24 pb-16 bg-slate-50 min-h-screen">
-        <div className="container-wide">
+      <PageHero
+        title="İletişim"
+        subtitle="Sorularınız için bize ulaşın, en kısa sürede yanıt verelim."
+      />
+      <main className="pb-16 bg-slate-50">
+        <div className="container-wide py-12">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h1 className="font-display text-4xl font-bold text-navy-900 mb-4">İletişim</h1>
-              <p className="text-slate-600 text-lg">Sorularınız için bize ulaşın, en kısa sürede yanıt verelim.</p>
-            </div>
 
             <div className="grid lg:grid-cols-3 gap-8">
               {/* Contact Info */}

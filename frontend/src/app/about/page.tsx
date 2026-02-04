@@ -2,15 +2,19 @@
 
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import PageHero from '@/components/layout/PageHero';
 
 export default function AboutPage() {
   return (
     <>
       <Header />
-      <main className="pt-24 pb-16 bg-slate-50 min-h-screen">
-        <div className="container-wide">
+      <PageHero
+        title="Hakkımızda"
+        subtitle="EduPremium ile tanışın, misyonumuzu ve vizyonumuzu keşfedin."
+      />
+      <main className="pb-16 bg-slate-50">
+        <div className="container-wide py-12">
           <div className="max-w-4xl mx-auto">
-            <h1 className="font-display text-4xl font-bold text-navy-900 mb-8">Hakkımızda</h1>
             
             <div className="card p-8 mb-8">
               <h2 className="font-display text-2xl font-semibold text-navy-900 mb-4">Misyonumuz</h2>

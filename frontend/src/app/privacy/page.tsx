@@ -2,15 +2,19 @@
 
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import PageHero from '@/components/layout/PageHero';
 
 export default function GizlilikPolitikasiPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-slate-50 pt-24 pb-16">
-        <div className="max-w-4xl mx-auto px-6">
-          <h1 className="text-4xl font-bold text-slate-900 mb-4">KVKK Aydinlatma Metni ve Gizlilik Politikasi</h1>
-          <p className="text-slate-500 mb-8">Son guncelleme: 23 Ocak 2026</p>
+      <PageHero
+        title="Gizlilik Politikası"
+        subtitle="KVKK Aydınlatma Metni ve Gizlilik Politikası"
+      />
+      <main className="bg-slate-50 pb-16">
+        <div className="max-w-4xl mx-auto px-6 py-12">
+          <p className="text-slate-500 mb-8">Son güncelleme: 23 Ocak 2026</p>
           
           <div className="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-slate-200 prose prose-slate max-w-none">
             

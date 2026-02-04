@@ -3,16 +3,19 @@
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import PageHero from '@/components/layout/PageHero';
 import { EDUCATION_LEVELS, LevelKey } from '@/lib/constants';
 
 export default function DerslerPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-slate-50 pt-24 pb-16">
-        <div className="max-w-6xl mx-auto px-6">
-          <h1 className="text-4xl font-bold text-slate-900 mb-4">Dersler</h1>
-          <p className="text-slate-600 mb-12">Tum branslarda uzman ogretmenlerimizle birebir ders alin.</p>
+      <PageHero
+        title="Dersler"
+        subtitle="Tüm branşlarda uzman öğretmenlerimizle birebir ders alın."
+      />
+      <main className="bg-slate-50 pb-16">
+        <div className="max-w-6xl mx-auto px-6 py-12">
           
           <div className="space-y-12">
             {Object.entries(EDUCATION_LEVELS).map(([key, value]) => (
