@@ -154,118 +154,74 @@ const VerifiedBadge = () => (
 
 const TeacherCard = ({ teacher, index }: { teacher: FeaturedTeacher; index: number }) => {
   const router = useRouter();
-  const [hovered, setHovered] = useState(false);
-  const initials = teacher.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2) || '??';
-  const avatarGradients = [
-    'from-[#1e3a5f] to-[#2a5080]',
-    'from-[#0d1b2a] to-[#1e3a5f]',
-    'from-[#2a5080] to-[#3a6098]',
-    'from-[#1a3050] to-[#2a5080]',
-    'from-[#0d1b2a] to-[#2a5080]',
-  ];
 
   const subjectDisplay = (teacher.subjects || []).map(s => {
     const parts = s.split(':');
     return parts.length === 2 ? parts[1] : s;
-  }).slice(0, 3);
+  }).slice(0, 2).join(' • ');
+
+  const handleClick = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      router.push('/login?redirect=/teachers/' + teacher.id);
+    } else {
+      router.push('/teachers/' + teacher.id);
+    }
+  };
 
   return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className="flex-shrink-0 w-[320px] transition-all duration-400 cursor-pointer"
-      style={{
-        transform: hovered ? 'translateY(-6px)' : 'translateY(0)',
-      }}
-    >
-      <div className={`rounded-[20px] p-[2px] transition-all duration-400 ${
-        hovered 
-          ? 'bg-gradient-to-br from-gold-500 via-gold-300 to-gold-500 shadow-2xl' 
-          : 'bg-gradient-to-br from-navy-200/30 via-gold-400/30 to-navy-200/30 shadow-lg'
-      }`}>
-        <div className="bg-white rounded-[18px] p-7 h-full flex flex-col gap-5 relative overflow-hidden">
-          {/* Background decoration */}
-          <div className="absolute -top-10 -right-10 w-[120px] h-[120px] rounded-full bg-gold-100/20" />
+    <div className="group relative bg-white rounded-2xl border border-[#D4AF37]/20 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(212,175,55,0.15)] transition-all duration-300 mt-8 flex flex-col items-center">
 
-          {/* Badge */}
-          <div className="flex items-center gap-1.5 bg-gradient-to-r from-amber-50 to-gold-50 border border-gold-200/40 rounded-full px-3 py-1 w-fit">
-            <DiamondIcon />
-            <span className="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Editörün Seçimi</span>
-          </div>
-
-          {/* Profile */}
-          <div className="flex gap-4 items-start">
-            <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${avatarGradients[index % 5]} flex items-center justify-center text-white text-[22px] font-bold shadow-md flex-shrink-0`}>
-              {teacher.avatar_url ? (
-                <img src={teacher.avatar_url} alt={teacher.full_name} className="w-full h-full rounded-2xl object-cover" />
-              ) : initials}
+      {/* Profil Fotoğrafı (Taşan Kısım) */}
+      <div className="absolute -top-12">
+        <div className="relative w-24 h-24 rounded-full p-1 bg-white shadow-xl ring-1 ring-[#D4AF37]/30 group-hover:ring-[#D4AF37] transition-all duration-300">
+          {teacher.avatar_url ? (
+            <img src={teacher.avatar_url} alt={teacher.full_name} className="rounded-full object-cover w-full h-full" />
+          ) : (
+            <div className="w-full h-full rounded-full bg-gradient-to-br from-[#1e3a5f] to-[#2a5080] flex items-center justify-center text-white text-2xl font-bold">
+              {teacher.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2) || '??'}
             </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="text-[17px] font-bold text-navy-900 leading-tight mb-1">{teacher.full_name}</h3>
-              <div className="flex items-center gap-1">
-                <StarIcon />
-                <span className="text-sm font-bold text-amber-700">{teacher.rating || '4.5'}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Headline */}
-          {teacher.featured_headline && (
-            <p className="text-sm font-medium text-navy-700 italic border-l-[3px] border-gold-400 pl-3 leading-relaxed">
-              &ldquo;{teacher.featured_headline}&rdquo;
-            </p>
           )}
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-2.5">
-            <div className="bg-slate-50 rounded-xl p-3 text-center">
-              <div className="text-lg font-extrabold text-navy-900">{teacher.experience_years || '-'}</div>
-              <div className="text-[11px] text-slate-500 font-medium">Yıl Deneyim</div>
-            </div>
-            <div className="bg-slate-50 rounded-xl p-3 text-center flex flex-col items-center justify-center gap-0.5">
-              {teacher.university ? (
-                <>
-                  <div className="text-[12px] font-bold text-navy-900 leading-tight">{teacher.university}</div>
-                  <div className="text-[10px] text-slate-500 font-medium">Mezun</div>
-                </>
-              ) : (
-                <>
-                  <VerifiedBadge />
-                  <div className="text-[11px] text-amber-700 font-bold">Onaylı Öğretmen</div>
-                </>
-              )}
-            </div>
+          {/* Puan Rozeti */}
+          <div className="absolute bottom-0 right-0 bg-[#D4AF37] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white shadow-sm">
+            {teacher.rating || '5.0'}
           </div>
-
-          {/* Subjects */}
-          <div className="flex gap-1.5 flex-wrap">
-            {subjectDisplay.map((s, i) => (
-              <span key={i} className="bg-navy-50 border border-navy-100 text-navy-700 rounded-lg px-2.5 py-1 text-[12px] font-semibold">
-                {s}
-              </span>
-            ))}
-          </div>
-
-          {/* CTA */}
-          <button
-            onClick={async () => {
-              // Session kontrolü - giriş yapmadan randevu/profil engelle
-              const { data: { session } } = await supabase.auth.getSession();
-              if (!session) {
-                router.push('/login?redirect=/teachers/' + teacher.id);
-              } else {
-                router.push('/teachers/' + teacher.id);
-              }
-            }}
-            className={`w-full py-3.5 rounded-xl text-center text-sm font-bold transition-all duration-300 block ${
-              hovered
-                ? 'bg-gradient-to-r from-gold-500 to-gold-400 text-navy-900'
-                : 'bg-gradient-to-r from-navy-900 to-navy-700 text-white'
-            }`}
-          >
-            {hovered ? 'Randevu Al' : 'Profili İncele'}
-          </button>
         </div>
+      </div>
+
+      {/* Kart İçeriği */}
+      <div className="pt-16 pb-6 px-6 text-center w-full flex-grow flex flex-col">
+        <h3 className="text-xl font-bold text-[#0F172A] font-serif mb-1 group-hover:text-[#D4AF37] transition-colors">
+          {teacher.full_name}
+        </h3>
+        <p className="text-xs font-bold text-[#D4AF37] uppercase tracking-wider mb-4">
+          {subjectDisplay || 'Uzman Öğretmen'}
+        </p>
+
+        {/* Yıldızlar */}
+        <div className="flex justify-center items-center gap-1 mb-4">
+          {[...Array(5)].map((_, i) => (
+            <svg key={i} width="14" height="14" viewBox="0 0 20 20" className={i < Math.floor(teacher.rating || 5) ? 'fill-[#D4AF37] text-[#D4AF37]' : 'fill-gray-200 text-gray-200'}>
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+          ))}
+          <span className="text-xs text-gray-400 ml-1 font-medium">{teacher.experience_years || 0} yıl</span>
+        </div>
+
+        {/* Headline/Bio */}
+        {teacher.featured_headline && (
+          <p className="text-sm text-gray-500 leading-relaxed line-clamp-3 mb-6 font-light border-t border-gray-50 pt-4">
+            {teacher.featured_headline}
+          </p>
+        )}
+
+        {/* Buton */}
+        <button
+          onClick={handleClick}
+          className="mt-auto w-full py-3 bg-[#0F172A] text-white text-sm font-medium rounded-xl hover:bg-[#1E293B] active:scale-[0.98] transition-all duration-200 shadow-lg shadow-[#0F172A]/20"
+        >
+          Profili İncele
+        </button>
       </div>
     </div>
   );
@@ -319,64 +275,67 @@ const EditorsChoiceSection = () => {
   };
 
   return (
-    <section className="section bg-gradient-to-b from-white via-slate-50/50 to-white overflow-hidden">
-      <div className="container-wide">
+    <section className="py-24 bg-[#FDFBF7] relative overflow-hidden">
+      {/* Arka Plan Deseni */}
+      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#0F172A 1px, transparent 1px)', backgroundSize: '32px 32px' }}></div>
+
+      <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-10">
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-50 to-gold-50 border border-gold-200/30 rounded-full px-5 py-2 mb-6">
-            <DiamondIcon />
-            <span className="text-[13px] font-bold text-amber-700 uppercase tracking-[1.5px]">Editörün Seçimi</span>
-            <DiamondIcon />
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#B49120] text-xs font-bold tracking-widest uppercase mb-6">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <span>EDİTÖRÜN SEÇİMİ</span>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
           </div>
 
-          <h2 className="mb-4">
-            Alanında <span className="text-gradient">En İyi</span> Öğretmenler
+          <h2 className="text-4xl md:text-5xl font-bold text-[#0F172A] mb-6 font-serif tracking-tight">
+            Alanında En İyi Öğretmenler
           </h2>
-
-          <p className="text-lg text-slate-600">
-            Titizlikle değerlendirilen, minimum 4.5 puan ve yüksek deneyime sahip uzman öğretmenlerimiz.
+          <p className="text-lg text-gray-600 font-light leading-relaxed">
+            Titizlikle değerlendirilen, minimum 4.5 puan ve yüksek deneyime sahip,
+            öğrenci başarısını kanıtlamış uzman eğitmenlerimiz.
           </p>
         </div>
 
         {/* Category Tabs */}
-        <div className="flex gap-1.5 justify-center flex-wrap mb-10">
-          <div className="inline-flex gap-1.5 bg-white rounded-full p-1.5 shadow-sm border border-slate-100">
-            {FEATURED_CATEGORIES.map((cat) => {
-              const Icon = CategoryIcons[cat.key];
-              const isActive = activeCategory === cat.key;
-              return (
-                <button
-                  key={cat.key}
-                  onClick={() => handleCategoryChange(cat.key)}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-[13.5px] font-semibold transition-all duration-300 ${
-                    isActive
-                      ? 'bg-gradient-to-r from-navy-900 to-navy-700 text-white shadow-md'
-                      : 'text-slate-500 hover:text-navy-700 hover:bg-slate-50'
+        <div className="flex flex-wrap justify-center gap-3 mb-16">
+          {FEATURED_CATEGORIES.map((cat) => {
+            const isActive = activeCategory === cat.key;
+            return (
+              <button
+                key={cat.key}
+                onClick={() => handleCategoryChange(cat.key)}
+                className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300
+                  ${isActive
+                    ? 'bg-[#0F172A] text-white shadow-xl shadow-[#0F172A]/20 scale-105'
+                    : 'bg-white text-gray-500 border border-gray-100 hover:border-[#D4AF37] hover:text-[#0F172A]'
                   }`}
-                >
-                  <Icon active={isActive} />
-                  {cat.label}
-                </button>
-              );
-            })}
-          </div>
+              >
+                {cat.label}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Cards */}
-        <div className={`flex gap-6 justify-center flex-wrap transition-all duration-200 ${isTransitioning ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'}`}>
+        {/* Cards Grid */}
+        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 gap-y-20 transition-all duration-200 ${isTransitioning ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'}`}>
           {loading ? (
-            <div className="flex justify-center py-20">
-              <div className="w-8 h-8 border-4 border-navy-600 border-t-transparent rounded-full animate-spin" />
+            <div className="col-span-full flex justify-center py-20">
+              <div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
             </div>
           ) : teachers.length === 0 ? (
-            <div className="text-center py-16 max-w-md mx-auto">
-              <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-10 h-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="col-span-full text-center py-16 max-w-md mx-auto">
+              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <svg className="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-navy-900 mb-2">Bu kategoride henüz öğretmen yok</h3>
-              <p className="text-slate-500 text-sm">Yakında bu alanda da uzman öğretmenlerimiz yer alacak.</p>
+              <h3 className="text-lg font-semibold text-[#0F172A] mb-2">Bu kategoride henüz öğretmen yok</h3>
+              <p className="text-gray-500 text-sm">Yakında bu alanda da uzman öğretmenlerimiz yer alacak.</p>
             </div>
           ) : (
             teachers.map((teacher, index) => (
