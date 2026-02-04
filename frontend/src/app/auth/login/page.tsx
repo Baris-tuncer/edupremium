@@ -1,103 +1,92 @@
 import React from 'react';
 import Link from 'next/link';
-import { GraduationCap, Presentation, ArrowRight, Star } from 'lucide-react';
+import { GraduationCap, Presentation, ChevronRight, Star } from 'lucide-react';
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen relative flex items-center justify-center overflow-hidden bg-[#020617]">
+    <div className="min-h-screen relative flex items-center justify-center bg-[#020617] overflow-hidden">
 
-      {/* --- 1. ARKA PLAN KATMANI (ATMOSFER) --- */}
+      {/* --- ARKA PLAN (Modern Öğretmen & Öğrenci) --- */}
       <div className="absolute inset-0 z-0">
-        {/* Fotoğraf: Modern eğitim ortamı */}
         <div
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: `url('https://images.unsplash.com/photo-1544717305-2782549b5136?q=80&w=2670&auto=format&fit=crop')`
           }}
         ></div>
 
-        {/* KRİTİK: Koyu Lacivert Perde (%85 Opaklık) - Yazılar net okunsun diye */}
+        {/* KARARTMA PERDESİ (%85) - Yazıların netliği için kritik */}
         <div className="absolute inset-0 bg-[#020617]/85 backdrop-blur-[2px]"></div>
 
-        {/* Işık Efektleri */}
+        {/* Hafif Altın Işıltılar */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#D4AF37] opacity-[0.05] rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#D4AF37] opacity-[0.03] rounded-full blur-[120px]"></div>
       </div>
 
-      {/* --- 2. İÇERİK KATMANI --- */}
-      <div className="relative z-10 container mx-auto px-4">
+      <div className="relative z-10 container mx-auto px-4 text-center">
+
+        {/* ÜST LOGO ROZETİ */}
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-bold uppercase tracking-widest mb-8 bg-[#D4AF37]/10 backdrop-blur-md">
+          <Star className="w-3 h-3 fill-current" /> EduPremium
+        </div>
 
         {/* BAŞLIK */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-bold uppercase tracking-widest mb-6 bg-[#D4AF37]/10 backdrop-blur-md">
-            <Star className="w-3 h-3 fill-current" /> EduPremium Giriş
-          </div>
-          <h1 className="text-4xl md:text-6xl font-bold text-white font-serif mb-4 drop-shadow-lg">
-            Tekrar Hoş Geldiniz
-          </h1>
-          <p className="text-slate-400 text-lg font-light max-w-xl mx-auto">
-            Premium eğitim paneline erişmek için lütfen giriş tipini seçiniz.
-          </p>
-        </div>
+        <h1 className="text-4xl md:text-5xl font-bold text-white font-serif mb-3 drop-shadow-md">
+          Giriş Yap
+        </h1>
+        <p className="text-slate-300 text-lg mb-12 font-light">
+          Hesap türünüzü seçin
+        </p>
 
-        {/* SEÇİM KARTLARI */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        {/* KARTLAR GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
 
-          {/* --- KART 1: ÖĞRENCİ / VELİ --- */}
+          {/* --- SOL KART: VELİ / ÖĞRENCİ --- */}
           <Link
-            href="/auth/login/student"
-            className="group relative h-80 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 flex flex-col items-center justify-center text-center hover:bg-white/10 hover:border-[#D4AF37]/50 transition-all duration-500 overflow-hidden"
+            href="/student/login"
+            className="group bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-10 hover:bg-white/10 hover:border-[#D4AF37]/50 transition-all duration-300 flex flex-col items-center cursor-pointer"
           >
-            {/* Hover Işığı */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[#D4AF37]/0 to-[#D4AF37]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:border-[#D4AF37] transition-all duration-500 shadow-2xl">
-              <GraduationCap className="w-10 h-10 text-slate-300 group-hover:text-[#D4AF37] transition-colors" />
+            <div className="w-16 h-16 bg-gradient-to-br from-white/10 to-transparent border border-white/5 rounded-2xl flex items-center justify-center text-slate-300 mb-6 group-hover:scale-110 group-hover:text-[#D4AF37] group-hover:border-[#D4AF37]/30 transition-all shadow-lg">
+              <GraduationCap className="w-8 h-8" />
             </div>
 
             <h2 className="text-2xl font-bold text-white font-serif mb-2 group-hover:text-[#D4AF37] transition-colors">
-              Öğrenci / Veli
+              Veli / Öğrenci
             </h2>
-            <p className="text-slate-400 text-sm mb-8 px-4 group-hover:text-slate-200 transition-colors">
-              Ders takibi, ödevler ve gelişim raporları için giriş yapın.
+            <p className="text-slate-400 text-sm mb-8 group-hover:text-slate-300 transition-colors">
+              Ders almak için giriş yapın
             </p>
 
-            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-500 group-hover:text-[#D4AF37] transition-colors">
-              Giriş Yap <ArrowRight className="w-4 h-4" />
+            <span className="inline-flex items-center gap-2 text-[#D4AF37] font-bold uppercase tracking-wider text-xs border border-[#D4AF37]/30 px-4 py-2 rounded-full group-hover:bg-[#D4AF37] group-hover:text-[#020617] transition-all">
+              Giriş Yap <ChevronRight className="w-4 h-4" />
             </span>
           </Link>
 
-          {/* --- KART 2: EĞİTMEN (YENİ SİMGE: SUNUM TAHTASI) --- */}
+          {/* --- SAĞ KART: ÖĞRETMEN --- */}
           <Link
-            href="/auth/login/teacher"
-            className="group relative h-80 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 flex flex-col items-center justify-center text-center hover:bg-white/10 hover:border-[#D4AF37]/50 transition-all duration-500 overflow-hidden"
+            href="/teacher/login"
+            className="group bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-10 hover:bg-white/10 hover:border-[#D4AF37]/50 transition-all duration-300 flex flex-col items-center cursor-pointer"
           >
-            <div className="absolute inset-0 bg-gradient-to-b from-[#D4AF37]/0 to-[#D4AF37]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:border-[#D4AF37] transition-all duration-500 shadow-2xl">
-              {/* Kravat yerine Sunum Tahtası */}
-              <Presentation className="w-10 h-10 text-slate-300 group-hover:text-[#D4AF37] transition-colors" />
+            <div className="w-16 h-16 bg-gradient-to-br from-white/10 to-transparent border border-white/5 rounded-2xl flex items-center justify-center text-slate-300 mb-6 group-hover:scale-110 group-hover:text-[#D4AF37] group-hover:border-[#D4AF37]/30 transition-all shadow-lg">
+              <Presentation className="w-8 h-8" />
             </div>
 
             <h2 className="text-2xl font-bold text-white font-serif mb-2 group-hover:text-[#D4AF37] transition-colors">
-              Eğitmen
+              Öğretmen
             </h2>
-            <p className="text-slate-400 text-sm mb-8 px-4 group-hover:text-slate-200 transition-colors">
-              Ders programı yönetimi ve öğrenci takibi için panelinize gidin.
+            <p className="text-slate-400 text-sm mb-8 group-hover:text-slate-300 transition-colors">
+              Ders vermek için giriş yapın
             </p>
 
-            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-500 group-hover:text-[#D4AF37] transition-colors">
-              Panelime Git <ArrowRight className="w-4 h-4" />
+            <span className="inline-flex items-center gap-2 text-[#D4AF37] font-bold uppercase tracking-wider text-xs border border-[#D4AF37]/30 px-4 py-2 rounded-full group-hover:bg-[#D4AF37] group-hover:text-[#020617] transition-all">
+              Giriş Yap <ChevronRight className="w-4 h-4" />
             </span>
           </Link>
 
         </div>
 
-        {/* Alt Link */}
-        <div className="text-center mt-12">
-          <p className="text-slate-500 text-sm">
-            Henüz hesabınız yok mu? <Link href="/register" className="text-[#D4AF37] font-bold hover:underline">Hemen Kayıt Olun</Link>
-          </p>
+        {/* ALT BİLGİ (Kayıt Ol) */}
+        <div className="mt-12 text-slate-500 text-sm">
+          Hesabınız yok mu? <Link href="/register" className="text-white font-bold hover:text-[#D4AF37] transition-colors ml-1">Kayıt Ol</Link>
         </div>
 
       </div>
