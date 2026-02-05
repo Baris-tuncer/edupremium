@@ -22,13 +22,32 @@ export async function POST(request: Request) {
     // Dersi getir
     const { data: lesson, error: lessonError } = await supabase
       .from('lessons')
-      .select('*, teacher_profiles!lessons_teacher_id_fkey(full_name), student_profiles!lessons_student_id_fkey(full_name)')
+      .select('*')
       .eq('id', lessonId)
       .single();
 
     if (lessonError || !lesson) {
+      console.error('Lesson fetch error:', lessonError);
       return NextResponse.json({ error: 'Ders bulunamadı' }, { status: 404 });
     }
+
+    // Öğretmen ve öğrenci isimlerini ayrı sorgula
+    let teacherName = 'Öğretmen';
+    let studentName = 'Öğrenci';
+
+    const { data: teacherProfile } = await supabase
+      .from('teacher_profiles')
+      .select('full_name')
+      .eq('id', lesson.teacher_id)
+      .single();
+    if (teacherProfile) teacherName = teacherProfile.full_name;
+
+    const { data: studentProfile } = await supabase
+      .from('student_profiles')
+      .select('full_name')
+      .eq('id', lesson.student_id)
+      .single();
+    if (studentProfile) studentName = studentProfile.full_name;
 
     // Meeting link'ten room name çıkar
     if (!lesson.meeting_link) {
@@ -51,10 +70,8 @@ export async function POST(request: Request) {
     // Role'e göre token oluştur
     let token: string | null;
     if (isTeacher) {
-      const teacherName = lesson.teacher_profiles?.full_name || 'Öğretmen';
       token = await createTeacherMeetingToken(roomName, teacherName);
     } else {
-      const studentName = lesson.student_profiles?.full_name || 'Öğrenci';
       token = await createStudentMeetingToken(roomName, studentName);
     }
 
