@@ -58,7 +58,7 @@ export default function TeacherStudentsPage() {
         if (!studentMap.has(studentId)) {
           studentMap.set(studentId, {
             id: studentId,
-            full_name: profile?.full_name || 'Ogrenci',
+            full_name: profile?.full_name || 'Öğrenci',
             email: profile?.email || '',
             avatar_url: profile?.avatar_url || null,
             total_lessons: 0,
@@ -103,7 +103,7 @@ export default function TeacherStudentsPage() {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -111,30 +111,30 @@ export default function TeacherStudentsPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="font-display text-2xl font-bold text-slate-900">Ogrencilerim</h1>
-        <p className="text-slate-600 mt-1">Ders verdiginiz ogrencilerin listesi</p>
+        <h1 className="font-serif text-2xl font-bold text-slate-900">Öğrencilerim</h1>
+        <p className="text-slate-600 mt-1">Ders verdiğiniz öğrencilerin listesi</p>
       </div>
 
       <div className="mb-6">
         <input
           type="text"
-          placeholder="Ogrenci ara..."
+          placeholder="Öğrenci ara..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full max-w-md pl-4 pr-4 py-2 border border-slate-200 rounded-xl"
+          className="w-full max-w-md pl-4 pr-4 py-2 border border-white/50 rounded-xl focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none"
         />
       </div>
 
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-          <p className="text-slate-600">Henuz ogrenci bulunmuyor.</p>
+        <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-12 text-center">
+          <p className="text-slate-600">Henüz öğrenci bulunmuyor.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 overflow-hidden">
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
-                <th className="text-left py-4 px-6 font-medium text-slate-600">Ogrenci</th>
+                <th className="text-left py-4 px-6 font-medium text-slate-600">Öğrenci</th>
                 <th className="text-center py-4 px-6 font-medium text-slate-600">Toplam Ders</th>
                 <th className="text-center py-4 px-6 font-medium text-slate-600">Tamamlanan</th>
                 <th className="text-center py-4 px-6 font-medium text-slate-600">Son Ders</th>
@@ -146,8 +146,8 @@ export default function TeacherStudentsPage() {
                 <tr key={student.id} className="border-b border-slate-100 hover:bg-slate-50">
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-semibold text-blue-700">
+                      <div className="w-10 h-10 bg-[#D4AF37]/10 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-semibold text-[#D4AF37]">
                           {student.full_name.charAt(0).toUpperCase()}
                         </span>
                       </div>

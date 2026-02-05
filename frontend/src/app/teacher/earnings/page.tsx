@@ -61,7 +61,7 @@ export default function TeacherEarningsPage() {
       const formattedEarnings = lessons.map(l => ({
         id: l.id,
         subject: l.subject,
-        student_name: studentMap.get(l.student_id) || 'Ogrenci',
+        student_name: studentMap.get(l.student_id) || 'Öğrenci',
         price: l.price || 0,
         completed_at: l.scheduled_at
       }));
@@ -138,7 +138,7 @@ export default function TeacherEarningsPage() {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -146,39 +146,39 @@ export default function TeacherEarningsPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="font-display text-2xl font-bold text-slate-900">Kazanclarim</h1>
-        <p className="text-slate-600 mt-1">Kazanc ozeti ve islem gecmisi</p>
+        <h1 className="font-serif text-2xl font-bold text-slate-900">Kazançlarım</h1>
+        <p className="text-slate-600 mt-1">Kazanç özeti ve işlem geçmişi</p>
       </div>
 
       {/* Ozet Kartlari */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <span className="text-sm font-medium text-slate-500">Toplam Kazanc</span>
+        <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6">
+          <span className="text-sm font-medium text-slate-500">Toplam Kazanç</span>
           <p className="text-2xl font-bold text-slate-900 mt-2">{formatCurrency(stats.totalEarnings)}</p>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6">
           <span className="text-sm font-medium text-slate-500">Bu Ay</span>
           <p className="text-2xl font-bold text-green-600 mt-2">{formatCurrency(stats.thisMonth)}</p>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <span className="text-sm font-medium text-slate-500">Gecen Ay</span>
+        <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6">
+          <span className="text-sm font-medium text-slate-500">Geçen Ay</span>
           <p className="text-2xl font-bold text-slate-900 mt-2">{formatCurrency(stats.lastMonth)}</p>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6">
           <span className="text-sm font-medium text-slate-500">Tamamlanan Ders</span>
           <p className="text-2xl font-bold text-slate-900 mt-2">{stats.completedLessons}</p>
         </div>
       </div>
 
       {/* Aylik Grafik */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-8">
-        <h2 className="font-semibold text-slate-900 mb-6">Aylik Kazanc</h2>
+      <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6 mb-8">
+        <h2 className="font-semibold text-slate-900 mb-6">Aylık Kazanç</h2>
         <div className="flex items-end gap-4 h-48">
           {monthlyData.map((m, i) => (
             <div key={i} className="flex-1 flex flex-col items-center">
               <div className="w-full bg-slate-100 rounded-t-lg relative" style={{ height: '160px' }}>
                 <div
-                  className="absolute bottom-0 w-full bg-blue-500 rounded-t-lg transition-all"
+                  className="absolute bottom-0 w-full bg-[#D4AF37] rounded-t-lg transition-all"
                   style={{ height: `${(m.earnings / maxEarning) * 100}%` }}
                 />
               </div>
@@ -189,22 +189,22 @@ export default function TeacherEarningsPage() {
         </div>
       </div>
 
-      {/* Islem Gecmisi */}
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+      {/* İşlem Geçmişi */}
+      <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 overflow-hidden">
         <div className="p-6 border-b border-slate-200">
-          <h2 className="font-semibold text-slate-900">Islem Gecmisi</h2>
+          <h2 className="font-semibold text-slate-900">İşlem Geçmişi</h2>
         </div>
         
         {earnings.length === 0 ? (
           <div className="p-12 text-center">
-            <p className="text-slate-600">Henuz tamamlanmis ders bulunmuyor.</p>
+            <p className="text-slate-600">Henüz tamamlanmış ders bulunmuyor.</p>
           </div>
         ) : (
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
                 <th className="text-left py-4 px-6 font-medium text-slate-600">Ders</th>
-                <th className="text-left py-4 px-6 font-medium text-slate-600">Ogrenci</th>
+                <th className="text-left py-4 px-6 font-medium text-slate-600">Öğrenci</th>
                 <th className="text-left py-4 px-6 font-medium text-slate-600">Tarih</th>
                 <th className="text-right py-4 px-6 font-medium text-slate-600">Tutar</th>
               </tr>

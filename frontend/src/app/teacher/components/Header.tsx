@@ -68,7 +68,7 @@ export default function TeacherHeader({ user }: HeaderProps) {
   return (
     <header className="fixed top-0 left-64 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-slate-100 z-30 px-8 flex items-center justify-between">
       <div>
-        <h1 className="text-xl font-display font-semibold text-navy-900">Öğretmen Paneli</h1>
+        <h1 className="text-xl font-serif font-semibold text-[#0F172A]">Öğretmen Paneli</h1>
       </div>
 
       <div className="flex items-center gap-4">
@@ -76,7 +76,7 @@ export default function TeacherHeader({ user }: HeaderProps) {
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="relative p-2 text-slate-500 hover:text-navy-900 hover:bg-slate-50 rounded-lg transition-colors"
+            className="relative p-2 text-slate-500 hover:text-[#0F172A] hover:bg-slate-50 rounded-lg transition-colors"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -87,25 +87,25 @@ export default function TeacherHeader({ user }: HeaderProps) {
               />
             </svg>
             {notifications.length > 0 && (
-              <span className="absolute top-1 right-1 w-2 h-2 bg-gold-500 rounded-full" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-[#D4AF37] rounded-full" />
             )}
           </button>
 
           {isOpen && (
             <div className="absolute right-0 top-12 w-80 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden z-50">
               <div className="p-4 border-b border-slate-100">
-                <h3 className="font-semibold text-navy-900">Yaklaşan Dersler</h3>
+                <h3 className="font-semibold text-[#0F172A]">Yaklaşan Dersler</h3>
               </div>
               {notifications.length > 0 ? (
                 <div className="max-h-64 overflow-y-auto">
                   {notifications.map((lesson) => (
                     <div key={lesson.id} className="p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-navy-100 rounded-full flex items-center justify-center text-sm font-semibold text-navy-600">
+                        <div className="w-8 h-8 bg-[#D4AF37]/10 rounded-full flex items-center justify-center text-sm font-semibold text-[#D4AF37]">
                           {lesson.subject?.charAt(0) || '?'}
                         </div>
                         <div>
-                          <p className="font-medium text-navy-900 text-sm">{lesson.subject || 'Ders'}</p>
+                          <p className="font-medium text-[#0F172A] text-sm">{lesson.subject || 'Ders'}</p>
                           <p className="text-xs text-slate-500">{formatDate(lesson.scheduled_at)}</p>
                         </div>
                       </div>

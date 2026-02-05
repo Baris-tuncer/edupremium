@@ -113,8 +113,8 @@ const config: Config = {
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-navy': 'linear-gradient(135deg, #1a365d 0%, #102a43 100%)',
-        'gradient-gold': 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)',
+        'gradient-navy': 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
+        'gradient-gold': 'linear-gradient(135deg, #D4AF37 0%, #B8941E 100%)',
         'noise': "url('/noise.png')",
       },
     },

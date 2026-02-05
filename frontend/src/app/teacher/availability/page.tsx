@@ -205,7 +205,7 @@ export default function AvailabilityPage() {
   if (isLoading) {
     return (
       <div className="p-8 flex items-center justify-center min-h-screen">
-        <div className="w-8 h-8 border-4 border-navy-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -214,14 +214,14 @@ export default function AvailabilityPage() {
     <div className="p-8 max-w-[1400px] mx-auto">
       <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-8 gap-6">
         <div>
-          <h1 className="text-3xl font-display font-bold text-slate-900">Müsaitlik Takvimi</h1>
+          <h1 className="text-3xl font-serif font-bold text-slate-900">Müsaitlik Takvimi</h1>
           <p className="text-slate-500 mt-1">Müsait olduğunuz saatleri seçin ve kaydedin.</p>
         </div>
         
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full xl:w-auto">
-          <div className="flex items-center gap-4 bg-white p-2 rounded-xl shadow-sm border border-slate-200">
+          <div className="flex items-center gap-4 bg-white/80 backdrop-blur-xl p-2 rounded-xl shadow-sm border border-white/50">
             <button onClick={() => changeWeek('prev')} className="p-2 hover:bg-slate-100 rounded-lg">←</button>
-            <span className="font-bold text-navy-900 min-w-[180px] text-center text-sm">
+            <span className="font-bold text-[#0F172A] min-w-[180px] text-center text-sm">
               {weekDates.length > 0 && `${formatDate(weekDates[0])} - ${formatDate(weekDates[6])}`}
             </span>
             <button onClick={() => changeWeek('next')} className="p-2 hover:bg-slate-100 rounded-lg">→</button>
@@ -244,12 +244,12 @@ export default function AvailabilityPage() {
           <span>Müsait</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-blue-600 rounded"></div>
+          <div className="w-4 h-4 bg-[#0F172A] rounded"></div>
           <span>Rezerve</span>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+      <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl shadow-[#0F172A]/5 border border-white/50 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full border-collapse min-w-[900px]">
             <thead>
@@ -285,7 +285,7 @@ export default function AvailabilityPage() {
                           onClick={() => handleSlotClick(date, hour)}
                           disabled={isPast || isBooked}
                           className={`w-full h-full rounded-lg text-xs font-medium transition-all flex items-center justify-center
-                            ${isBooked ? 'bg-blue-600 text-white cursor-not-allowed' 
+                            ${isBooked ? 'bg-[#0F172A] text-white cursor-not-allowed' 
                               : isAvailable ? 'bg-emerald-100 text-emerald-700 border border-emerald-300 hover:bg-emerald-200' 
                               : isPast ? 'bg-slate-50 text-slate-300 cursor-not-allowed'
                               : 'hover:bg-slate-100 text-slate-400'}`}

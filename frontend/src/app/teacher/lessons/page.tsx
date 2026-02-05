@@ -125,30 +125,30 @@ export default function TeacherLessonsPage() {
     if (isPast) {
       return <span className="px-3 py-1 text-xs font-medium rounded-full bg-amber-100 text-amber-800">Tamamlanmadı</span>;
     }
-    return <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Planlandı</span>;
+    return <span className="px-3 py-1 text-xs font-medium rounded-full bg-[#D4AF37]/10 text-[#0F172A]">Planlandı</span>;
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-navy-600"></div>
+      <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4AF37]"></div>
       </div>
     );
   }
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-navy-900 mb-6">Derslerim</h1>
+      <h1 className="text-2xl font-bold text-[#0F172A] mb-6">Derslerim</h1>
       <div className="flex gap-2 mb-6">
         <button
           onClick={() => setFilter('upcoming')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'upcoming' ? 'bg-navy-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'upcoming' ? 'bg-[#0F172A] text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
         >
           Gelecek Dersler
         </button>
         <button
           onClick={() => setFilter('completed')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'completed' ? 'bg-navy-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'completed' ? 'bg-[#0F172A] text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
         >
           Tamamlanan Dersler
         </button>
@@ -156,20 +156,20 @@ export default function TeacherLessonsPage() {
       <div className="space-y-4">
         {filteredLessons.length > 0 ? (
           filteredLessons.map((lesson) => (
-            <div key={lesson.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div key={lesson.id} className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-2xl shadow-2xl shadow-[#0F172A]/5 p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-navy-100 rounded-full flex items-center justify-center font-semibold text-navy-600">
+                  <div className="w-12 h-12 bg-[#D4AF37]/10 rounded-full flex items-center justify-center font-semibold text-[#0F172A]/70">
                     {lesson.subject?.charAt(0) || '?'}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-navy-900">{lesson.subject || 'Ders'}</h3>
+                    <h3 className="font-semibold text-[#0F172A]">{lesson.subject || 'Ders'}</h3>
                     <p className="text-sm text-slate-600">{lesson.duration_minutes} dakika • {lesson.price} ₺</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="text-right">
-                    <p className="font-medium text-navy-900">
+                    <p className="font-medium text-[#0F172A]">
                       {new Date(lesson.scheduled_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </p>
                     <p className="text-sm text-slate-600">
@@ -180,7 +180,7 @@ export default function TeacherLessonsPage() {
                   {canJoinMeeting(lesson) && (
                     <button 
                       onClick={() => handleJoinClick(lesson.meeting_link)}
-                      className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                      className="px-4 py-2 bg-[#0F172A] text-white text-sm font-medium rounded-lg hover:bg-[#D4AF37] hover:text-[#0F172A] transition-colors flex items-center gap-2"
                     >
                       🎥 Derse Katıl
                     </button>
@@ -195,7 +195,7 @@ export default function TeacherLessonsPage() {
             </div>
           ))
         ) : (
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
+          <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-2xl shadow-2xl shadow-[#0F172A]/5 p-12 text-center">
             <p className="text-slate-500">{filter === 'upcoming' ? 'Henüz planlanmış ders bulunmuyor' : 'Henüz tamamlanmış ders bulunmuyor'}</p>
           </div>
         )}
@@ -204,7 +204,7 @@ export default function TeacherLessonsPage() {
       {/* Kayıt Onay Modalı */}
       {showConsentModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl">
+          <div className="bg-white/95 backdrop-blur-xl rounded-3xl max-w-lg w-full p-6 shadow-xl">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                 <span className="text-2xl">🔴</span>
@@ -245,7 +245,7 @@ export default function TeacherLessonsPage() {
                 type="checkbox"
                 checked={consentChecked}
                 onChange={(e) => setConsentChecked(e.target.checked)}
-                className="w-5 h-5 mt-0.5 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+                className="w-5 h-5 mt-0.5 text-[#0F172A] rounded border-slate-300 focus:ring-[#D4AF37]"
               />
               <span className="text-slate-700 text-sm">
                 Bu dersin ses ve görüntü olarak kaydedileceğini okudum, anladım ve <strong>kabul ediyorum</strong>.

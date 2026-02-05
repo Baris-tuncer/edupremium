@@ -262,45 +262,45 @@ export default function TeacherProfilePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Profil Ayarlari</h1>
+      <h1 className="text-2xl font-bold text-slate-900 mb-6">Profil Ayarları</h1>
 
       <div className="space-y-8">
         {/* Komisyon Durumu Kartı */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
+        <div className="bg-gradient-to-r from-[#0F172A] to-[#0F172A]/80 rounded-2xl p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-blue-100 text-sm">Komisyon Seviyeniz</p>
+              <p className="text-white/70 text-sm">Komisyon Seviyeniz</p>
               <p className="text-2xl font-bold">{commissionTier.label} (%{commissionTier.percentage})</p>
-              <p className="text-blue-100 mt-1">Tamamlanan Ders: {completedLessons}</p>
+              <p className="text-white/70 mt-1">Tamamlanan Ders: {completedLessons}</p>
             </div>
             {nextTierInfo ? (
               <div className="text-right">
-                <p className="text-blue-100 text-sm">Sonraki Seviye</p>
+                <p className="text-white/70 text-sm">Sonraki Seviye</p>
                 <p className="text-xl font-semibold">{nextTierInfo.nextTier} (%{nextTierInfo.nextRate})</p>
-                <p className="text-blue-100">{nextTierInfo.lessonsNeeded} ders kaldi</p>
+                <p className="text-white/70">{nextTierInfo.lessonsNeeded} ders kaldi</p>
               </div>
             ) : (
               <div className="text-right">
                 <p className="text-2xl">🏆</p>
-                <p className="text-blue-100">En yuksek seviye!</p>
+                <p className="text-white/70">En yüksek seviye!</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Profil Fotoğrafı ve Video */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">Profil Medyasi</h2>
+        <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Profil Medyası</h2>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Profil Fotografi</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Profil Fotoğrafı</label>
               <div className="flex items-center gap-4">
                 {avatarUrl ? (
                   <img src={avatarUrl} alt="Avatar" className="w-20 h-20 rounded-full object-cover" />
@@ -310,24 +310,24 @@ export default function TeacherProfilePage() {
                   </div>
                 )}
                 <label className="cursor-pointer px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200">
-                  {uploading ? 'Yukleniyor...' : 'Fotograf Sec'}
+                  {uploading ? 'Yükleniyor...' : 'Fotoğraf Seç'}
                   <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploading} />
                 </label>
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Tanitim Videosu</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Tanıtım Videosu</label>
               {videoUrl ? (
                 <div className="space-y-2">
                   <video src={videoUrl} controls className="w-full h-48 aspect-video object-contain rounded-lg" />
                   <label className="cursor-pointer inline-block px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200">
-                    {uploading ? 'Yukleniyor...' : 'Degistir'}
+                    {uploading ? 'Yükleniyor...' : 'Değiştir'}
                     <input type="file" accept="video/*" className="hidden" onChange={handleVideoUpload} disabled={uploading} />
                   </label>
                 </div>
               ) : (
-                <label className="cursor-pointer block p-8 border-2 border-dashed border-slate-300 rounded-lg text-center hover:border-blue-400">
-                  <span className="text-slate-500">{uploading ? 'Yukleniyor...' : 'Video Yukle (Max 100MB)'}</span>
+                <label className="cursor-pointer block p-8 border-2 border-dashed border-slate-300 rounded-lg text-center hover:border-[#D4AF37]">
+                  <span className="text-slate-500">{uploading ? 'Yükleniyor...' : 'Video Yükle (Max 100MB)'}</span>
                   <input type="file" accept="video/*" className="hidden" onChange={handleVideoUpload} disabled={uploading} />
                 </label>
               )}
@@ -336,28 +336,28 @@ export default function TeacherProfilePage() {
         </div>
 
         {/* Diploma */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6">
           <h2 className="text-lg font-semibold text-slate-900 mb-4">Diploma / Sertifika</h2>
-          <p className="text-sm text-slate-500 mb-4">Ogrencilerin guvenini kazanmak icin diplomanizi yukleyin.</p>
+          <p className="text-sm text-slate-500 mb-4">Öğrencilerin güvenini kazanmak için diplomanızı yükleyin.</p>
           {diplomaUrl ? (
             <div className="space-y-3">
               <img src={diplomaUrl} alt="Diploma" className="max-w-md rounded-lg border" />
               <label className="cursor-pointer inline-block px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200">
-                {uploading ? 'Yukleniyor...' : 'Degistir'}
+                {uploading ? 'Yükleniyor...' : 'Değiştir'}
                 <input type="file" accept="image/*,.pdf" className="hidden" onChange={handleDiplomaUpload} disabled={uploading} />
               </label>
             </div>
           ) : (
-            <label className="cursor-pointer block p-8 border-2 border-dashed border-slate-300 rounded-lg text-center hover:border-blue-400">
-              <span className="text-slate-500">{uploading ? 'Yukleniyor...' : 'Diploma Yukle (Max 10MB)'}</span>
+            <label className="cursor-pointer block p-8 border-2 border-dashed border-slate-300 rounded-lg text-center hover:border-[#D4AF37]">
+              <span className="text-slate-500">{uploading ? 'Yükleniyor...' : 'Diploma Yükle (Max 10MB)'}</span>
               <input type="file" accept="image/*,.pdf" className="hidden" onChange={handleDiplomaUpload} disabled={uploading} />
             </label>
           )}
         </div>
 
         {/* Kişisel Bilgiler */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">Kisisel Bilgiler</h2>
+        <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Kişisel Bilgiler</h2>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Ad Soyad</label>
@@ -365,7 +365,7 @@ export default function TeacherProfilePage() {
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#D4AF37] outline-none"
               />
             </div>
             <div>
@@ -374,8 +374,8 @@ export default function TeacherProfilePage() {
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ornegin: Matematik Ogretmeni"
-                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                placeholder="Örneğin: Matematik Öğretmeni"
+                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#D4AF37] outline-none"
               />
             </div>
             <div className="md:col-span-2">
@@ -385,25 +385,25 @@ export default function TeacherProfilePage() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="05XX XXX XX XX"
-                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#D4AF37] outline-none"
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Hakkimda</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Hakkımda</label>
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 rows={4}
-                placeholder="Kendinizi tanitin..."
-                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                placeholder="Kendinizi tanıtın..."
+                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#D4AF37] outline-none resize-none"
               />
             </div>
           </div>
         </div>
 
         {/* Fiyatlandırma */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">Fiyatlandirma</h2>
+        <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Fiyatlandırma</h2>
           
           <div className="grid md:grid-cols-2 gap-6">
             {/* Baz Fiyat Input */}
@@ -418,7 +418,7 @@ export default function TeacherProfilePage() {
                   onChange={(e) => setBasePrice(parseInt(e.target.value) || 0)}
                   min={PRICING_CONSTANTS.MIN_BASE_PRICE}
                   placeholder={`Minimum ${PRICING_CONSTANTS.MIN_BASE_PRICE}`}
-                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-lg font-semibold ${
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#D4AF37] outline-none text-lg font-semibold ${
                     !priceValidation.valid && basePrice > 0 ? 'border-red-300 bg-red-50' : 'border-slate-200'
                   }`}
                 />
@@ -443,7 +443,7 @@ export default function TeacherProfilePage() {
                 {/* Öğretmene Kalan */}
                 <div className="flex justify-between items-center py-2 border-t border-b border-slate-200">
                   <span className="text-slate-800 font-medium flex items-center gap-2">
-                    <span className="text-green-500">✅</span> Elinize Gececek Net
+                    <span className="text-green-500">✅</span> Elinize Geçecek Net
                   </span>
                   <span className="font-bold text-lg text-green-600">{formatPrice(priceDetails.teacherNet)}</span>
                 </div>
@@ -459,9 +459,9 @@ export default function TeacherProfilePage() {
                 {/* Veli Fiyatı */}
                 <div className="flex justify-between items-center pt-3 border-t border-slate-300">
                   <span className="text-slate-800 font-medium flex items-center gap-2">
-                    <span>🏷️</span> Veliye Gorunecek Fiyat
+                    <span>🏷️</span> Veliye Görünecek Fiyat
                   </span>
-                  <span className="font-bold text-xl text-blue-600">{formatPrice(priceDetails.displayPrice)}</span>
+                  <span className="font-bold text-xl text-[#D4AF37]">{formatPrice(priceDetails.displayPrice)}</span>
                 </div>
               </div>
             )}
@@ -472,13 +472,13 @@ export default function TeacherProfilePage() {
             <div className="flex items-start gap-3">
               <span className="text-xl">💡</span>
               <div className="text-sm text-amber-800">
-                <p className="font-medium">Nasil Calisir?</p>
+                <p className="font-medium">Nasıl Çalışır?</p>
                 <p className="mt-1">
-                  Belirlediginiz ders bedelinden <strong>%{commissionTier.percentage} komisyon</strong> kesilir, 
-                  kalan tutar size odenir. Vergiler veliye yansitilir.
+                  Belirlediğiniz ders bedelinden <strong>%{commissionTier.percentage} komisyon</strong> kesilir, 
+                  kalan tutar size ödenir. Vergiler veliye yansıtılır.
                 </p>
                 <p className="mt-2 text-amber-700">
-                  Daha fazla ders verdikce komisyon oraniniz duser: 
+                  Daha fazla ders verdikçe komisyon oranınız düşer: 
                   <strong> 101+ ders: %20</strong>, 
                   <strong> 201+ ders: %15</strong>
                 </p>
@@ -488,10 +488,10 @@ export default function TeacherProfilePage() {
         </div>
 
         {/* Ders Seçimi */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">Verdigim Dersler</h2>
+        <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Verdiğim Dersler</h2>
           <p className="text-slate-600 text-sm mb-6">
-            Vermek istediginiz dersleri seciniz.
+            Vermek istediğiniz dersleri seçiniz.
           </p>
 
           <div className="space-y-6">
@@ -507,7 +507,7 @@ export default function TeacherProfilePage() {
                         onClick={() => toggleSubject(levelKey, subject)}
                         className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                           selected
-                            ? 'bg-blue-600 text-white shadow-md'
+                            ? 'bg-[#0F172A] text-white shadow-md'
                             : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                         }`}
                       >
@@ -523,7 +523,7 @@ export default function TeacherProfilePage() {
           {selectedSubjects.length > 0 && (
             <div className="mt-6 pt-4 border-t border-slate-200">
               <p className="text-sm text-slate-600">
-                <strong>{selectedSubjects.length}</strong> ders secildi
+                <strong>{selectedSubjects.length}</strong> ders seçildi
               </p>
             </div>
           )}
@@ -534,9 +534,9 @@ export default function TeacherProfilePage() {
           <button
             onClick={handleSave}
             disabled={saving || !priceValidation.valid}
-            className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-8 py-3 bg-[#0F172A] text-white font-semibold rounded-xl hover:bg-[#D4AF37] hover:text-[#0F172A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {saving ? 'Kaydediliyor...' : 'Degisiklikleri Kaydet'}
+            {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
           </button>
         </div>
       </div>

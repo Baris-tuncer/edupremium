@@ -51,8 +51,8 @@ export default function TeacherSidebar({ activeItem, user }: SidebarProps) {
             </svg>
           </div>
           <div>
-            <span className="font-display text-xl font-semibold text-white">EduPremium</span>
-            <span className="block text-2xs text-navy-300 uppercase tracking-widest">Öğretmen Paneli</span>
+            <span className="font-serif text-xl font-semibold text-white">EduPremium</span>
+            <span className="block text-2xs text-white/50 uppercase tracking-widest">Öğretmen Paneli</span>
           </div>
         </Link>
       </div>
@@ -65,7 +65,7 @@ export default function TeacherSidebar({ activeItem, user }: SidebarProps) {
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
               activeItem === item.id
                 ? 'bg-white/10 text-white'
-                : 'text-navy-200 hover:bg-white/5 hover:text-white'
+                : 'text-white/60 hover:bg-white/5 hover:text-white'
             }`}
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -73,7 +73,7 @@ export default function TeacherSidebar({ activeItem, user }: SidebarProps) {
             </svg>
             <span className="font-medium">{item.label}</span>
             {activeItem === item.id && (
-              <span className="ml-auto w-1.5 h-1.5 bg-gold-400 rounded-full" />
+              <span className="ml-auto w-1.5 h-1.5 bg-[#D4AF37] rounded-full" />
             )}
           </Link>
         ))}
@@ -88,20 +88,20 @@ export default function TeacherSidebar({ activeItem, user }: SidebarProps) {
               className="w-10 h-10 rounded-full object-cover"
             />
           ) : (
-            <div className="w-10 h-10 bg-gold-500 rounded-full flex items-center justify-center font-display font-semibold text-navy-900">
+            <div className="w-10 h-10 bg-[#D4AF37] rounded-full flex items-center justify-center font-serif font-semibold text-[#0F172A]">
               {getInitials()}
             </div>
           )}
           <div className="flex-1 min-w-0">
             <div className="font-medium text-white truncate">{getFullName()}</div>
-            <div className="text-sm text-navy-300">Öğretmen</div>
+            <div className="text-sm text-white/50">Öğretmen</div>
           </div>
           <button
             onClick={handleLogout}
             className="opacity-0 group-hover:opacity-100 transition-opacity"
             title="Çıkış Yap"
           >
-            <svg className="w-5 h-5 text-navy-300 hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5 text-white/50 hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
           </button>

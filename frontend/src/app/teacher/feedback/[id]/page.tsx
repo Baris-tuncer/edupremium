@@ -19,7 +19,7 @@ const RatingStars = ({
 
   return (
     <div className="mb-6">
-      <label className="input-label mb-3">{label}</label>
+      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">{label}</label>
       <div className="flex items-center gap-2">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
@@ -33,7 +33,7 @@ const RatingStars = ({
             <svg
               className={`w-10 h-10 transition-colors ${
                 star <= (hover || value)
-                  ? 'text-gold-400 fill-current'
+                  ? 'text-[#D4AF37] fill-current'
                   : 'text-slate-300'
               }`}
               viewBox="0 0 20 20"
@@ -42,7 +42,7 @@ const RatingStars = ({
             </svg>
           </button>
         ))}
-        <span className="ml-3 text-lg font-semibold text-navy-900">{value}/5</span>
+        <span className="ml-3 text-lg font-semibold text-[#0F172A]">{value}/5</span>
       </div>
     </div>
   );
@@ -93,11 +93,11 @@ export default function TeacherFeedbackPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12">
-      <div className="container-narrow">
+    <div className="min-h-screen bg-[#FDFBF7] py-12">
+      <div className="max-w-3xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
-          <Link href="/teacher/dashboard" className="inline-flex items-center gap-2 text-slate-600 hover:text-navy-900 mb-4">
+          <Link href="/teacher/dashboard" className="inline-flex items-center gap-2 text-slate-600 hover:text-[#0F172A] mb-4">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
@@ -110,13 +110,13 @@ export default function TeacherFeedbackPage() {
         </div>
 
         {/* Lesson Info Card */}
-        <div className="card p-6 mb-8">
+        <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6 mb-8">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-navy-100 rounded-2xl flex items-center justify-center font-display text-2xl font-semibold text-navy-700">
+            <div className="w-16 h-16 bg-[#D4AF37]/10 rounded-2xl flex items-center justify-center font-serif text-2xl font-semibold text-[#D4AF37]">
               {lesson.student.split(' ').map(n => n[0]).join('')}
             </div>
             <div>
-              <h2 className="font-display text-xl font-semibold text-navy-900">{lesson.student}</h2>
+              <h2 className="font-serif text-xl font-semibold text-[#0F172A]">{lesson.student}</h2>
               <p className="text-slate-500">{lesson.subject}</p>
               <p className="text-sm text-slate-400">{lesson.date} • {lesson.time}</p>
             </div>
@@ -124,10 +124,10 @@ export default function TeacherFeedbackPage() {
         </div>
 
         {/* Feedback Form */}
-        <form onSubmit={handleSubmit} className="card p-8">
+        <form onSubmit={handleSubmit} className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-8">
           {/* Ratings Section */}
           <div className="mb-8">
-            <h3 className="font-display text-lg font-semibold text-navy-900 mb-6">Performans Değerlendirmesi</h3>
+            <h3 className="font-serif text-lg font-semibold text-[#0F172A] mb-6">Performans Değerlendirmesi</h3>
             
             <RatingStars
               label="Konuyu Anlama Düzeyi"
@@ -148,11 +148,11 @@ export default function TeacherFeedbackPage() {
             />
           </div>
 
-          <div className="divider mb-8" />
+          <div className="border-t border-slate-200/50 mb-8" />
 
           {/* Homework Status */}
           <div className="mb-8">
-            <h3 className="font-display text-lg font-semibold text-navy-900 mb-4">Ödev Durumu</h3>
+            <h3 className="font-serif text-lg font-semibold text-[#0F172A] mb-4">Ödev Durumu</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
                 { id: 'NOT_ASSIGNED', label: 'Ödev Verilmedi' },
@@ -166,7 +166,7 @@ export default function TeacherFeedbackPage() {
                   onClick={() => setHomeworkStatus(option.id)}
                   className={`py-3 px-4 rounded-xl border-2 font-medium transition-all ${
                     homeworkStatus === option.id
-                      ? 'border-navy-600 bg-navy-50 text-navy-900'
+                      ? 'border-[#D4AF37] bg-[#D4AF37]/5 text-[#0F172A]'
                       : 'border-slate-200 text-slate-600 hover:border-slate-300'
                   }`}
                 >
@@ -176,32 +176,32 @@ export default function TeacherFeedbackPage() {
             </div>
           </div>
 
-          <div className="divider mb-8" />
+          <div className="border-t border-slate-200/50 mb-8" />
 
           {/* Topics Covered */}
           <div className="mb-8">
-            <h3 className="font-display text-lg font-semibold text-navy-900 mb-4">İşlenen Konular</h3>
+            <h3 className="font-serif text-lg font-semibold text-[#0F172A] mb-4">İşlenen Konular</h3>
             <div className="flex gap-2 mb-3">
               <input
                 type="text"
                 value={newTopic}
                 onChange={(e) => setNewTopic(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTopic())}
-                className="input flex-1"
+                className="flex-1 w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none"
                 placeholder="Konu ekle..."
               />
-              <button type="button" onClick={handleAddTopic} className="btn-secondary px-4">
+              <button type="button" onClick={handleAddTopic} className="px-4 py-2.5 border border-[#0F172A] text-[#0F172A] rounded-xl font-medium hover:bg-[#0F172A] hover:text-white transition-all">
                 Ekle
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
               {topics.map((topic, i) => (
-                <span key={i} className="badge badge-navy flex items-center gap-2 py-2 px-3">
+                <span key={i} className="bg-[#0F172A]/10 text-[#0F172A] rounded-full flex items-center gap-2 py-2 px-3 text-sm font-medium">
                   {topic}
                   <button
                     type="button"
                     onClick={() => setTopics(topics.filter((_, idx) => idx !== i))}
-                    className="hover:text-navy-900"
+                    className="hover:text-[#0F172A]"
                   >
                     ×
                   </button>
@@ -215,23 +215,23 @@ export default function TeacherFeedbackPage() {
 
           {/* Areas for Improvement */}
           <div className="mb-8">
-            <h3 className="font-display text-lg font-semibold text-navy-900 mb-4">Geliştirilmesi Gereken Alanlar</h3>
+            <h3 className="font-serif text-lg font-semibold text-[#0F172A] mb-4">Geliştirilmesi Gereken Alanlar</h3>
             <div className="flex gap-2 mb-3">
               <input
                 type="text"
                 value={newImprovement}
                 onChange={(e) => setNewImprovement(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddImprovement())}
-                className="input flex-1"
+                className="flex-1 w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none"
                 placeholder="Alan ekle..."
               />
-              <button type="button" onClick={handleAddImprovement} className="btn-secondary px-4">
+              <button type="button" onClick={handleAddImprovement} className="px-4 py-2.5 border border-[#0F172A] text-[#0F172A] rounded-xl font-medium hover:bg-[#0F172A] hover:text-white transition-all">
                 Ekle
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
               {improvements.map((item, i) => (
-                <span key={i} className="badge badge-warning flex items-center gap-2 py-2 px-3">
+                <span key={i} className="bg-amber-100 text-amber-800 rounded-full flex items-center gap-2 py-2 px-3 text-sm font-medium">
                   {item}
                   <button
                     type="button"
@@ -248,30 +248,30 @@ export default function TeacherFeedbackPage() {
             </div>
           </div>
 
-          <div className="divider mb-8" />
+          <div className="border-t border-slate-200/50 mb-8" />
 
           {/* Teacher Notes */}
           <div className="mb-8">
-            <h3 className="font-display text-lg font-semibold text-navy-900 mb-4">Öğretmen Notları</h3>
+            <h3 className="font-serif text-lg font-semibold text-[#0F172A] mb-4">Öğretmen Notları</h3>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="input resize-none h-32"
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none resize-none h-32"
               placeholder="Ders hakkında eklemek istediğiniz notlar... (Opsiyonel)"
             />
           </div>
 
           {/* AI Report Preview */}
-          <div className="bg-navy-50 border border-navy-100 rounded-2xl p-6 mb-8">
+          <div className="bg-[#D4AF37]/5 border border-[#D4AF37]/20 rounded-2xl p-6 mb-8">
             <div className="flex items-start gap-3 mb-4">
-              <div className="w-10 h-10 bg-navy-100 rounded-xl flex items-center justify-center text-navy-600">
+              <div className="w-10 h-10 bg-[#D4AF37]/10 rounded-xl flex items-center justify-center text-[#0F172A]/70">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
               <div>
-                <h4 className="font-display font-semibold text-navy-900">AI Rapor Oluşturma</h4>
-                <p className="text-sm text-navy-600">
+                <h4 className="font-serif font-semibold text-[#0F172A]">AI Rapor Oluşturma</h4>
+                <p className="text-sm text-[#0F172A]/70">
                   Bu değerlendirme gönderildikten sonra, yapay zeka tarafından veliye yönelik 
                   profesyonel bir rapor otomatik olarak oluşturulacak ve e-posta ile gönderilecektir.
                 </p>
@@ -281,13 +281,13 @@ export default function TeacherFeedbackPage() {
 
           {/* Submit */}
           <div className="flex gap-4">
-            <Link href="/teacher/dashboard" className="btn-secondary flex-1 py-4">
+            <Link href="/teacher/dashboard" className="flex-1 py-4 border border-[#0F172A] text-[#0F172A] rounded-xl font-medium hover:bg-[#0F172A] hover:text-white transition-all text-center">
               İptal
             </Link>
             <button
               type="submit"
               disabled={isSubmitting || !comprehension || !engagement || !participation || !homeworkStatus || topics.length === 0}
-              className="btn-primary flex-1 py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-4 text-lg bg-[#0F172A] text-white rounded-xl font-semibold hover:bg-[#D4AF37] hover:text-[#0F172A] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <span className="flex items-center justify-center gap-2">
