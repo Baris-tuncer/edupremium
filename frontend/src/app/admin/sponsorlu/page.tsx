@@ -229,7 +229,7 @@ export default function SponsorluPage() {
   if (loading) {
     return (
       <div className="p-8 flex justify-center">
-        <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -256,7 +256,7 @@ export default function SponsorluPage() {
             onClick={() => setActiveTab(tab.key as any)}
             className={`px-5 py-2.5 rounded-lg font-medium text-sm transition-all ${
               activeTab === tab.key
-                ? 'bg-red-500 text-white'
+                ? 'bg-[#0F172A] text-white'
                 : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
             }`}
           >
@@ -273,7 +273,7 @@ export default function SponsorluPage() {
             {CATEGORIES.map(cat => {
               const count = getSlotCount(cat.key);
               return (
-                <div key={cat.key} className="bg-white rounded-xl p-5 border border-slate-200">
+                <div key={cat.key} className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 p-5">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-semibold text-slate-900">{cat.label}</h3>
                     <span className={`text-sm font-bold px-2 py-0.5 rounded-full ${
@@ -299,13 +299,13 @@ export default function SponsorluPage() {
           {/* Aktif Öğretmenler */}
           <h2 className="text-lg font-bold text-slate-900 mb-4">Aktif Sponsorlu Öğretmenler</h2>
           {featuredTeachers.length === 0 ? (
-            <div className="bg-white rounded-xl p-8 text-center border border-slate-200">
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 p-8 text-center">
               <p className="text-slate-500">Henüz sponsorlu öğretmen yok.</p>
             </div>
           ) : (
             <div className="space-y-3">
               {featuredTeachers.map(teacher => (
-                <div key={teacher.id} className="bg-white rounded-xl p-5 border border-slate-200 flex items-center gap-4">
+                <div key={teacher.id} className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 p-5 flex items-center gap-4">
                   {/* Avatar */}
                   <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
                     {teacher.avatar_url ? (
@@ -360,13 +360,13 @@ export default function SponsorluPage() {
       {activeTab === 'payments' && (
         <div>
           {payments.length === 0 ? (
-            <div className="bg-white rounded-xl p-8 text-center border border-slate-200">
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 p-8 text-center">
               <p className="text-slate-500">Henüz ödeme başvurusu yok.</p>
             </div>
           ) : (
             <div className="space-y-3">
               {payments.map(payment => (
-                <div key={payment.id} className="bg-white rounded-xl p-5 border border-slate-200 flex items-center gap-4">
+                <div key={payment.id} className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 p-5 flex items-center gap-4">
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-slate-900">
@@ -423,7 +423,7 @@ export default function SponsorluPage() {
       {/* TAB: Öğretmen Ekle */}
       {activeTab === 'add' && (
         <div className="max-w-xl">
-          <div className="bg-white rounded-xl p-6 border border-slate-200 space-y-5">
+          <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 p-6 space-y-5">
             <h2 className="text-lg font-bold text-slate-900">Manuel Öğretmen Ekle</h2>
             <p className="text-sm text-slate-500">Ödeme alındıktan sonra öğretmeni buradan öne çıkarabilirsiniz.</p>
 
@@ -433,7 +433,7 @@ export default function SponsorluPage() {
               <select
                 value={selectedTeacher}
                 onChange={e => setSelectedTeacher(e.target.value)}
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37]"
               >
                 <option value="">Öğretmen seçin...</option>
                 {allTeachers.map(t => (
@@ -450,7 +450,7 @@ export default function SponsorluPage() {
               <select
                 value={selectedCategory}
                 onChange={e => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37]"
               >
                 <option value="">Kategori seçin...</option>
                 {CATEGORIES.map(cat => {
@@ -472,7 +472,7 @@ export default function SponsorluPage() {
                 value={headline}
                 onChange={e => setHeadline(e.target.value)}
                 placeholder='Örn: "LGS Matematik Uzmanı - %95 Başarı Oranı"'
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37]"
                 maxLength={100}
               />
               <p className="text-xs text-slate-400 mt-1">{headline.length}/100 karakter</p>
@@ -484,7 +484,7 @@ export default function SponsorluPage() {
               <select
                 value={duration}
                 onChange={e => setDuration(Number(e.target.value))}
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37]"
               >
                 <option value={30}>30 gün (1 ay) - 4.500 ₺</option>
                 <option value={60}>60 gün (2 ay) - 9.000 ₺</option>
@@ -496,7 +496,7 @@ export default function SponsorluPage() {
             <button
               onClick={handleAddFeatured}
               disabled={saving || !selectedTeacher || !selectedCategory || !headline}
-              className="w-full bg-red-500 text-white py-3 rounded-lg font-semibold hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-[#0F172A] text-white py-3 rounded-lg font-semibold hover:bg-[#D4AF37] hover:text-[#0F172A] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {saving ? 'Ekleniyor...' : 'Öğretmeni Öne Çıkar'}
             </button>

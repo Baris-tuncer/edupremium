@@ -258,7 +258,7 @@ export default function AdminInvitationsPage() {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -272,7 +272,7 @@ export default function AdminInvitationsPage() {
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl transition-colors flex items-center gap-2"
+          className="px-6 py-3 bg-[#0F172A] hover:bg-[#D4AF37] hover:text-[#0F172A] text-white font-medium rounded-xl transition-colors flex items-center gap-2"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -283,19 +283,19 @@ export default function AdminInvitationsPage() {
 
       {/* Istatistikler */}
       <div className="grid grid-cols-4 gap-4 mb-8">
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
+        <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 p-4">
           <p className="text-sm text-slate-500">Toplam</p>
           <p className="text-2xl font-bold text-slate-900">{invitations.length}</p>
         </div>
-        <div className="bg-green-50 rounded-xl border border-green-200 p-4">
+        <div className="bg-green-50 rounded-3xl border border-green-200 p-4">
           <p className="text-sm text-green-600">Aktif</p>
           <p className="text-2xl font-bold text-green-700">{invitations.filter(i => i.status === 'ACTIVE').length}</p>
         </div>
-        <div className="bg-blue-50 rounded-xl border border-blue-200 p-4">
+        <div className="bg-blue-50 rounded-3xl border border-blue-200 p-4">
           <p className="text-sm text-blue-600">Kullanıldı</p>
           <p className="text-2xl font-bold text-blue-700">{invitations.filter(i => i.status === 'USED').length}</p>
         </div>
-        <div className="bg-gray-50 rounded-xl border border-gray-200 p-4">
+        <div className="bg-gray-50 rounded-3xl border border-gray-200 p-4">
           <p className="text-sm text-gray-600">Süresi Dolmuş</p>
           <p className="text-2xl font-bold text-gray-700">{invitations.filter(i => i.status === 'EXPIRED' || i.status === 'REVOKED').length}</p>
         </div>
@@ -314,8 +314,8 @@ export default function AdminInvitationsPage() {
             onClick={() => setFilter(f.value)}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               filter === f.value
-                ? 'bg-slate-900 text-white'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                ? 'bg-[#0F172A] text-white'
+                : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
             }`}
           >
             {f.label}
@@ -324,7 +324,7 @@ export default function AdminInvitationsPage() {
       </div>
 
       {/* Tablo */}
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+      <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 overflow-hidden">
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50">
@@ -417,7 +417,7 @@ export default function AdminInvitationsPage() {
       {/* Yeni Kod Olustur Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+          <div className="bg-white/95 backdrop-blur-xl rounded-3xl max-w-md w-full p-6">
             <h2 className="text-xl font-bold text-slate-900 mb-6">Yeni Davet Kodu</h2>
 
             <div className="space-y-4">
@@ -428,7 +428,7 @@ export default function AdminInvitationsPage() {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="ornek@email.com"
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] outline-none"
                 />
               </div>
 
@@ -439,7 +439,7 @@ export default function AdminInvitationsPage() {
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   placeholder="05XX XXX XX XX"
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] outline-none"
                 />
               </div>
 
@@ -448,7 +448,7 @@ export default function AdminInvitationsPage() {
                 <select
                   value={formData.expiresInDays}
                   onChange={(e) => setFormData({ ...formData, expiresInDays: Number(e.target.value) })}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] outline-none"
                 >
                   <option value={7}>7 gün</option>
                   <option value={14}>14 gün</option>
@@ -481,7 +481,7 @@ export default function AdminInvitationsPage() {
                         onChange={(e) => setFormData({ ...formData, personalMessage: e.target.value })}
                         placeholder="Merhaba, sizi platformumuza davet etmekten mutluluk duyuyoruz..."
                         rows={3}
-                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none resize-none"
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] outline-none resize-none"
                       />
                     </div>
                   )}
@@ -499,7 +499,7 @@ export default function AdminInvitationsPage() {
               <button
                 onClick={createInvitation}
                 disabled={creating}
-                className="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-3 bg-[#0F172A] hover:bg-[#D4AF37] hover:text-[#0F172A] text-white font-medium rounded-xl transition-colors disabled:opacity-50"
               >
                 {creating ? 'Oluşturuluyor...' : (formData.sendEmail && formData.email ? 'Oluştur ve Gönder' : 'Oluştur')}
               </button>
@@ -511,7 +511,7 @@ export default function AdminInvitationsPage() {
       {/* Email Gonder Modal */}
       {showEmailModal && selectedInvitation && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+          <div className="bg-white/95 backdrop-blur-xl rounded-3xl max-w-md w-full p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -546,7 +546,7 @@ export default function AdminInvitationsPage() {
                   value={emailForm.email}
                   onChange={(e) => setEmailForm({ ...emailForm, email: e.target.value })}
                   placeholder="ornek@email.com"
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] outline-none"
                 />
               </div>
 
@@ -557,7 +557,7 @@ export default function AdminInvitationsPage() {
                   onChange={(e) => setEmailForm({ ...emailForm, personalMessage: e.target.value })}
                   placeholder="Merhaba, sizi platformumuza davet etmekten mutluluk duyuyoruz..."
                   rows={3}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] outline-none resize-none"
                 />
               </div>
             </div>

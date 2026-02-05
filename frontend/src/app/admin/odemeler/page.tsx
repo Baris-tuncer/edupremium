@@ -33,7 +33,7 @@ export default function AdminPaymentsPage() {
 
   const loadPayments = async () => {
     try {
-      // Tamamlanmis dersleri cek (odemeler olarak)
+      // Tamamlanmış dersleri çek (ödemeler olarak)
       const { data: lessons, error } = await supabase
         .from('lessons')
         .select('id, subject, price, status, scheduled_at, teacher_id, student_id')
@@ -41,7 +41,7 @@ export default function AdminPaymentsPage() {
 
       if (error) throw error;
 
-      // Ogretmen ve ogrenci isimlerini al
+      // Öğretmen ve öğrenci isimlerini al
       const teacherIds = [...new Set(lessons?.map(l => l.teacher_id) || [])];
       const studentIds = [...new Set(lessons?.map(l => l.student_id).filter(Boolean) || [])];
 
@@ -84,7 +84,7 @@ export default function AdminPaymentsPage() {
 
       setPayments(formattedPayments);
 
-      // Istatistikler (sadece tamamlanan dersler)
+      // İstatistikler (sadece tamamlanan dersler)
       const completed = formattedPayments.filter(p => p.status === 'COMPLETED');
       const totalRevenue = completed.reduce((sum, p) => sum + p.price, 0);
       const platformCommission = completed.reduce((sum, p) => sum + p.platform_commission, 0);
@@ -121,9 +121,9 @@ export default function AdminPaymentsPage() {
     };
     const labels: Record<string, string> = {
       'PENDING': 'Bekliyor',
-      'CONFIRMED': 'Onaylandi',
-      'COMPLETED': 'Tamamlandi',
-      'CANCELLED': 'Iptal'
+      'CONFIRMED': 'Onaylandı',
+      'COMPLETED': 'Tamamlandı',
+      'CANCELLED': 'İptal'
     };
     return (
       <span className={`px-3 py-1 text-xs font-medium rounded-full ${styles[status] || 'bg-slate-100'}`}>
@@ -135,7 +135,7 @@ export default function AdminPaymentsPage() {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -143,11 +143,11 @@ export default function AdminPaymentsPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Odemeler</h1>
-        <p className="text-slate-600 mt-1">Tum odeme islemlerini goruntuleyebilirsiniz</p>
+        <h1 className="text-2xl font-bold text-slate-900">Ödemeler</h1>
+        <p className="text-slate-600 mt-1">Tüm ödeme işlemlerini görüntüleyebilirsiniz</p>
       </div>
 
-      {/* Istatistik Kartlari */}
+      {/* İstatistik Kartları */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white">
           <p className="text-green-100 text-sm">Toplam Gelir (Brut)</p>
@@ -160,33 +160,33 @@ export default function AdminPaymentsPage() {
           <p className="text-blue-100 text-sm mt-1">%25 komisyon</p>
         </div>
         <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white">
-          <p className="text-purple-100 text-sm">Ogretmen Odemeleri</p>
+          <p className="text-purple-100 text-sm">Öğretmen Ödemeleri</p>
           <p className="text-3xl font-bold mt-2">{formatCurrency(stats.teacherPayments)}</p>
-          <p className="text-purple-100 text-sm mt-1">Net odenen</p>
+          <p className="text-purple-100 text-sm mt-1">Net ödenen</p>
         </div>
         <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 text-white">
-          <p className="text-orange-100 text-sm">Bekleyen Odeme</p>
+          <p className="text-orange-100 text-sm">Bekleyen Ödeme</p>
           <p className="text-3xl font-bold mt-2">{payments.filter(p => p.status === 'CONFIRMED').length}</p>
-          <p className="text-orange-100 text-sm mt-1">Onaylanmis dersler</p>
+          <p className="text-orange-100 text-sm mt-1">Onaylanmış dersler</p>
         </div>
       </div>
 
       {/* Filtreler */}
       <div className="flex flex-wrap gap-2 mb-6">
         {[
-          { value: 'all', label: 'Tumu' },
+          { value: 'all', label: 'Tümü' },
           { value: 'PENDING', label: 'Bekleyen' },
           { value: 'CONFIRMED', label: 'Onaylanan' },
           { value: 'COMPLETED', label: 'Tamamlanan' },
-          { value: 'CANCELLED', label: 'Iptal' }
+          { value: 'CANCELLED', label: 'İptal' }
         ].map(f => (
           <button
             key={f.value}
             onClick={() => setFilter(f.value)}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               filter === f.value
-                ? 'bg-red-500 text-white'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                ? 'bg-[#0F172A] text-white'
+                : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
             }`}
           >
             {f.label}
@@ -195,17 +195,17 @@ export default function AdminPaymentsPage() {
       </div>
 
       {/* Tablo */}
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+      <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 overflow-hidden">
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50">
               <th className="text-left py-4 px-6 font-medium text-slate-600">Tarih</th>
               <th className="text-left py-4 px-6 font-medium text-slate-600">Ders</th>
-              <th className="text-left py-4 px-6 font-medium text-slate-600">Ogretmen</th>
-              <th className="text-left py-4 px-6 font-medium text-slate-600">Ogrenci</th>
+              <th className="text-left py-4 px-6 font-medium text-slate-600">Öğretmen</th>
+              <th className="text-left py-4 px-6 font-medium text-slate-600">Öğrenci</th>
               <th className="text-center py-4 px-6 font-medium text-slate-600">Toplam</th>
               <th className="text-center py-4 px-6 font-medium text-slate-600">Komisyon</th>
-              <th className="text-center py-4 px-6 font-medium text-slate-600">Ogretmen</th>
+              <th className="text-center py-4 px-6 font-medium text-slate-600">Öğretmen</th>
               <th className="text-center py-4 px-6 font-medium text-slate-600">Durum</th>
             </tr>
           </thead>
@@ -213,7 +213,7 @@ export default function AdminPaymentsPage() {
             {filteredPayments.length === 0 ? (
               <tr>
                 <td colSpan={8} className="py-12 text-center text-slate-500">
-                  Odeme bulunamadi
+                  Ödeme bulunamadı
                 </td>
               </tr>
             ) : (

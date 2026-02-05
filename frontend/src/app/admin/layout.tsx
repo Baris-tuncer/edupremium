@@ -15,7 +15,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     const checkAuth = async () => {
-      // Login sayfasinda kontrol yapma
+      // Login sayfasında kontrol yapma
       if (pathname === '/admin/login') {
         setIsLoading(false);
         return;
@@ -28,7 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         return;
       }
 
-      // Admin kontrolu
+      // Admin kontrolü
       const { data: profile } = await supabase
         .from('teacher_profiles')
         .select('is_admin')
@@ -48,17 +48,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     checkAuth();
   }, [router, pathname]);
 
-  // Login sayfasi icin layout yok
+  // Login sayfası için layout yok
   if (pathname === '/admin/login') {
     return <>{children}</>;
   }
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-slate-600">Yukleniyor...</p>
+          <div className="w-12 h-12 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-600">Yükleniyor...</p>
         </div>
       </div>
     );
@@ -71,7 +71,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const activeItem = pathname.split('/')[2] || 'dashboard';
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-[#FDFBF7]">
       <AdminSidebar activeItem={activeItem} />
       <AdminHeader user={user} />
       <main className="ml-64 pt-16">

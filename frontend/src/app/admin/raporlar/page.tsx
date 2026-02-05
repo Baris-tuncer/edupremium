@@ -18,10 +18,10 @@ export default function AdminReportsPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-navy-900">Raporlar</h1>
+          <h1 className="text-3xl font-bold text-[#0F172A]">Raporlar</h1>
           <p className="text-slate-600 mt-1">Platform istatistiklerini ve raporlarını görüntüleyin</p>
         </div>
-        <button className="bg-navy-900 hover:bg-navy-800 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2">
+        <button className="bg-[#0F172A] hover:bg-[#1E293B] text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2">
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
@@ -32,8 +32,8 @@ export default function AdminReportsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Sidebar */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl shadow-sm p-4">
-            <h3 className="font-semibold text-navy-900 mb-4">Rapor Türü</h3>
+          <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 p-4">
+            <h3 className="font-semibold text-[#0F172A] mb-4">Rapor Türü</h3>
             <div className="space-y-2">
               {reports.map((report) => (
                 <button
@@ -41,7 +41,7 @@ export default function AdminReportsPage() {
                   onClick={() => setSelectedReport(report.id)}
                   className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${
                     selectedReport === report.id
-                      ? 'bg-navy-50 text-navy-900'
+                      ? 'bg-[#D4AF37]/5 text-[#0F172A]'
                       : 'text-slate-600 hover:bg-slate-50'
                   }`}
                 >
@@ -52,11 +52,11 @@ export default function AdminReportsPage() {
             </div>
 
             <div className="mt-6 pt-6 border-t">
-              <h3 className="font-semibold text-navy-900 mb-4">Tarih Aralığı</h3>
+              <h3 className="font-semibold text-[#0F172A] mb-4">Tarih Aralığı</h3>
               <select
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-navy-500"
+                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#D4AF37]"
               >
                 <option value="today">Bugün</option>
                 <option value="this_week">Bu Hafta</option>
@@ -71,10 +71,10 @@ export default function AdminReportsPage() {
 
         {/* Content */}
         <div className="lg:col-span-3">
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 p-6">
             {selectedReport === 'overview' && (
               <>
-                <h2 className="text-xl font-bold text-navy-900 mb-6">Genel Bakış</h2>
+                <h2 className="text-xl font-bold text-[#0F172A] mb-6">Genel Bakış</h2>
                 
                 {/* Quick Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -108,11 +108,11 @@ export default function AdminReportsPage() {
 
             {selectedReport === 'revenue' && (
               <>
-                <h2 className="text-xl font-bold text-navy-900 mb-6">Gelir Raporu</h2>
+                <h2 className="text-xl font-bold text-[#0F172A] mb-6">Gelir Raporu</h2>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
                     <span className="font-medium">Brüt Gelir</span>
-                    <span className="text-xl font-bold text-navy-900">₺52,400</span>
+                    <span className="text-xl font-bold text-[#0F172A]">₺52,400</span>
                   </div>
                   <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
                     <span className="font-medium">Platform Komisyonu (%20)</span>
@@ -132,7 +132,7 @@ export default function AdminReportsPage() {
 
             {selectedReport === 'teachers' && (
               <>
-                <h2 className="text-xl font-bold text-navy-900 mb-6">Öğretmen Performansı</h2>
+                <h2 className="text-xl font-bold text-[#0F172A] mb-6">Öğretmen Performansı</h2>
                 <div className="text-center text-slate-500 py-12">
                   <p>Öğretmen performans raporu hazırlanıyor...</p>
                 </div>
@@ -141,7 +141,7 @@ export default function AdminReportsPage() {
 
             {selectedReport === 'students' && (
               <>
-                <h2 className="text-xl font-bold text-navy-900 mb-6">Öğrenci Aktivitesi</h2>
+                <h2 className="text-xl font-bold text-[#0F172A] mb-6">Öğrenci Aktivitesi</h2>
                 <div className="text-center text-slate-500 py-12">
                   <p>Öğrenci aktivite raporu hazırlanıyor...</p>
                 </div>
@@ -150,7 +150,7 @@ export default function AdminReportsPage() {
 
             {selectedReport === 'lessons' && (
               <>
-                <h2 className="text-xl font-bold text-navy-900 mb-6">Ders İstatistikleri</h2>
+                <h2 className="text-xl font-bold text-[#0F172A] mb-6">Ders İstatistikleri</h2>
                 <div className="text-center text-slate-500 py-12">
                   <p>Ders istatistikleri raporu hazırlanıyor...</p>
                 </div>

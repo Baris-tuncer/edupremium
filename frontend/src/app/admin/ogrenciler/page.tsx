@@ -25,7 +25,7 @@ export default function AdminStudentsPage() {
 
   const loadStudents = async () => {
     try {
-      // Ogrenci profilleri
+      // Öğrenci profilleri
       const { data: profiles, error } = await supabase
         .from('student_profiles')
         .select('*')
@@ -33,7 +33,7 @@ export default function AdminStudentsPage() {
 
       if (error) throw error;
 
-      // Her ogrencinin ders sayisini al
+      // Her öğrencinin ders sayısını al
       const studentsWithLessons = await Promise.all(
         (profiles || []).map(async (student) => {
           const { count } = await supabase
@@ -63,7 +63,7 @@ export default function AdminStudentsPage() {
 
   const formatDate = (d: string) => new Date(d).toLocaleDateString('tr-TR');
 
-  // Istatistikler
+  // İstatistikler
   const totalStudents = students.length;
   const thisMonthStudents = students.filter(s => {
     const date = new Date(s.created_at);
@@ -75,7 +75,7 @@ export default function AdminStudentsPage() {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -83,8 +83,8 @@ export default function AdminStudentsPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Ogrenciler</h1>
-        <p className="text-slate-600 mt-1">Tum ogrencileri goruntuleyin</p>
+        <h1 className="text-2xl font-bold text-slate-900">Öğrenciler</h1>
+        <p className="text-slate-600 mt-1">Tüm öğrencileri görüntüleyin</p>
       </div>
 
       {/* Arama */}
@@ -92,10 +92,10 @@ export default function AdminStudentsPage() {
         <div className="relative max-w-md">
           <input
             type="text"
-            placeholder="Isim veya email ile ara..."
+            placeholder="İsim veya email ile ara..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
+            className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] outline-none"
           />
           <svg className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -103,39 +103,39 @@ export default function AdminStudentsPage() {
         </div>
       </div>
 
-      {/* Istatistikler */}
+      {/* İstatistikler */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <span className="text-sm font-medium text-slate-500">Toplam Ogrenci</span>
+        <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 p-6">
+          <span className="text-sm font-medium text-slate-500">Toplam Öğrenci</span>
           <p className="text-3xl font-bold text-slate-900 mt-2">{totalStudents}</p>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <span className="text-sm font-medium text-slate-500">Bu Ay Kayit</span>
+        <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 p-6">
+          <span className="text-sm font-medium text-slate-500">Bu Ay Kayıt</span>
           <p className="text-3xl font-bold text-green-600 mt-2">{thisMonthStudents}</p>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 p-6">
           <span className="text-sm font-medium text-slate-500">Toplam Ders</span>
           <p className="text-3xl font-bold text-blue-600 mt-2">{totalLessons}</p>
         </div>
       </div>
 
       {/* Tablo */}
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+      <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 overflow-hidden">
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50">
-              <th className="text-left py-4 px-6 font-medium text-slate-600">Ogrenci</th>
+              <th className="text-left py-4 px-6 font-medium text-slate-600">Öğrenci</th>
               <th className="text-left py-4 px-6 font-medium text-slate-600">Telefon</th>
               <th className="text-left py-4 px-6 font-medium text-slate-600">Veli</th>
-              <th className="text-center py-4 px-6 font-medium text-slate-600">Ders Sayisi</th>
-              <th className="text-center py-4 px-6 font-medium text-slate-600">Kayit Tarihi</th>
+              <th className="text-center py-4 px-6 font-medium text-slate-600">Ders Sayısı</th>
+              <th className="text-center py-4 px-6 font-medium text-slate-600">Kayıt Tarihi</th>
             </tr>
           </thead>
           <tbody>
             {filteredStudents.length === 0 ? (
               <tr>
                 <td colSpan={5} className="py-12 text-center text-slate-500">
-                  {searchTerm ? 'Aramayla eslesen ogrenci bulunamadi' : 'Henuz ogrenci bulunmuyor'}
+                  {searchTerm ? 'Aramayla eşleşen öğrenci bulunamadı' : 'Henüz öğrenci bulunmuyor'}
                 </td>
               </tr>
             ) : (
@@ -143,8 +143,8 @@ export default function AdminStudentsPage() {
                 <tr key={student.id} className="border-b border-slate-100 hover:bg-slate-50">
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-semibold text-purple-700">
+                      <div className="w-10 h-10 bg-[#D4AF37]/10 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-semibold text-[#D4AF37]">
                           {student.full_name?.charAt(0) || '?'}
                         </span>
                       </div>

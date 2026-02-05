@@ -33,12 +33,12 @@ export default function AdminDashboardPage() {
 
   const loadStats = async () => {
     try {
-      // Ogretmen sayisi
+      // Öğretmen sayısı
       const { count: teacherCount } = await supabase
         .from('teacher_profiles')
         .select('*', { count: 'exact', head: true });
 
-      // Ogrenci sayisi
+      // Öğrenci sayısı
       const { count: studentCount } = await supabase
         .from('student_profiles')
         .select('*', { count: 'exact', head: true });
@@ -86,7 +86,7 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -95,14 +95,14 @@ export default function AdminDashboardPage() {
     <div className="p-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-        <p className="text-slate-600 mt-1">Platform genel bakis</p>
+        <p className="text-slate-600 mt-1">Platform genel bakış</p>
       </div>
 
-      {/* Ana Istatistikler */}
+      {/* Ana İstatistikler */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-lg shadow-[#0F172A]/5 p-6">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium text-slate-500">Toplam Ogretmen</span>
+            <span className="text-sm font-medium text-slate-500">Toplam Öğretmen</span>
             <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
               <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -112,9 +112,9 @@ export default function AdminDashboardPage() {
           <p className="text-3xl font-bold text-slate-900">{stats.totalTeachers}</p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-lg shadow-[#0F172A]/5 p-6">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium text-slate-500">Toplam Ogrenci</span>
+            <span className="text-sm font-medium text-slate-500">Toplam Öğrenci</span>
             <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center">
               <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -124,7 +124,7 @@ export default function AdminDashboardPage() {
           <p className="text-3xl font-bold text-slate-900">{stats.totalStudents}</p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-lg shadow-[#0F172A]/5 p-6">
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm font-medium text-slate-500">Tamamlanan Ders</span>
             <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">
@@ -137,7 +137,7 @@ export default function AdminDashboardPage() {
           <p className="text-sm text-slate-400 mt-1">Toplam: {stats.totalLessons}</p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-lg shadow-[#0F172A]/5 p-6">
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm font-medium text-slate-500">Toplam Gelir</span>
             <div className="w-10 h-10 bg-yellow-50 rounded-xl flex items-center justify-center">
@@ -150,7 +150,7 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Finansal Ozet */}
+      {/* Finansal Özet */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white">
           <span className="text-sm font-medium text-green-100">Bu Ay Gelir</span>
@@ -165,20 +165,20 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white">
-          <span className="text-sm font-medium text-purple-100">Ogretmen Odemeleri</span>
+          <span className="text-sm font-medium text-purple-100">Öğretmen Ödemeleri</span>
           <p className="text-3xl font-bold mt-2">{formatCurrency(stats.totalRevenue - stats.platformCommission)}</p>
-          <p className="text-sm text-purple-100 mt-1">Net odenen</p>
+          <p className="text-sm text-purple-100 mt-1">Net ödenen</p>
         </div>
       </div>
 
       {/* Komisyon Sistemi Bilgisi */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
+      <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 p-6">
         <h2 className="text-lg font-semibold text-slate-900 mb-4">Komisyon Sistemi</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-slate-50 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <span className="w-3 h-3 bg-red-500 rounded-full"></span>
-              <span className="font-medium text-slate-900">Baslangic</span>
+              <span className="font-medium text-slate-900">Başlangıç</span>
             </div>
             <p className="text-2xl font-bold text-slate-900">%25</p>
             <p className="text-sm text-slate-500">0-100 ders</p>
