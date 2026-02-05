@@ -1,215 +1,245 @@
-import PageHeader from '@/components/shared/PageHeader';
-import { ContentSection } from '@/components/shared/ContentSection';
+import Header from '@/components/layout/Header'
+import Footer from '@/components/layout/Footer'
+import { Star } from 'lucide-react'
 
 export default function KullanimSartlariPage() {
   return (
-    <main className="w-full">
-      <PageHeader title="Kullanım Şartları" subtitle="Platform Kuralları" />
-      <ContentSection>
-        <p className="text-slate-500 mb-8">Son güncelleme: 23 Ocak 2026</p>
+    <>
+      <Header />
+      <main className="min-h-screen relative bg-[#FDFBF7] overflow-hidden">
 
-        <div className="prose prose-slate max-w-none">
-
-          <section className="mb-10">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">1. Genel Hukumler</h2>
-            <p className="text-slate-600 mb-4">
-              Bu Kullanim Sartlari ("Sozlesme"), EduPremium platformunu ("Platform") kullanan tum kullanicilar
-              ("Kullanici", "Ogrenci", "Ogretmen" veya "Veli") ile Platform sahibi arasindaki hukuki iliskiyi duzenler.
-            </p>
-            <p className="text-slate-600 mb-4">
-              Platformu kullanarak, kayit olarak veya hizmetlerimizden yararlanarak bu Sozlesme'nin tum
-              hukumlerini okudugunuzu, anladiginizi ve kabul ettiginizi beyan ve taahhut etmis olursunuz.
-            </p>
-            <p className="text-slate-600">
-              Bu Sozlesme'yi kabul etmiyorsaniz, Platformu kullanmayiniz.
-            </p>
-          </section>
-
-          <section className="mb-10">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">2. Tanimlar</h2>
-            <ul className="list-disc pl-6 text-slate-600 space-y-2">
-              <li><strong>Platform:</strong> EduPremium web sitesi, mobil uygulamalar ve ilgili tum dijital hizmetler.</li>
-              <li><strong>Ogretmen:</strong> Platformda ders veren, davet usulu sisteme dahil edilmis egitimciler.</li>
-              <li><strong>Ogrenci:</strong> Platformdan ders alan kullanicilar.</li>
-              <li><strong>Veli:</strong> Ogrenci adina islem yapan yasal temsilciler.</li>
-              <li><strong>Ders:</strong> Ogretmen ve ogrenci arasinda gerceklesen online egitim oturumu.</li>
-              <li><strong>Hesap:</strong> Kullanicinin Platforma erisim icin olusturdugu kisisel hesap.</li>
-            </ul>
-          </section>
-
-          <section className="mb-10">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">3. Uyelik ve Hesap Guveniligi</h2>
-            <h3 className="text-lg font-semibold text-slate-800 mb-3">3.1 Kayit Sartlari</h3>
-            <ul className="list-disc pl-6 text-slate-600 space-y-2 mb-4">
-              <li>Platformu kullanmak icin 18 yasindan buyuk olmaniz veya yasal velinizin onayini almaniz gerekmektedir.</li>
-              <li>Kayit sirasinda verdiginiz bilgilerin dogru, guncel ve eksiksiz olmasi zorunludur.</li>
-              <li>Ogretmen olarak kayit olmak icin gecerli bir davet kodu gereklidir.</li>
-            </ul>
-
-            <h3 className="text-lg font-semibold text-slate-800 mb-3">3.2 Hesap Sorumlulugu</h3>
-            <ul className="list-disc pl-6 text-slate-600 space-y-2">
-              <li>Hesabinizin guvenliginden tamamen siz sorumlusunuz.</li>
-              <li>Sifrenizi ucuncu kisilerle paylasmamaniz gerekmektedir.</li>
-              <li>Hesabinizda gerceklesen tum islemlerden siz sorumlu tutulacaksiniz.</li>
-              <li>Yetkisiz erisim supheniz varsa derhal bizimle iletisime gecmelisiniz.</li>
-            </ul>
-          </section>
-
-          <section className="mb-10">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">4. Hizmet Kullanim Kurallari</h2>
-            <h3 className="text-lg font-semibold text-slate-800 mb-3">4.1 Kabul Edilebilir Kullanim</h3>
-            <p className="text-slate-600 mb-4">Platform yalnizca egitim amacli kullanilabilir. Asagidaki davranislar kesinlikle yasaktir:</p>
-            <ul className="list-disc pl-6 text-slate-600 space-y-2 mb-4">
-              <li>Yanlis veya yaniltici bilgi vermek</li>
-              <li>Baska bir kisinin kimligine burunmek</li>
-              <li>Platform guvenligini tehlikeye atacak islemler yapmak</li>
-              <li>Platformu yasadisi amaclarla kullanmak</li>
-              <li>Diger kullanicilari taciz etmek veya rahatsiz etmek</li>
-              <li>Fikri mulkiyet haklarini ihlal etmek</li>
-              <li>Platform disinda odeme talep etmek veya kabul etmek</li>
-            </ul>
-
-            <h3 className="text-lg font-semibold text-slate-800 mb-3">4.2 Ogretmen Yukumlulukleri</h3>
-            <ul className="list-disc pl-6 text-slate-600 space-y-2 mb-4">
-              <li>Belirlenen ders saatlerine uymak</li>
-              <li>Profesyonel ve saygiIi bir tutum sergilemek</li>
-              <li>Egitim kalitesini korumak</li>
-              <li>Ogrenci gizliligine saygı gostermek</li>
-              <li>Platform kurallarına uymak</li>
-            </ul>
-
-            <h3 className="text-lg font-semibold text-slate-800 mb-3">4.3 Ogrenci/Veli Yukumlulukleri</h3>
-            <ul className="list-disc pl-6 text-slate-600 space-y-2">
-              <li>Derslere zamaninda katilmak</li>
-              <li>Ogretmene saygiIi davranmak</li>
-              <li>Odemeleri zamaninda yapmak</li>
-              <li>Uygun bir ogrenme ortami saglamak</li>
-            </ul>
-          </section>
-
-          <section className="mb-10">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">5. Odeme Kosullari</h2>
-            <h3 className="text-lg font-semibold text-slate-800 mb-3">5.1 Ucretlendirme</h3>
-            <ul className="list-disc pl-6 text-slate-600 space-y-2 mb-4">
-              <li>Ders ucretleri ogretmen profillerinde belirtilmistir.</li>
-              <li>Tum fiyatlar Turk Lirasi (TL) cinsindendir.</li>
-              <li>Platform, hizmet komisyonu alma hakkini sakli tutar.</li>
-              <li>Fiyat degisiklikleri onceden duyurulacaktir.</li>
-            </ul>
-
-            <h3 className="text-lg font-semibold text-slate-800 mb-3">5.2 Odeme Yontemleri</h3>
-            <p className="text-slate-600 mb-4">
-              Odemeler kredi karti, banka karti veya havale/EFT yoluyla yapilabilir.
-              Tum odemeler guvenli odeme altyapisi uzerinden gerceklestirilir.
-            </p>
-
-            <h3 className="text-lg font-semibold text-slate-800 mb-3">5.3 Fatura</h3>
-            <p className="text-slate-600">
-              Her odeme icin elektronik fatura duzenlenir ve kayitli e-posta adresinize gonderilir.
-            </p>
-          </section>
-
-          <section className="mb-10">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">6. Iptal ve Iade Politikasi</h2>
-            <h3 className="text-lg font-semibold text-slate-800 mb-3">6.1 Ders Iptali</h3>
-            <ul className="list-disc pl-6 text-slate-600 space-y-2 mb-4">
-              <li><strong>24 saatten fazla once:</strong> Tam iade yapilir.</li>
-              <li><strong>12-24 saat once:</strong> %50 iade yapilir.</li>
-              <li><strong>12 saatten az:</strong> Iade yapilmaz.</li>
-              <li>Ogretmen kaynakli iptallerde tam iade yapilir.</li>
-            </ul>
-
-            <h3 className="text-lg font-semibold text-slate-800 mb-3">6.2 Iade Sureci</h3>
-            <p className="text-slate-600">
-              Iadeler, iptal talebinin onaylanmasindan itibaren 5-10 is gunu icerisinde
-              odemenin yapildigi yonteme iade edilir.
-            </p>
-          </section>
-
-          <section className="mb-10">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">7. Fikri Mulkiyet Haklari</h2>
-            <p className="text-slate-600 mb-4">
-              Platform uzerindeki tum icerik, tasarim, logo, yazi, grafik, yazilim ve diger materyaller
-              EduPremium'un veya lisans verenlerinin mulkiyetindedir ve telif hakki ile korunmaktadir.
-            </p>
-            <ul className="list-disc pl-6 text-slate-600 space-y-2">
-              <li>Platform icerigini kopyalayamazsiniz, dagitamazsiniz veya ticari amacla kullanamazsiniz.</li>
-              <li>Ders kayitlari ogretmenin izni olmadan paylasilamaz.</li>
-              <li>Ogretmenlerin olusturdugu materyaller kendilerine aittir.</li>
-            </ul>
-          </section>
-
-          <section className="mb-10">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">8. Sorumluluk Sinirlamasi</h2>
-            <p className="text-slate-600 mb-4">
-              EduPremium, asagidaki durumlardan dolayi sorumluluk kabul etmez:
-            </p>
-            <ul className="list-disc pl-6 text-slate-600 space-y-2">
-              <li>Teknik arizalar veya kesintiler nedeniyle yasanan aksakliklar</li>
-              <li>Ucuncu taraf hizmetlerinden kaynaklanan sorunlar</li>
-              <li>Kullanici hatalari veya ihmalleri</li>
-              <li>Ogretmen-ogrenci arasindaki anlasmazliklar</li>
-              <li>Dolayli, ozel veya cezai zararlar</li>
-            </ul>
-            <p className="text-slate-600 mt-4">
-              Platformun toplam sorumlulugu, kullanicinin son 12 ayda odedigi tutari asmayacaktir.
-            </p>
-          </section>
-
-          <section className="mb-10">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">9. Hesap Askiya Alma ve Fesih</h2>
-            <p className="text-slate-600 mb-4">
-              EduPremium, asagidaki durumlarda hesabinizi askiya alma veya feshetme hakkini sakli tutar:
-            </p>
-            <ul className="list-disc pl-6 text-slate-600 space-y-2">
-              <li>Bu Sozlesme'nin ihlali</li>
-              <li>Yasadisi veya uygunsuz davranislar</li>
-              <li>Diger kullanicilara zarar veren eylemler</li>
-              <li>Dolandiricilik veya suistimal</li>
-              <li>Uzun sureli hesap hareketsizligi</li>
-            </ul>
-          </section>
-
-          <section className="mb-10">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">10. Degisiklikler</h2>
-            <p className="text-slate-600">
-              EduPremium, bu Sozlesme'yi herhangi bir zamanda degistirme hakkini sakli tutar.
-              Onemli degisiklikler e-posta veya Platform uzerinden bildirilecektir.
-              Degisikliklerden sonra Platformu kullanmaya devam etmeniz,
-              yeni kosullari kabul ettiginiz anlamina gelir.
-            </p>
-          </section>
-
-          <section className="mb-10">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">11. Uyusmazliklarin Cozumu</h2>
-            <p className="text-slate-600 mb-4">
-              Bu Sozlesme'den dogan uyusmazliklarda Turk hukuku uygulanacaktir.
-            </p>
-            <p className="text-slate-600">
-              Uyusmazliklarin cozumunde Istanbul Mahkemeleri ve Icra Daireleri yetkilidir.
-            </p>
-          </section>
-
-          <section className="mb-10">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">12. Iletisim</h2>
-            <p className="text-slate-600 mb-4">
-              Bu Sozlesme hakkinda sorulariniz icin bizimle iletisime gecebilirsiniz:
-            </p>
-            <ul className="list-none text-slate-600 space-y-2">
-              <li><strong>E-posta:</strong> legal@edupremium.com</li>
-              <li><strong>Adres:</strong> [Sirket Adresi]</li>
-              <li><strong>Telefon:</strong> [Telefon Numarasi]</li>
-            </ul>
-          </section>
-
-          <section className="pt-6 border-t border-slate-200">
-            <p className="text-slate-500 text-sm">
-              Bu Kullanim Sartlari en son 23 Ocak 2026 tarihinde guncellenmistir.
-            </p>
-          </section>
-
+        {/* --- ARKA PLAN --- */}
+        <div className="absolute inset-0 z-0">
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: `url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2228&auto=format&fit=crop')`
+            }}
+          ></div>
+          <div className="absolute inset-0 bg-[#FDFBF7]/60 backdrop-blur-[6px]"></div>
         </div>
-      </ContentSection>
-    </main>
-  );
+
+        <div className="relative z-10 pt-28 pb-20 px-4">
+          <div className="max-w-4xl mx-auto">
+
+            {/* Header */}
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#0F172A]/10 text-[#0F172A] text-xs font-bold uppercase tracking-widest mb-6 bg-white/40 backdrop-blur-md shadow-sm">
+                <Star className="w-3 h-3 text-[#D4AF37] fill-current" /> Platform Kuralları
+              </div>
+              <h1 className="text-4xl md:text-5xl font-bold text-[#0F172A] font-serif mb-4">Kullanım Şartları</h1>
+              <p className="text-slate-500 text-sm">Son güncelleme: 23 Ocak 2026</p>
+            </div>
+
+            {/* İçerik Kartı */}
+            <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-8 md:p-12 shadow-2xl shadow-[#0F172A]/5">
+              <div className="prose prose-slate max-w-none">
+
+                <section className="mb-10">
+                  <h2 className="text-2xl font-bold text-[#0F172A] font-serif mb-4">1. Genel Hükümler</h2>
+                  <p className="text-slate-600 mb-4">
+                    Bu Kullanım Şartları (&quot;Sözleşme&quot;), EduPremium platformunu (&quot;Platform&quot;) kullanan tüm kullanıcılar
+                    (&quot;Kullanıcı&quot;, &quot;Öğrenci&quot;, &quot;Öğretmen&quot; veya &quot;Veli&quot;) ile Platform sahibi arasındaki hukuki ilişkiyi düzenler.
+                  </p>
+                  <p className="text-slate-600 mb-4">
+                    Platformu kullanarak, kayıt olarak veya hizmetlerimizden yararlanarak bu Sözleşme&apos;nin tüm
+                    hükümlerini okuduğunuzu, anladığınızı ve kabul ettiğinizi beyan ve taahhüt etmiş olursunuz.
+                  </p>
+                  <p className="text-slate-600">
+                    Bu Sözleşme&apos;yi kabul etmiyorsanız, Platformu kullanmayınız.
+                  </p>
+                </section>
+
+                <section className="mb-10">
+                  <h2 className="text-2xl font-bold text-[#0F172A] font-serif mb-4">2. Tanımlar</h2>
+                  <ul className="list-disc pl-6 text-slate-600 space-y-2">
+                    <li><strong>Platform:</strong> EduPremium web sitesi, mobil uygulamalar ve ilgili tüm dijital hizmetler.</li>
+                    <li><strong>Öğretmen:</strong> Platformda ders veren, davet usulü sisteme dahil edilmiş eğitimciler.</li>
+                    <li><strong>Öğrenci:</strong> Platformdan ders alan kullanıcılar.</li>
+                    <li><strong>Veli:</strong> Öğrenci adına işlem yapan yasal temsilciler.</li>
+                    <li><strong>Ders:</strong> Öğretmen ve öğrenci arasında gerçekleşen online eğitim oturumu.</li>
+                    <li><strong>Hesap:</strong> Kullanıcının Platforma erişim için oluşturduğu kişisel hesap.</li>
+                  </ul>
+                </section>
+
+                <section className="mb-10">
+                  <h2 className="text-2xl font-bold text-[#0F172A] font-serif mb-4">3. Üyelik ve Hesap Güvenliği</h2>
+                  <h3 className="text-lg font-bold text-[#0F172A] mb-3">3.1 Kayıt Şartları</h3>
+                  <ul className="list-disc pl-6 text-slate-600 space-y-2 mb-4">
+                    <li>Platformu kullanmak için 18 yaşından büyük olmanız veya yasal velinizin onayını almanız gerekmektedir.</li>
+                    <li>Kayıt sırasında verdiğiniz bilgilerin doğru, güncel ve eksiksiz olması zorunludur.</li>
+                    <li>Öğretmen olarak kayıt olmak için geçerli bir davet kodu gereklidir.</li>
+                  </ul>
+
+                  <h3 className="text-lg font-bold text-[#0F172A] mb-3">3.2 Hesap Sorumluluğu</h3>
+                  <ul className="list-disc pl-6 text-slate-600 space-y-2">
+                    <li>Hesabınızın güvenliğinden tamamen siz sorumlusunuz.</li>
+                    <li>Şifrenizi üçüncü kişilerle paylaşmamanız gerekmektedir.</li>
+                    <li>Hesabınızda gerçekleşen tüm işlemlerden siz sorumlu tutulacaksınız.</li>
+                    <li>Yetkisiz erişim şüpheniz varsa derhal bizimle iletişime geçmelisiniz.</li>
+                  </ul>
+                </section>
+
+                <section className="mb-10">
+                  <h2 className="text-2xl font-bold text-[#0F172A] font-serif mb-4">4. Hizmet Kullanım Kuralları</h2>
+                  <h3 className="text-lg font-bold text-[#0F172A] mb-3">4.1 Kabul Edilebilir Kullanım</h3>
+                  <p className="text-slate-600 mb-4">Platform yalnızca eğitim amaçlı kullanılabilir. Aşağıdaki davranışlar kesinlikle yasaktır:</p>
+                  <ul className="list-disc pl-6 text-slate-600 space-y-2 mb-4">
+                    <li>Yanlış veya yanıltıcı bilgi vermek</li>
+                    <li>Başka bir kişinin kimliğine bürünmek</li>
+                    <li>Platform güvenliğini tehlikeye atacak işlemler yapmak</li>
+                    <li>Platformu yasadışı amaçlarla kullanmak</li>
+                    <li>Diğer kullanıcıları taciz etmek veya rahatsız etmek</li>
+                    <li>Fikri mülkiyet haklarını ihlal etmek</li>
+                    <li>Platform dışında ödeme talep etmek veya kabul etmek</li>
+                  </ul>
+
+                  <h3 className="text-lg font-bold text-[#0F172A] mb-3">4.2 Öğretmen Yükümlülükleri</h3>
+                  <ul className="list-disc pl-6 text-slate-600 space-y-2 mb-4">
+                    <li>Belirlenen ders saatlerine uymak</li>
+                    <li>Profesyonel ve saygılı bir tutum sergilemek</li>
+                    <li>Eğitim kalitesini korumak</li>
+                    <li>Öğrenci gizliliğine saygı göstermek</li>
+                    <li>Platform kurallarına uymak</li>
+                  </ul>
+
+                  <h3 className="text-lg font-bold text-[#0F172A] mb-3">4.3 Öğrenci/Veli Yükümlülükleri</h3>
+                  <ul className="list-disc pl-6 text-slate-600 space-y-2">
+                    <li>Derslere zamanında katılmak</li>
+                    <li>Öğretmene saygılı davranmak</li>
+                    <li>Ödemeleri zamanında yapmak</li>
+                    <li>Uygun bir öğrenme ortamı sağlamak</li>
+                  </ul>
+                </section>
+
+                <section className="mb-10">
+                  <h2 className="text-2xl font-bold text-[#0F172A] font-serif mb-4">5. Ödeme Koşulları</h2>
+                  <h3 className="text-lg font-bold text-[#0F172A] mb-3">5.1 Ücretlendirme</h3>
+                  <ul className="list-disc pl-6 text-slate-600 space-y-2 mb-4">
+                    <li>Ders ücretleri öğretmen profillerinde belirtilmiştir.</li>
+                    <li>Tüm fiyatlar Türk Lirası (TL) cinsindendir.</li>
+                    <li>Platform, hizmet komisyonu alma hakkını saklı tutar.</li>
+                    <li>Fiyat değişiklikleri önceden duyurulacaktır.</li>
+                  </ul>
+
+                  <h3 className="text-lg font-bold text-[#0F172A] mb-3">5.2 Ödeme Yöntemleri</h3>
+                  <p className="text-slate-600 mb-4">
+                    Ödemeler kredi kartı, banka kartı veya havale/EFT yoluyla yapılabilir.
+                    Tüm ödemeler güvenli ödeme altyapısı üzerinden gerçekleştirilir.
+                  </p>
+
+                  <h3 className="text-lg font-bold text-[#0F172A] mb-3">5.3 Fatura</h3>
+                  <p className="text-slate-600">
+                    Her ödeme için elektronik fatura düzenlenir ve kayıtlı e-posta adresinize gönderilir.
+                  </p>
+                </section>
+
+                <section className="mb-10">
+                  <h2 className="text-2xl font-bold text-[#0F172A] font-serif mb-4">6. İptal ve İade Politikası</h2>
+                  <h3 className="text-lg font-bold text-[#0F172A] mb-3">6.1 Ders İptali</h3>
+                  <ul className="list-disc pl-6 text-slate-600 space-y-2 mb-4">
+                    <li><strong>24 saatten fazla önce:</strong> Tam iade yapılır.</li>
+                    <li><strong>12-24 saat önce:</strong> %50 iade yapılır.</li>
+                    <li><strong>12 saatten az:</strong> İade yapılmaz.</li>
+                    <li>Öğretmen kaynaklı iptallerde tam iade yapılır.</li>
+                  </ul>
+
+                  <h3 className="text-lg font-bold text-[#0F172A] mb-3">6.2 İade Süreci</h3>
+                  <p className="text-slate-600">
+                    İadeler, iptal talebinin onaylanmasından itibaren 5-10 iş günü içerisinde
+                    ödemenin yapıldığı yönteme iade edilir.
+                  </p>
+                </section>
+
+                <section className="mb-10">
+                  <h2 className="text-2xl font-bold text-[#0F172A] font-serif mb-4">7. Fikri Mülkiyet Hakları</h2>
+                  <p className="text-slate-600 mb-4">
+                    Platform üzerindeki tüm içerik, tasarım, logo, yazı, grafik, yazılım ve diğer materyaller
+                    EduPremium&apos;un veya lisans verenlerinin mülkiyetindedir ve telif hakkı ile korunmaktadır.
+                  </p>
+                  <ul className="list-disc pl-6 text-slate-600 space-y-2">
+                    <li>Platform içeriğini kopyalayamazsınız, dağıtamazsınız veya ticari amaçla kullanamazsınız.</li>
+                    <li>Ders kayıtları öğretmenin izni olmadan paylaşılamaz.</li>
+                    <li>Öğretmenlerin oluşturduğu materyaller kendilerine aittir.</li>
+                  </ul>
+                </section>
+
+                <section className="mb-10">
+                  <h2 className="text-2xl font-bold text-[#0F172A] font-serif mb-4">8. Sorumluluk Sınırlaması</h2>
+                  <p className="text-slate-600 mb-4">
+                    EduPremium, aşağıdaki durumlardan dolayı sorumluluk kabul etmez:
+                  </p>
+                  <ul className="list-disc pl-6 text-slate-600 space-y-2">
+                    <li>Teknik arızalar veya kesintiler nedeniyle yaşanan aksaklıklar</li>
+                    <li>Üçüncü taraf hizmetlerinden kaynaklanan sorunlar</li>
+                    <li>Kullanıcı hataları veya ihmalleri</li>
+                    <li>Öğretmen-öğrenci arasındaki anlaşmazlıklar</li>
+                    <li>Dolaylı, özel veya cezai zararlar</li>
+                  </ul>
+                  <p className="text-slate-600 mt-4">
+                    Platformun toplam sorumluluğu, kullanıcının son 12 ayda ödediği tutarı aşmayacaktır.
+                  </p>
+                </section>
+
+                <section className="mb-10">
+                  <h2 className="text-2xl font-bold text-[#0F172A] font-serif mb-4">9. Hesap Askıya Alma ve Fesih</h2>
+                  <p className="text-slate-600 mb-4">
+                    EduPremium, aşağıdaki durumlarda hesabınızı askıya alma veya feshetme hakkını saklı tutar:
+                  </p>
+                  <ul className="list-disc pl-6 text-slate-600 space-y-2">
+                    <li>Bu Sözleşme&apos;nin ihlali</li>
+                    <li>Yasadışı veya uygunsuz davranışlar</li>
+                    <li>Diğer kullanıcılara zarar veren eylemler</li>
+                    <li>Dolandırıcılık veya suistimal</li>
+                    <li>Uzun süreli hesap hareketsizliği</li>
+                  </ul>
+                </section>
+
+                <section className="mb-10">
+                  <h2 className="text-2xl font-bold text-[#0F172A] font-serif mb-4">10. Değişiklikler</h2>
+                  <p className="text-slate-600">
+                    EduPremium, bu Sözleşme&apos;yi herhangi bir zamanda değiştirme hakkını saklı tutar.
+                    Önemli değişiklikler e-posta veya Platform üzerinden bildirilecektir.
+                    Değişikliklerden sonra Platformu kullanmaya devam etmeniz,
+                    yeni koşulları kabul ettiğiniz anlamına gelir.
+                  </p>
+                </section>
+
+                <section className="mb-10">
+                  <h2 className="text-2xl font-bold text-[#0F172A] font-serif mb-4">11. Uyuşmazlıkların Çözümü</h2>
+                  <p className="text-slate-600 mb-4">
+                    Bu Sözleşme&apos;den doğan uyuşmazlıklarda Türk hukuku uygulanacaktır.
+                  </p>
+                  <p className="text-slate-600">
+                    Uyuşmazlıkların çözümünde İstanbul Mahkemeleri ve İcra Daireleri yetkilidir.
+                  </p>
+                </section>
+
+                <section className="mb-10">
+                  <h2 className="text-2xl font-bold text-[#0F172A] font-serif mb-4">12. İletişim</h2>
+                  <p className="text-slate-600 mb-4">
+                    Bu Sözleşme hakkında sorularınız için bizimle iletişime geçebilirsiniz:
+                  </p>
+                  <ul className="list-none text-slate-600 space-y-2">
+                    <li><strong>E-posta:</strong> legal@edupremium.com</li>
+                    <li><strong>Adres:</strong> [Şirket Adresi]</li>
+                    <li><strong>Telefon:</strong> [Telefon Numarası]</li>
+                  </ul>
+                </section>
+
+                <section className="pt-6 border-t border-slate-200">
+                  <p className="text-slate-400 text-sm">
+                    Bu Kullanım Şartları en son 23 Ocak 2026 tarihinde güncellenmiştir.
+                  </p>
+                </section>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </>
+  )
 }
