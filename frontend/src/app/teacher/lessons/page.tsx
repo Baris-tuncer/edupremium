@@ -14,7 +14,8 @@ export default function TeacherLessonsPage() {
   // Kayıt onay modalı
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [consentChecked, setConsentChecked] = useState(false);
-  const [pendingMeetingLink, setPendingMeetingLink] = useState<string | null>(null);
+  const [pendingLessonId, setPendingLessonId] = useState<string | null>(null);
+  const [joiningMeeting, setJoiningMeeting] = useState(false);
 
   useEffect(() => {
     fetchLessons();
@@ -98,19 +99,41 @@ export default function TeacherLessonsPage() {
   };
 
   // Derse katıl butonuna tıklandığında önce onay modalı göster
-  const handleJoinClick = (meetingLink: string) => {
-    setPendingMeetingLink(meetingLink);
+  const handleJoinClick = (lessonId: string) => {
+    setPendingLessonId(lessonId);
     setConsentChecked(false);
     setShowConsentModal(true);
   };
 
-  // Onay verildikten sonra derse katıl
-  const handleConsentAndJoin = () => {
-    if (!consentChecked || !pendingMeetingLink) return;
-    window.open(pendingMeetingLink, '_blank', 'noopener,noreferrer');
-    setShowConsentModal(false);
-    setPendingMeetingLink(null);
-    setConsentChecked(false);
+  // Onay verildikten sonra derse katıl (token ile)
+  const handleConsentAndJoin = async () => {
+    if (!consentChecked || !pendingLessonId) return;
+
+    setJoiningMeeting(true);
+    try {
+      const response = await fetch('/api/lessons/meeting-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lessonId: pendingLessonId })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || 'Derse katılırken hata oluştu');
+        return;
+      }
+
+      // Token'lı URL ile derse katıl
+      window.open(data.meetingUrl, '_blank', 'noopener,noreferrer');
+      setShowConsentModal(false);
+      setPendingLessonId(null);
+      setConsentChecked(false);
+    } catch (error) {
+      toast.error('Derse katılırken hata oluştu');
+    } finally {
+      setJoiningMeeting(false);
+    }
   };
 
   const getStatusBadge = (status: string, scheduledAt: string) => {
@@ -178,8 +201,8 @@ export default function TeacherLessonsPage() {
                   </div>
                   {getStatusBadge(lesson.status, lesson.scheduled_at)}
                   {canJoinMeeting(lesson) && (
-                    <button 
-                      onClick={() => handleJoinClick(lesson.meeting_link)}
+                    <button
+                      onClick={() => handleJoinClick(lesson.id)}
                       className="px-4 py-2 bg-[#0F172A] text-white text-sm font-medium rounded-lg hover:bg-[#D4AF37] hover:text-[#0F172A] transition-colors flex items-center gap-2"
                     >
                       🎥 Derse Katıl
@@ -254,18 +277,24 @@ export default function TeacherLessonsPage() {
 
             <div className="flex gap-3">
               <button
-                onClick={() => { setShowConsentModal(false); setPendingMeetingLink(null); }}
+                onClick={() => { setShowConsentModal(false); setPendingLessonId(null); }}
                 className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-colors"
               >
                 İptal
               </button>
               <button
                 onClick={handleConsentAndJoin}
-                disabled={!consentChecked}
+                disabled={!consentChecked || joiningMeeting}
                 className="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                <span>🎥</span>
-                Kabul Et ve Derse Katıl
+                {joiningMeeting ? (
+                  <span>Bağlanıyor...</span>
+                ) : (
+                  <>
+                    <span>🎥</span>
+                    Kabul Et ve Derse Katıl
+                  </>
+                )}
               </button>
             </div>
           </div>
