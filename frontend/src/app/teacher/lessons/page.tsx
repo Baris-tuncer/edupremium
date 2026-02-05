@@ -115,7 +115,14 @@ export default function TeacherLessonsPage() {
       return;
     }
 
+    // Popup blocker'ı bypass etmek için önce pencereyi aç
+    const newWindow = window.open('about:blank', '_blank');
+
     setJoiningMeeting(true);
+    setShowConsentModal(false);
+    setPendingLessonId(null);
+    setConsentChecked(false);
+
     try {
       const response = await fetch('/api/lessons/meeting-token', {
         method: 'POST',
@@ -126,24 +133,25 @@ export default function TeacherLessonsPage() {
       const data = await response.json();
 
       if (response.ok && data.meetingUrl) {
-        // Token'lı URL ile derse katıl
-        window.open(data.meetingUrl, '_blank', 'noopener,noreferrer');
+        if (newWindow) {
+          newWindow.location.href = data.meetingUrl;
+        } else {
+          window.location.href = data.meetingUrl;
+        }
       } else {
-        // Token alınamazsa direkt meeting link ile gir
-        console.warn('Token alınamadı, direkt link kullanılıyor:', data.error);
-        window.open(lesson.meeting_link, '_blank', 'noopener,noreferrer');
+        if (newWindow) {
+          newWindow.location.href = lesson.meeting_link;
+        } else {
+          window.location.href = lesson.meeting_link;
+        }
       }
-
-      setShowConsentModal(false);
-      setPendingLessonId(null);
-      setConsentChecked(false);
     } catch (error) {
-      // Hata durumunda da direkt meeting link ile gir
-      console.error('API hatası, direkt link kullanılıyor:', error);
-      window.open(lesson.meeting_link, '_blank', 'noopener,noreferrer');
-      setShowConsentModal(false);
-      setPendingLessonId(null);
-      setConsentChecked(false);
+      console.error('API hatası:', error);
+      if (newWindow) {
+        newWindow.location.href = lesson.meeting_link;
+      } else {
+        window.location.href = lesson.meeting_link;
+      }
     } finally {
       setJoiningMeeting(false);
     }
