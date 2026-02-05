@@ -171,19 +171,24 @@ export default function TeacherDetailPage() {
     };
   };
 
-  if (loading) return <div className="min-h-screen bg-slate-50 flex items-center justify-center"><div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>;
-  if (!teacher) return <div className="min-h-screen bg-slate-50 flex items-center justify-center"><div className="text-center"><h1 className="text-2xl font-bold mb-4">Öğretmen Bulunamadı</h1><Link href="/student/dashboard" className="text-blue-600">Geri Dön</Link></div></div>;
+  if (loading) return <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center"><div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" /></div>;
+  if (!teacher) return <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center"><div className="text-center"><h1 className="text-2xl font-bold text-[#0F172A] mb-4">Öğretmen Bulunamadı</h1><Link href="/student/dashboard" className="text-[#D4AF37]">Geri Dön</Link></div></div>;
 
   const displayPrice = teacher.hourly_rate_display || calculateDisplayPrice(teacher.base_price || 0, teacher.commission_rate || 0.25);
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="bg-white border-b"><div className="max-w-6xl mx-auto px-4 py-4"><Link href="/student/dashboard" className="text-blue-600 hover:underline flex items-center gap-2">← Öğretmenlere Dön</Link></div></div>
+    <div className="min-h-screen relative bg-[#FDFBF7] overflow-hidden">
+      {/* --- ARKA PLAN --- */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2228&auto=format&fit=crop')` }}></div>
+        <div className="absolute inset-0 bg-[#FDFBF7]/60 backdrop-blur-[6px]"></div>
+      </div>
+      <div className="relative z-10 bg-white/80 backdrop-blur-xl border-b border-white/50"><div className="max-w-6xl mx-auto px-4 py-4"><Link href="/student/dashboard" className="text-[#D4AF37] hover:underline flex items-center gap-2 font-bold">← Öğretmenlere Dön</Link></div></div>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-2xl shadow-sm border p-6">
+            <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6">
               <div className="flex items-start gap-6">
                 {teacher.avatar_url ? <img src={teacher.avatar_url} alt={teacher.full_name} className="w-24 h-24 rounded-full object-cover" /> : <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center"><span className="text-3xl font-bold text-blue-600">{teacher.full_name?.charAt(0)}</span></div>}
                 <div className="flex-1">
@@ -192,19 +197,19 @@ export default function TeacherDetailPage() {
                     {teacher.is_verified && <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">✓ Onaylı</span>}
                   </div>
                   <p className="text-slate-600 mt-1">{teacher.title}</p>
-                  <span className="text-2xl font-bold text-blue-600 mt-3 block">{formatPrice(displayPrice)}<span className="text-sm font-normal text-slate-500">/ders</span></span>
+                  <span className="text-2xl font-bold text-[#D4AF37] mt-3 block">{formatPrice(displayPrice)}<span className="text-sm font-normal text-slate-500">/ders</span></span>
                 </div>
               </div>
             </div>
 
-            {teacher.video_url && <div className="bg-white rounded-2xl shadow-sm border p-6"><h2 className="text-lg font-semibold mb-4">Tanıtım Videosu</h2><video src={teacher.video_url} controls className="w-full max-h-64 rounded-xl object-contain" /></div>}
-            {teacher.bio && <div className="bg-white rounded-2xl shadow-sm border p-6"><h2 className="text-lg font-semibold mb-4">Hakkında</h2><p className="text-slate-600 whitespace-pre-wrap">{teacher.bio}</p></div>}
-            {teacher.subjects?.length > 0 && <div className="bg-white rounded-2xl shadow-sm border p-6"><h2 className="text-lg font-semibold mb-4">Verdiği Dersler</h2><div className="flex flex-wrap gap-2">{teacher.subjects.map((s, i) => <span key={i} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm">{s}</span>)}</div></div>}
-            {teacher.diploma_url && <div className="bg-white rounded-2xl shadow-sm border p-6"><h2 className="text-lg font-semibold mb-4">📜 Diploma / Sertifika</h2><img src={teacher.diploma_url} alt="Diploma" className="max-w-full rounded-lg border" /><p className="text-sm text-green-600 mt-2">✓ Diploma doğrulandı</p></div>}
+            {teacher.video_url && <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6"><h2 className="text-lg font-semibold mb-4">Tanıtım Videosu</h2><video src={teacher.video_url} controls className="w-full max-h-64 rounded-xl object-contain" /></div>}
+            {teacher.bio && <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6"><h2 className="text-lg font-semibold mb-4">Hakkında</h2><p className="text-slate-600 whitespace-pre-wrap">{teacher.bio}</p></div>}
+            {teacher.subjects?.length > 0 && <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6"><h2 className="text-lg font-semibold mb-4">Verdiği Dersler</h2><div className="flex flex-wrap gap-2">{teacher.subjects.map((s, i) => <span key={i} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm">{s}</span>)}</div></div>}
+            {teacher.diploma_url && <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6"><h2 className="text-lg font-semibold mb-4">📜 Diploma / Sertifika</h2><img src={teacher.diploma_url} alt="Diploma" className="max-w-full rounded-lg border" /><p className="text-sm text-green-600 mt-2">✓ Diploma doğrulandı</p></div>}
           </div>
 
           <div className="space-y-6">
-            <div className="bg-white rounded-2xl shadow-sm border p-6 sticky top-4">
+            <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6 sticky top-4">
               <h2 className="text-lg font-semibold mb-4">Ders Satın Al</h2>
 
               {teacher.subjects?.length > 0 && <div className="mb-4"><label className="block text-sm font-medium mb-2">Ders Seçin</label><select value={selectedSubject} onChange={(e) => setSelectedSubject(e.target.value)} className="w-full px-4 py-2 border rounded-xl">{teacher.subjects.map((s, i) => <option key={i} value={s}>{s}</option>)}</select></div>}
@@ -260,14 +265,14 @@ export default function TeacherDetailPage() {
                 <button
                   onClick={handleSecurePurchase}
                   disabled={!selectedSlot || purchasing || availabilities.length === 0 || !lessonNote.trim() || !!noteError}
-                  className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-3 bg-[#0F172A] text-white font-bold rounded-xl hover:bg-[#D4AF37] hover:text-[#0F172A] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {purchasing ? 'İşleniyor...' : 'Ödemeye Geç'}
                 </button>
               ) : (
                 <button
                   onClick={() => router.push(`/login?redirect=/student/teacher/${teacherId}`)}
-                  className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700"
+                  className="w-full py-3 bg-[#0F172A] text-white font-bold rounded-xl hover:bg-[#D4AF37] hover:text-[#0F172A] transition-all"
                 >
                   Satın Almak İçin Giriş Yap
                 </button>

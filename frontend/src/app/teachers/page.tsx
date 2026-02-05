@@ -361,23 +361,23 @@ function TeachersContent() {
       {/* Regular listing */}
       <div className="flex gap-8">
         <aside className="w-72 shrink-0 space-y-6">
-          <div className="card p-5">
-            <h3 className="font-semibold text-navy-900 mb-4">Öğretmen Ara</h3>
+          <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-5 shadow-2xl shadow-[#0F172A]/5">
+            <h3 className="font-semibold text-[#0F172A] mb-4">Öğretmen Ara</h3>
             <input
               type="text"
               placeholder="İsim ile ara..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="input-field w-full"
+              className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300"
             />
           </div>
 
-          <div className="card p-5">
-            <h3 className="font-semibold text-navy-900 mb-4">Eğitim Seviyesi</h3>
+          <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-5 shadow-2xl shadow-[#0F172A]/5">
+            <h3 className="font-semibold text-[#0F172A] mb-4">Eğitim Seviyesi</h3>
             <select
               value={selectedLevel}
               onChange={(e) => { setSelectedLevel(e.target.value); setSelectedSubject(''); }}
-              className="input-field w-full"
+              className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all"
             >
               <option value="">Tümü</option>
               {Object.entries(EDUCATION_LEVELS).map(([key, value]) => (
@@ -387,12 +387,12 @@ function TeachersContent() {
           </div>
 
           {selectedLevel && currentSubjects.length > 0 && (
-            <div className="card p-5">
-              <h3 className="font-semibold text-navy-900 mb-4">Ders</h3>
+            <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-5 shadow-2xl shadow-[#0F172A]/5">
+              <h3 className="font-semibold text-[#0F172A] mb-4">Ders</h3>
               <select
                 value={selectedSubject}
                 onChange={(e) => setSelectedSubject(e.target.value)}
-                className="input-field w-full"
+                className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all"
               >
                 <option value="">Tümü</option>
                 {currentSubjects.map((subject) => (
@@ -402,7 +402,7 @@ function TeachersContent() {
             </div>
           )}
 
-          <button onClick={clearFilters} className="btn-secondary w-full">
+          <button onClick={clearFilters} className="w-full py-3 border-2 border-[#0F172A]/20 rounded-xl font-bold text-[#0F172A] hover:bg-[#0F172A] hover:text-white transition-all">
             Filtreleri Temizle
           </button>
         </aside>
@@ -415,7 +415,7 @@ function TeachersContent() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="input-field w-auto py-2"
+              className="bg-white border border-slate-200 rounded-xl py-2 px-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all"
             >
               <option value="recommended">Önerilen</option>
               <option value="rating">En Yüksek Puan</option>
@@ -427,11 +427,11 @@ function TeachersContent() {
 
           {loading ? (
             <div className="flex items-center justify-center py-20">
-              <div className="w-8 h-8 border-4 border-navy-600 border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
             </div>
           ) : teachers.length === 0 ? (
-            <div className="card p-12 text-center">
-              <h3 className="text-xl font-semibold text-navy-900 mb-2">Öğretmen bulunamadı</h3>
+            <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-12 text-center shadow-2xl shadow-[#0F172A]/5">
+              <h3 className="text-xl font-semibold text-[#0F172A] mb-2">Öğretmen bulunamadı</h3>
               <p className="text-slate-500">Filtreleri değiştirerek tekrar deneyin.</p>
             </div>
           ) : (
@@ -446,7 +446,7 @@ function TeachersContent() {
                   <Link 
                     href={'/teachers/' + teacher.id} 
                     key={teacher.id} 
-                    className="card p-6 flex gap-6 hover:shadow-lg transition-shadow"
+                    className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-6 flex gap-6 hover:bg-white hover:shadow-lg hover:shadow-[#D4AF37]/10 transition-all duration-300"
                   >
                     <div className="shrink-0">
                       {teacher.avatar_url ? (
@@ -504,7 +504,7 @@ function TeachersContent() {
                         </div>
                         <div className="text-sm text-slate-500">/saat</div>
                       </div>
-                      <span className="btn-primary py-2 px-4 text-sm">
+                      <span className="bg-[#0F172A] text-white font-bold py-2 px-4 text-sm rounded-xl hover:bg-[#D4AF37] hover:text-[#0F172A] transition-all">
                         Profili Gör
                       </span>
                     </div>
@@ -526,15 +526,20 @@ export default function TeachersPage() {
   return (
     <>
       <Header />
-      <main className="pt-24 pb-16 bg-slate-50 min-h-screen">
-        <div className="container-wide">
+      <main className="min-h-screen relative bg-[#FDFBF7] overflow-hidden">
+        {/* --- ARKA PLAN --- */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2228&auto=format&fit=crop')` }}></div>
+          <div className="absolute inset-0 bg-[#FDFBF7]/60 backdrop-blur-[6px]"></div>
+        </div>
+        <div className="relative z-10 pt-28 pb-16 max-w-6xl mx-auto px-4 sm:px-6">
           <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-navy-900 mb-4">Öğretmenler</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-[#0F172A] font-serif mb-4">Öğretmenler</h1>
             <p className="text-lg text-slate-600">
               Alanında uzman, titizlikle seçilmiş öğretmenlerimizle tanışın.
             </p>
           </div>
-          <Suspense fallback={<div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-navy-600 border-t-transparent rounded-full animate-spin" /></div>}>
+          <Suspense fallback={<div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" /></div>}>
             <TeachersContent />
           </Suspense>
         </div>

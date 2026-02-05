@@ -203,9 +203,10 @@ export default function TeacherProfilePage() {
     return (
       <>
         <Header />
-        <main className="pt-24 pb-16 bg-slate-50 min-h-screen">
-          <div className="container-wide flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-4 border-navy-600 border-t-transparent rounded-full animate-spin" />
+        <main className="min-h-screen relative bg-[#FDFBF7] overflow-hidden">
+          <div className="absolute inset-0 z-0"><div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2228&auto=format&fit=crop')` }}></div><div className="absolute inset-0 bg-[#FDFBF7]/60 backdrop-blur-[6px]"></div></div>
+          <div className="relative z-10 pt-28 pb-16 flex items-center justify-center py-20">
+            <div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
           </div>
         </main>
         <Footer />
@@ -217,10 +218,11 @@ export default function TeacherProfilePage() {
     return (
       <>
         <Header />
-        <main className="pt-24 pb-16 bg-slate-50 min-h-screen">
-          <div className="container-wide text-center py-20">
-            <h1 className="text-2xl font-bold text-navy-900 mb-4">Öğretmen bulunamadı</h1>
-            <Link href="/teachers" className="text-navy-600 hover:underline">← Öğretmenlere Dön</Link>
+        <main className="min-h-screen relative bg-[#FDFBF7] overflow-hidden">
+          <div className="absolute inset-0 z-0"><div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2228&auto=format&fit=crop')` }}></div><div className="absolute inset-0 bg-[#FDFBF7]/60 backdrop-blur-[6px]"></div></div>
+          <div className="relative z-10 pt-28 pb-16 text-center py-20">
+            <h1 className="text-2xl font-bold text-[#0F172A] mb-4">Öğretmen bulunamadı</h1>
+            <Link href="/teachers" className="text-[#D4AF37] hover:underline">← Öğretmenlere Dön</Link>
           </div>
         </main>
         <Footer />
@@ -238,8 +240,13 @@ export default function TeacherProfilePage() {
     <>
       <Header />
       <Toaster position="top-right" />
-      <main className="pt-24 pb-16 bg-slate-50 min-h-screen">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+      <main className="min-h-screen relative bg-[#FDFBF7] overflow-hidden">
+        {/* --- ARKA PLAN --- */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2228&auto=format&fit=crop')` }}></div>
+          <div className="absolute inset-0 bg-[#FDFBF7]/60 backdrop-blur-[6px]"></div>
+        </div>
+        <div className="relative z-10 pt-28 pb-16 max-w-6xl mx-auto px-4 sm:px-6">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-sm text-slate-500 mb-8">
             <Link href="/" className="hover:text-navy-900">Ana Sayfa</Link>
@@ -253,7 +260,7 @@ export default function TeacherProfilePage() {
             {/* Sol Kolon - Profil */}
             <div className="lg:col-span-2 space-y-6">
               {/* Ana Bilgiler */}
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+              <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-8">
                 <div className="flex gap-6">
                   {teacher.avatar_url ? (
                     <img
@@ -321,7 +328,7 @@ export default function TeacherProfilePage() {
 
               {/* Tanıtım Videosu */}
               {teacher.video_url && (
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+                <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-8">
                   <h2 className="text-xl font-bold text-navy-900 mb-4 flex items-center gap-2">
                     <svg className="w-5 h-5 text-navy-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -342,7 +349,7 @@ export default function TeacherProfilePage() {
 
               {/* Hakkında */}
               {teacher.bio && (
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+                <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-8">
                   <h2 className="text-xl font-bold text-navy-900 mb-4">Hakkında</h2>
                   <p className="text-slate-600 leading-relaxed">{teacher.bio}</p>
                 </div>
@@ -350,7 +357,7 @@ export default function TeacherProfilePage() {
 
               {/* Dersler */}
               {teacher.subjects && teacher.subjects.length > 0 && (
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+                <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-8">
                   <h2 className="text-xl font-bold text-navy-900 mb-4">Verdiği Dersler</h2>
                   <div className="flex flex-wrap gap-2">
                     {teacher.subjects.map((subject, i) => (
@@ -362,7 +369,7 @@ export default function TeacherProfilePage() {
 
               {/* Diploma */}
               {teacher.diploma_url && (
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+                <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-8">
                   <h2 className="text-xl font-bold text-navy-900 mb-4 flex items-center gap-2">
                     <svg className="w-5 h-5 text-navy-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -382,7 +389,7 @@ export default function TeacherProfilePage() {
 
             {/* Sağ Kolon - Randevu */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sticky top-24">
+              <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6 sticky top-24">
                 <div className="text-center mb-6">
                   <div className="text-4xl font-bold text-navy-900 mb-1">
                     ₺{price.toLocaleString('tr-TR')}
@@ -392,7 +399,7 @@ export default function TeacherProfilePage() {
 
                 <button
                   onClick={handleOpenBooking}
-                  className="w-full bg-gradient-to-r from-navy-900 to-navy-700 text-white py-4 rounded-xl text-lg font-semibold hover:from-navy-800 hover:to-navy-600 transition-all mb-4"
+                  className="w-full bg-[#0F172A] text-white py-4 rounded-xl text-lg font-semibold hover:bg-[#D4AF37] hover:text-[#0F172A] transition-all mb-4"
                 >
                   Randevu Al
                 </button>
@@ -410,9 +417,9 @@ export default function TeacherProfilePage() {
       {/* Booking Modal */}
       {isBookingOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-navy-950/60 backdrop-blur-sm" onClick={() => setIsBookingOpen(false)} />
+          <div className="absolute inset-0 bg-[#0F172A]/60 backdrop-blur-sm" onClick={() => setIsBookingOpen(false)} />
 
-          <div className="relative bg-white rounded-3xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-slate-100 px-8 py-6 flex items-center justify-between rounded-t-3xl z-10">
               <div>
                 <h2 className="text-2xl font-bold text-navy-900">Randevu Al</h2>
@@ -584,7 +591,7 @@ export default function TeacherProfilePage() {
                 <button
                   onClick={handleBooking}
                   disabled={!selectedTime || isSubmitting || !lessonNote.trim() || !!noteError}
-                  className="flex-1 py-3 bg-gradient-to-r from-navy-900 to-navy-700 text-white rounded-xl font-semibold hover:from-navy-800 hover:to-navy-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 py-3 bg-[#0F172A] text-white rounded-xl font-semibold hover:bg-[#D4AF37] hover:text-[#0F172A] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   {isSubmitting ? 'İşleniyor...' : 'Ödemeye Geç'}
                 </button>

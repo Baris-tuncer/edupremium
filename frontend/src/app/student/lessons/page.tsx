@@ -184,35 +184,40 @@ export default function StudentLessonsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="bg-white shadow-sm border-b border-slate-200">
+    <div className="min-h-screen relative bg-[#FDFBF7] overflow-hidden">
+      {/* --- ARKA PLAN --- */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2228&auto=format&fit=crop')` }}></div>
+        <div className="absolute inset-0 bg-[#FDFBF7]/60 backdrop-blur-[6px]"></div>
+      </div>
+      <header className="relative z-10 bg-white/80 backdrop-blur-xl border-b border-white/50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">EduPremium</h1>
+            <h1 className="text-2xl font-bold text-[#0F172A] font-serif">EduPremium</h1>
             <p className="text-sm text-slate-600">Hoş geldin, {studentName}</p>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/student/dashboard" className="px-4 py-2 text-slate-600 hover:text-slate-900 font-medium">
+            <Link href="/student/dashboard" className="px-4 py-2 text-slate-600 hover:text-[#D4AF37] font-medium transition-colors">
               Öğretmenler
             </Link>
-            <Link href="/student/lessons" className="px-4 py-2 text-blue-600 font-medium">
+            <Link href="/student/lessons" className="px-4 py-2 text-[#D4AF37] font-bold">
               Derslerim
             </Link>
-            <button onClick={handleLogout} className="px-4 py-2 text-slate-600 hover:text-slate-900 font-medium">
+            <button onClick={handleLogout} className="px-4 py-2 text-slate-600 hover:text-[#0F172A] font-medium transition-colors">
               Çıkış Yap
             </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="relative z-10 max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl font-bold text-slate-900">Derslerim</h2>
@@ -224,22 +229,22 @@ export default function StudentLessonsPage() {
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => setFilter('upcoming')}
-            className={'px-4 py-2 rounded-xl font-medium transition-colors ' + 
-              (filter === 'upcoming' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50')}
+            className={'px-4 py-2 rounded-xl font-medium transition-colors ' +
+              (filter === 'upcoming' ? 'bg-[#0F172A] text-white' : 'bg-white/80 text-slate-600 border border-white/50 hover:bg-white')}
           >
             Gelecek Dersler ({upcomingCount})
           </button>
           <button
             onClick={() => setFilter('completed')}
-            className={'px-4 py-2 rounded-xl font-medium transition-colors ' + 
-              (filter === 'completed' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50')}
+            className={'px-4 py-2 rounded-xl font-medium transition-colors ' +
+              (filter === 'completed' ? 'bg-[#0F172A] text-white' : 'bg-white/80 text-slate-600 border border-white/50 hover:bg-white')}
           >
             Geçmiş Dersler ({completedCount})
           </button>
           <button
             onClick={() => setFilter('all')}
-            className={'px-4 py-2 rounded-xl font-medium transition-colors ' + 
-              (filter === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50')}
+            className={'px-4 py-2 rounded-xl font-medium transition-colors ' +
+              (filter === 'all' ? 'bg-[#0F172A] text-white' : 'bg-white/80 text-slate-600 border border-white/50 hover:bg-white')}
           >
             Tümü ({lessons.length})
           </button>
@@ -249,7 +254,7 @@ export default function StudentLessonsPage() {
         {filteredLessons.length > 0 ? (
           <div className="space-y-4">
             {filteredLessons.map((lesson) => (
-              <div key={lesson.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+              <div key={lesson.id} className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -306,7 +311,7 @@ export default function StudentLessonsPage() {
                   <div className="mt-4 pt-4 border-t border-slate-100">
                     <button 
                       onClick={() => handleJoinClick(lesson.meeting_link)}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-medium rounded-xl hover:bg-green-700 transition-colors"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#0F172A] text-white font-bold rounded-xl hover:bg-[#D4AF37] hover:text-[#0F172A] transition-all"
                     >
                       🎥 Derse Katıl
                     </button>
@@ -316,7 +321,7 @@ export default function StudentLessonsPage() {
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
+          <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-12 text-center">
             <p className="text-slate-500 mb-4">
               {filter === 'upcoming' && 'Gelecek dersiniz bulunmuyor'}
               {filter === 'completed' && 'Geçmiş dersiniz bulunmuyor'}
@@ -324,7 +329,7 @@ export default function StudentLessonsPage() {
             </p>
             <Link 
               href="/student/dashboard" 
-              className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors"
+              className="inline-block px-6 py-3 bg-[#0F172A] text-white font-bold rounded-xl hover:bg-[#D4AF37] hover:text-[#0F172A] transition-all"
             >
               Öğretmenlere Göz At
             </Link>
