@@ -32,7 +32,7 @@ export default function TeacherLoginPage() {
 
       if (session) {
         router.refresh()
-        router.push('/teachers')
+        router.push('/teacher/dashboard')
       }
 
     } catch (err: any) {
