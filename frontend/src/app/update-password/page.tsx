@@ -19,14 +19,32 @@ export default function UpdatePassword() {
   const [sessionValid, setSessionValid] = useState(false)
 
   useEffect(() => {
-    // Hash fragment'ten oturumu yakala (Supabase recovery link)
     const handleRecoverySession = async () => {
-      // URL'de hash varsa Supabase otomatik işleyecek, biraz bekle
+      // Önce URL parametrelerinden token_hash ve type al
+      const params = new URLSearchParams(window.location.search)
+      const tokenHash = params.get('token_hash')
+      const type = params.get('type')
+
+      // Token varsa verifyOtp ile doğrula
+      if (tokenHash && type === 'recovery') {
+        const { data, error } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: 'recovery',
+        })
+
+        if (!error && data.session) {
+          setSessionValid(true)
+          setChecking(false)
+          return
+        }
+      }
+
+      // Hash fragment kontrolü (eski linkler için fallback)
       if (window.location.hash) {
-        // Supabase auth client hash'i otomatik parse eder
         await new Promise(resolve => setTimeout(resolve, 500))
       }
 
+      // Son çare: mevcut oturumu kontrol et
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
         setSessionValid(true)

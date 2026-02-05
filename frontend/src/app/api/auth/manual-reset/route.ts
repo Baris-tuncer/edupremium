@@ -35,16 +35,16 @@ export async function POST(request: Request) {
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'recovery',
       email,
-      options: {
-        redirectTo: baseUrl + '/update-password'
-      }
     })
 
     if (linkError) {
       return NextResponse.json({ error: 'Link Hatasi: ' + linkError.message }, { status: 400 })
     }
 
-    const resetLink = linkData.properties.action_link
+    // action_link yerine hashed_token kullanarak doğrudan sitemize yönlendiriyoruz
+    // Bu sayede Supabase sunucusuna gitmeden token'ı kendimiz işleyebiliyoruz
+    const token = linkData.properties.hashed_token
+    const resetLink = baseUrl + '/update-password?token_hash=' + token + '&type=recovery'
 
     // 2. Resend Mail Gonderimi
     // KRITIK: Calisan 'noreply' adresini kullaniyoruz.
