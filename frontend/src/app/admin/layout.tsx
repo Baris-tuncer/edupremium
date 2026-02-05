@@ -55,7 +55,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center">
+      <div className="min-h-screen bg-[#FDFBF7]/80 backdrop-blur-xl flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-slate-600">Yükleniyor...</p>
@@ -71,7 +71,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const activeItem = pathname.split('/')[2] || 'dashboard';
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7]">
+    <div className="min-h-screen bg-[#FDFBF7]/80 backdrop-blur-xl">
       <AdminSidebar activeItem={activeItem} />
       <AdminHeader user={user} />
       <main className="ml-64 pt-16">

@@ -171,13 +171,13 @@ export default function TeacherDetailPage() {
     };
   };
 
-  if (loading) return <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center"><div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" /></div>;
-  if (!teacher) return <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center"><div className="text-center"><h1 className="text-2xl font-bold text-[#0F172A] mb-4">Öğretmen Bulunamadı</h1><Link href="/student/dashboard" className="text-[#D4AF37]">Geri Dön</Link></div></div>;
+  if (loading) return <div className="min-h-screen bg-[#FDFBF7]/80 backdrop-blur-xl flex items-center justify-center"><div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" /></div>;
+  if (!teacher) return <div className="min-h-screen bg-[#FDFBF7]/80 backdrop-blur-xl flex items-center justify-center"><div className="text-center"><h1 className="text-2xl font-bold text-[#0F172A] mb-4">Öğretmen Bulunamadı</h1><Link href="/student/dashboard" className="text-[#D4AF37]">Geri Dön</Link></div></div>;
 
   const displayPrice = teacher.hourly_rate_display || calculateDisplayPrice(teacher.base_price || 0, teacher.commission_rate || 0.25);
 
   return (
-    <div className="min-h-screen relative bg-[#FDFBF7] overflow-hidden">
+    <div className="min-h-screen relative bg-[#FDFBF7]/80 backdrop-blur-xl overflow-hidden">
       {/* --- ARKA PLAN --- */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2228&auto=format&fit=crop')` }}></div>

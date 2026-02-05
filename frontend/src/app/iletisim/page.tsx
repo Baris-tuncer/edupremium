@@ -6,7 +6,7 @@ export default function IletisimPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen relative bg-[#FDFBF7] overflow-hidden">
+      <main className="min-h-screen relative bg-[#FDFBF7]/80 backdrop-blur-xl overflow-hidden">
 
         {/* --- ARKA PLAN --- */}
         <div className="absolute inset-0 z-0">
@@ -109,7 +109,7 @@ export default function IletisimPage() {
                   </div>
                 </div>
 
-                <div className="mt-8 p-4 bg-[#FDFBF7] rounded-xl border border-[#D4AF37]/20">
+                <div className="mt-8 p-4 bg-[#FDFBF7]/80 backdrop-blur-xl rounded-xl border border-[#D4AF37]/20">
                   <p className="text-xs text-slate-500 text-center">
                     Acil durumlar için e-posta yoluyla 7/24 ulaşabilirsiniz.
                   </p>

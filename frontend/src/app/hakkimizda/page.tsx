@@ -6,7 +6,7 @@ export default function HakkimizdaPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen relative bg-[#FDFBF7] overflow-hidden">
+      <main className="min-h-screen relative bg-[#FDFBF7]/80 backdrop-blur-xl overflow-hidden">
 
         {/* --- ARKA PLAN --- */}
         <div className="absolute inset-0 z-0">
@@ -78,7 +78,7 @@ export default function HakkimizdaPage() {
               <div className="grid md:grid-cols-3 gap-6">
 
                 <div className="text-center">
-                  <div className="w-14 h-14 bg-[#FDFBF7] border border-[#D4AF37]/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <div className="w-14 h-14 bg-[#FDFBF7]/80 backdrop-blur-xl border border-[#D4AF37]/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <GraduationCap className="w-7 h-7 text-[#D4AF37]" />
                   </div>
                   <h3 className="font-bold text-[#0F172A] mb-2">Kalite Odaklı Eğitim</h3>
@@ -86,7 +86,7 @@ export default function HakkimizdaPage() {
                 </div>
 
                 <div className="text-center">
-                  <div className="w-14 h-14 bg-[#FDFBF7] border border-[#D4AF37]/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <div className="w-14 h-14 bg-[#FDFBF7]/80 backdrop-blur-xl border border-[#D4AF37]/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <Users className="w-7 h-7 text-[#D4AF37]" />
                   </div>
                   <h3 className="font-bold text-[#0F172A] mb-2">Öğrenci Memnuniyeti</h3>
@@ -94,7 +94,7 @@ export default function HakkimizdaPage() {
                 </div>
 
                 <div className="text-center">
-                  <div className="w-14 h-14 bg-[#FDFBF7] border border-[#D4AF37]/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <div className="w-14 h-14 bg-[#FDFBF7]/80 backdrop-blur-xl border border-[#D4AF37]/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <Shield className="w-7 h-7 text-[#D4AF37]" />
                   </div>
                   <h3 className="font-bold text-[#0F172A] mb-2">Şeffaflık ve Güven</h3>

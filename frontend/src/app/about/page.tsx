@@ -6,7 +6,7 @@ export default function AboutPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen relative bg-[#FDFBF7] overflow-hidden">
+      <main className="min-h-screen relative bg-[#FDFBF7]/80 backdrop-blur-xl overflow-hidden">
 
         {/* --- ARKA PLAN --- */}
         <div className="absolute inset-0 z-0">
@@ -43,7 +43,7 @@ export default function AboutPage() {
             {/* Mission / Vision / Values */}
             <div className="grid md:grid-cols-3 gap-6 mb-8">
               <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-8 shadow-2xl shadow-[#0F172A]/5 text-center">
-                <div className="w-14 h-14 bg-[#FDFBF7] border border-[#D4AF37]/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-14 h-14 bg-[#FDFBF7]/80 backdrop-blur-xl border border-[#D4AF37]/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Target className="w-7 h-7 text-[#D4AF37]" />
                 </div>
                 <h3 className="text-xl font-bold text-[#0F172A] font-serif mb-2">Mission</h3>
@@ -51,7 +51,7 @@ export default function AboutPage() {
               </div>
 
               <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-8 shadow-2xl shadow-[#0F172A]/5 text-center">
-                <div className="w-14 h-14 bg-[#FDFBF7] border border-[#D4AF37]/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-14 h-14 bg-[#FDFBF7]/80 backdrop-blur-xl border border-[#D4AF37]/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Users className="w-7 h-7 text-[#D4AF37]" />
                 </div>
                 <h3 className="text-xl font-bold text-[#0F172A] font-serif mb-2">Vision</h3>
@@ -59,7 +59,7 @@ export default function AboutPage() {
               </div>
 
               <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-8 shadow-2xl shadow-[#0F172A]/5 text-center">
-                <div className="w-14 h-14 bg-[#FDFBF7] border border-[#D4AF37]/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-14 h-14 bg-[#FDFBF7]/80 backdrop-blur-xl border border-[#D4AF37]/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Award className="w-7 h-7 text-[#D4AF37]" />
                 </div>
                 <h3 className="text-xl font-bold text-[#0F172A] font-serif mb-2">Values</h3>

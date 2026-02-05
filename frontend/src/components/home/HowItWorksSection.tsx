@@ -45,7 +45,7 @@ const HowItWorksSection = () => {
               {index < steps.length - 1 && (
                 <div className="hidden lg:block absolute top-10 left-full w-full h-0.5 bg-gradient-to-r from-navy-200 to-transparent z-0" />
               )}
-              <div className="relative bg-white rounded-2xl p-8 shadow-card hover:shadow-elevated transition-shadow duration-300">
+              <div className="relative bg-white/80 backdrop-blur-xl rounded-2xl p-8 shadow-card hover:shadow-elevated transition-shadow duration-300">
                 <div className="font-display text-5xl font-bold text-navy-100 mb-4">
                   {step.number}
                 </div>

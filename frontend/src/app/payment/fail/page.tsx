@@ -9,7 +9,7 @@ function FailContent() {
   const error = searchParams.get('error')
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center bg-[#FDFBF7] overflow-hidden">
+    <div className="min-h-screen relative flex items-center justify-center bg-[#FDFBF7]/80 backdrop-blur-xl overflow-hidden">
 
       {/* --- ARKA PLAN --- */}
       <div className="absolute inset-0 z-0">
@@ -44,7 +44,7 @@ function FailContent() {
 export default function PaymentFailPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">
+      <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7]/80 backdrop-blur-xl">
         <div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
       </div>
     }>

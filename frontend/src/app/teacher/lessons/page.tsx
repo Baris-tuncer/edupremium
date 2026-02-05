@@ -130,7 +130,7 @@ export default function TeacherLessonsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center">
+      <div className="min-h-screen bg-[#FDFBF7]/80 backdrop-blur-xl flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4AF37]"></div>
       </div>
     );
@@ -142,13 +142,13 @@ export default function TeacherLessonsPage() {
       <div className="flex gap-2 mb-6">
         <button
           onClick={() => setFilter('upcoming')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'upcoming' ? 'bg-[#0F172A] text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'upcoming' ? 'bg-[#0F172A] text-white' : 'bg-white/80 backdrop-blur-xl text-slate-600 hover:bg-slate-50'}`}
         >
           Gelecek Dersler
         </button>
         <button
           onClick={() => setFilter('completed')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'completed' ? 'bg-[#0F172A] text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'completed' ? 'bg-[#0F172A] text-white' : 'bg-white/80 backdrop-blur-xl text-slate-600 hover:bg-slate-50'}`}
         >
           Tamamlanan Dersler
         </button>

@@ -27,7 +27,7 @@ export default function Sidebar() {
             <Link key={item.href} href={item.href} className={`flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-200 group ${isActive ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25 translate-x-1' : 'hover:bg-white/5 hover:text-white'}`}>
               <span className={`text-xl transition-transform group-hover:scale-110 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}`}>{item.icon}</span>
               <span className="font-medium">{item.label}</span>
-              {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white"></div>}
+              {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white/80 backdrop-blur-xl"></div>}
             </Link>
           )
         })}

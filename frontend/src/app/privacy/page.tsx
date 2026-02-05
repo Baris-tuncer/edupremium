@@ -6,7 +6,7 @@ export default function GizlilikPolitikasiPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen relative bg-[#FDFBF7] overflow-hidden">
+      <main className="min-h-screen relative bg-[#FDFBF7]/80 backdrop-blur-xl overflow-hidden">
 
         {/* --- ARKA PLAN --- */}
         <div className="absolute inset-0 z-0">
@@ -261,7 +261,7 @@ export default function GizlilikPolitikasiPage() {
                   <p className="text-slate-600 mb-4">
                     KVKK kapsamındaki haklarınız veya gizlilik politikamız hakkında sorularınız için:
                   </p>
-                  <div className="bg-[#FDFBF7] rounded-xl border border-[#D4AF37]/20 p-6">
+                  <div className="bg-[#FDFBF7]/80 backdrop-blur-xl rounded-xl border border-[#D4AF37]/20 p-6">
                     <div className="flex items-center gap-3 mb-4">
                       <ShieldCheck className="w-5 h-5 text-[#D4AF37]" />
                       <span className="font-bold text-[#0F172A]">İletişim Bilgileri</span>

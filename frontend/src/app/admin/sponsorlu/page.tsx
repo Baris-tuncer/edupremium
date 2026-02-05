@@ -257,7 +257,7 @@ export default function SponsorluPage() {
             className={`px-5 py-2.5 rounded-lg font-medium text-sm transition-all ${
               activeTab === tab.key
                 ? 'bg-[#0F172A] text-white'
-                : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+                : 'bg-white/80 backdrop-blur-xl text-slate-600 hover:bg-slate-50 border border-slate-200'
             }`}
           >
             {tab.label}

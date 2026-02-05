@@ -16,7 +16,7 @@ const SubjectsSection = () => {
   ];
 
   return (
-    <section className="section bg-white">
+    <section className="section bg-white/80 backdrop-blur-xl">
       <div className="container-wide">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between mb-12">
           <div>

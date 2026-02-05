@@ -173,7 +173,7 @@ export default function StudentDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center">
+      <div className="min-h-screen bg-[#FDFBF7]/80 backdrop-blur-xl flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
           <p className="text-sm text-slate-500 font-medium">Yükleniyor...</p>
@@ -183,7 +183,7 @@ export default function StudentDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] relative overflow-hidden">
+    <div className="min-h-screen bg-[#FDFBF7]/80 backdrop-blur-xl relative overflow-hidden">
 
       {/* --- PREMIUM ARKA PLAN (Kütüphane + %60 Opak Filtre) --- */}
       <div className="absolute inset-0 z-0 pointer-events-none">
@@ -338,7 +338,7 @@ export default function StudentDashboardPage() {
                   <input
                     type="text"
                     placeholder="Öğretmen ara..."
-                    className="w-full md:w-64 bg-white border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm focus:border-[#D4AF37] outline-none"
+                    className="w-full md:w-64 bg-white/80 backdrop-blur-xl border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm focus:border-[#D4AF37] outline-none"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />

@@ -92,7 +92,7 @@ export default function TeacherHeader({ user }: HeaderProps) {
           </button>
 
           {isOpen && (
-            <div className="absolute right-0 top-12 w-80 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden z-50">
+            <div className="absolute right-0 top-12 w-80 bg-white/80 backdrop-blur-xl rounded-xl shadow-lg border border-slate-200 overflow-hidden z-50">
               <div className="p-4 border-b border-slate-100">
                 <h3 className="font-semibold text-[#0F172A]">Yaklaşan Dersler</h3>
               </div>

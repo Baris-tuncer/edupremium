@@ -105,7 +105,7 @@ export default function AdminSettingsPage() {
                   <h3 className="font-semibold text-[#D4AF37] mb-4 text-lg">Fiyat Hesaplama Detayı</h3>
                   
                   <div className="space-y-3 text-sm">
-                    <div className="bg-white rounded-lg p-4">
+                    <div className="bg-white/80 backdrop-blur-xl rounded-lg p-4">
                       <h4 className="font-medium text-slate-700 mb-3">1. Öğretmen Tarafı</h4>
                       <div className="space-y-2">
                         <div className="flex justify-between">
@@ -123,7 +123,7 @@ export default function AdminSettingsPage() {
                       </div>
                     </div>
 
-                    <div className="bg-white rounded-lg p-4">
+                    <div className="bg-white/80 backdrop-blur-xl rounded-lg p-4">
                       <h4 className="font-medium text-slate-700 mb-3">2. Vergi Hesaplama (Veliye Yansır)</h4>
                       <div className="space-y-2">
                         <div className="flex justify-between">
@@ -149,7 +149,7 @@ export default function AdminSettingsPage() {
                       </div>
                     </div>
 
-                    <div className="bg-white rounded-lg p-4">
+                    <div className="bg-white/80 backdrop-blur-xl rounded-lg p-4">
                       <h4 className="font-medium text-slate-700 mb-3">3. Sonuc</h4>
                       <div className="space-y-2">
                         <div className="flex justify-between">

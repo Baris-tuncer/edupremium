@@ -203,7 +203,7 @@ export default function TeacherProfilePage() {
     return (
       <>
         <Header />
-        <main className="min-h-screen relative bg-[#FDFBF7] overflow-hidden">
+        <main className="min-h-screen relative bg-[#FDFBF7]/80 backdrop-blur-xl overflow-hidden">
           <div className="absolute inset-0 z-0"><div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2228&auto=format&fit=crop')` }}></div><div className="absolute inset-0 bg-[#FDFBF7]/60 backdrop-blur-[6px]"></div></div>
           <div className="relative z-10 pt-28 pb-16 flex items-center justify-center py-20">
             <div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
@@ -218,7 +218,7 @@ export default function TeacherProfilePage() {
     return (
       <>
         <Header />
-        <main className="min-h-screen relative bg-[#FDFBF7] overflow-hidden">
+        <main className="min-h-screen relative bg-[#FDFBF7]/80 backdrop-blur-xl overflow-hidden">
           <div className="absolute inset-0 z-0"><div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2228&auto=format&fit=crop')` }}></div><div className="absolute inset-0 bg-[#FDFBF7]/60 backdrop-blur-[6px]"></div></div>
           <div className="relative z-10 pt-28 pb-16 text-center py-20">
             <h1 className="text-2xl font-bold text-[#0F172A] mb-4">Öğretmen bulunamadı</h1>
@@ -240,7 +240,7 @@ export default function TeacherProfilePage() {
     <>
       <Header />
       <Toaster position="top-right" />
-      <main className="min-h-screen relative bg-[#FDFBF7] overflow-hidden">
+      <main className="min-h-screen relative bg-[#FDFBF7]/80 backdrop-blur-xl overflow-hidden">
         {/* --- ARKA PLAN --- */}
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2228&auto=format&fit=crop')` }}></div>
@@ -420,7 +420,7 @@ export default function TeacherProfilePage() {
           <div className="absolute inset-0 bg-[#0F172A]/60 backdrop-blur-sm" onClick={() => setIsBookingOpen(false)} />
 
           <div className="relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-slate-100 px-8 py-6 flex items-center justify-between rounded-t-3xl z-10">
+            <div className="sticky top-0 bg-white/80 backdrop-blur-xl border-b border-slate-100 px-8 py-6 flex items-center justify-between rounded-t-3xl z-10">
               <div>
                 <h2 className="text-2xl font-bold text-navy-900">Randevu Al</h2>
                 <p className="text-slate-500">{teacher.full_name} ile ders</p>

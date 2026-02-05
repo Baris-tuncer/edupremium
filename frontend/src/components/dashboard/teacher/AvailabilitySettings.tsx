@@ -128,7 +128,7 @@ export default function AvailabilitySettings() {
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+    <div className="bg-white/80 backdrop-blur-xl p-6 rounded-xl shadow-sm border border-gray-200">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-lg font-bold text-gray-900">Çalışma Saatleri</h2>
@@ -145,13 +145,13 @@ export default function AvailabilitySettings() {
 
       <div className="space-y-4">
         {schedule.map((day, dayIndex) => (
-          <div key={day.dayOfWeek} className={`flex flex-col sm:flex-row sm:items-start gap-4 p-4 rounded-lg border transition-all ${day.isActive ? 'border-gray-300 bg-white shadow-sm' : 'border-gray-100 bg-gray-50 opacity-70'}`}>
+          <div key={day.dayOfWeek} className={`flex flex-col sm:flex-row sm:items-start gap-4 p-4 rounded-lg border transition-all ${day.isActive ? 'border-gray-300 bg-white/80 backdrop-blur-xl shadow-sm' : 'border-gray-100 bg-gray-50 opacity-70'}`}>
             <div className="w-40 pt-2 flex items-center gap-3">
               <button 
                 onClick={() => handleDayToggle(dayIndex)}
                 className={`relative w-11 h-6 rounded-full transition-colors focus:outline-none ${day.isActive ? 'bg-black' : 'bg-gray-300'}`}
               >
-                <span className={`block w-4 h-4 bg-white rounded-full shadow transform transition-transform ${day.isActive ? 'translate-x-6' : 'translate-x-1'}`} />
+                <span className={`block w-4 h-4 bg-white/80 backdrop-blur-xl rounded-full shadow transform transition-transform ${day.isActive ? 'translate-x-6' : 'translate-x-1'}`} />
               </button>
               <span className={`font-semibold ${day.isActive ? 'text-gray-900' : 'text-gray-500'}`}>
                 {DAYS.find(d => d.id === day.dayOfWeek)?.label}

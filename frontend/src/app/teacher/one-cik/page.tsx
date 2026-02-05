@@ -213,7 +213,7 @@ export default function OneCikPage() {
           <h2 className="text-xl font-bold text-[#0F172A] mb-2">Başvurunuz Alındı!</h2>
           <p className="text-slate-600 mb-6">Aşağıdaki hesaba havale/EFT yaptıktan sonra başvurunuz onaylanacaktır.</p>
 
-          <div className="bg-white rounded-xl p-5 text-left space-y-4 border border-slate-200">
+          <div className="bg-white/80 backdrop-blur-xl rounded-xl p-5 text-left space-y-4 border border-slate-200">
             <div className="flex justify-between items-center">
               <span className="text-slate-500">Banka</span>
               <span className="font-semibold text-[#0F172A]">{BANK_INFO.bankName}</span>
@@ -385,7 +385,7 @@ export default function OneCikPage() {
                     navigator.clipboard.writeText(BANK_INFO.iban.replace(/\s/g, ''));
                     alert('IBAN kopyalandı!');
                   }}
-                  className="text-xs bg-white hover:bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 transition-colors"
+                  className="text-xs bg-white/80 backdrop-blur-xl hover:bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 transition-colors"
                 >
                   Kopyala
                 </button>

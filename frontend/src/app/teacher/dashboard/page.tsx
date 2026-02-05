@@ -179,7 +179,7 @@ export default function TeacherDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen relative flex items-center justify-center bg-[#FDFBF7] overflow-hidden">
+      <div className="min-h-screen relative flex items-center justify-center bg-[#FDFBF7]/80 backdrop-blur-xl overflow-hidden">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -198,7 +198,7 @@ export default function TeacherDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen relative bg-[#FDFBF7] overflow-hidden">
+    <div className="min-h-screen relative bg-[#FDFBF7]/80 backdrop-blur-xl overflow-hidden">
 
       {/* --- ARKA PLAN --- */}
       <div className="absolute inset-0 z-0">
@@ -301,7 +301,7 @@ export default function TeacherDashboardPage() {
               ) : (
                 <div className="space-y-3">
                   {upcomingLessons.map((lesson) => (
-                    <div key={lesson.id} className="flex items-center gap-4 p-4 bg-[#FDFBF7] rounded-xl border border-slate-100">
+                    <div key={lesson.id} className="flex items-center gap-4 p-4 bg-[#FDFBF7]/80 backdrop-blur-xl rounded-xl border border-slate-100">
                       <div className="w-11 h-11 bg-[#0F172A] rounded-xl flex items-center justify-center flex-shrink-0">
                         <span className="text-sm font-bold text-[#D4AF37]">
                           {lesson.subject.charAt(0)}
@@ -338,7 +338,7 @@ export default function TeacherDashboardPage() {
               ) : (
                 <div className="space-y-3">
                   {recentReviews.map((review) => (
-                    <div key={review.id} className="p-4 bg-[#FDFBF7] rounded-xl border border-slate-100">
+                    <div key={review.id} className="p-4 bg-[#FDFBF7]/80 backdrop-blur-xl rounded-xl border border-slate-100">
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-bold text-[#0F172A] text-sm">{review.student_name}</span>
                         <div className="flex items-center gap-0.5">

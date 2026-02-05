@@ -5,7 +5,7 @@ import { ArrowRight, ChevronDown, BookOpen } from 'lucide-react';
 const HeroSection = () => {
   return (
     // 1. ANA KAPLAYICI: Ekranı tam kaplar (h-screen), boşluk yok (p-0)
-    <section className="relative w-full h-screen bg-[#FDFBF7] overflow-hidden flex items-center">
+    <section className="relative w-full h-screen bg-[#FDFBF7]/80 backdrop-blur-xl overflow-hidden flex items-center">
       
       {/* 2. ARKA PLAN FOTOĞRAFI (Tam Ekran) */}
       <div

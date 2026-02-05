@@ -148,7 +148,7 @@ export default function AdminLessonsPage() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               filter === f.value
                 ? 'bg-[#0F172A] text-white'
-                : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+                : 'bg-white/80 backdrop-blur-xl text-slate-600 hover:bg-slate-50 border border-slate-200'
             }`}
           >
             {f.label}

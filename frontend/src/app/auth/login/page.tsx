@@ -4,7 +4,7 @@ import { GraduationCap, Presentation, ChevronRight, Star } from 'lucide-react';
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen relative flex items-center justify-center bg-[#FDFBF7] overflow-hidden">
+    <div className="min-h-screen relative flex items-center justify-center bg-[#FDFBF7]/80 backdrop-blur-xl overflow-hidden">
 
       {/* ARKA PLAN - Opaklık Landing Page ile Eşitlendi (%60) */}
       <div className="absolute inset-0 z-0">
@@ -41,7 +41,7 @@ export default function LoginPage() {
             href="/student/login"
             className="group bg-white/80 backdrop-blur-xl border border-white/40 rounded-3xl p-10 hover:bg-white hover:scale-[1.02] hover:shadow-2xl hover:shadow-[#D4AF37]/20 transition-all duration-300 flex flex-col items-center cursor-pointer relative overflow-hidden"
           >
-            <div className="w-16 h-16 bg-[#FDFBF7] border border-slate-100 rounded-2xl flex items-center justify-center text-[#0F172A] mb-6 group-hover:bg-[#D4AF37] group-hover:text-white transition-all shadow-sm">
+            <div className="w-16 h-16 bg-[#FDFBF7]/80 backdrop-blur-xl border border-slate-100 rounded-2xl flex items-center justify-center text-[#0F172A] mb-6 group-hover:bg-[#D4AF37] group-hover:text-white transition-all shadow-sm">
               <GraduationCap className="w-8 h-8" />
             </div>
             <h2 className="text-2xl font-bold text-[#0F172A] font-serif mb-2">
@@ -60,7 +60,7 @@ export default function LoginPage() {
             href="/teacher/login"
             className="group bg-white/80 backdrop-blur-xl border border-white/40 rounded-3xl p-10 hover:bg-white hover:scale-[1.02] hover:shadow-2xl hover:shadow-[#D4AF37]/20 transition-all duration-300 flex flex-col items-center cursor-pointer relative overflow-hidden"
           >
-            <div className="w-16 h-16 bg-[#FDFBF7] border border-slate-100 rounded-2xl flex items-center justify-center text-[#0F172A] mb-6 group-hover:bg-[#D4AF37] group-hover:text-white transition-all shadow-sm">
+            <div className="w-16 h-16 bg-[#FDFBF7]/80 backdrop-blur-xl border border-slate-100 rounded-2xl flex items-center justify-center text-[#0F172A] mb-6 group-hover:bg-[#D4AF37] group-hover:text-white transition-all shadow-sm">
               <Presentation className="w-8 h-8" />
             </div>
             <h2 className="text-2xl font-bold text-[#0F172A] font-serif mb-2">

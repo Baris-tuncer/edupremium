@@ -93,7 +93,7 @@ export default function TeacherFeedbackPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] py-12">
+    <div className="min-h-screen bg-[#FDFBF7]/80 backdrop-blur-xl py-12">
       <div className="max-w-3xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">

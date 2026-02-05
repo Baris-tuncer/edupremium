@@ -100,7 +100,7 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center bg-[#FDFBF7] overflow-hidden">
+    <div className="min-h-screen relative flex items-center justify-center bg-[#FDFBF7]/80 backdrop-blur-xl overflow-hidden">
 
       {/* --- ARKA PLAN --- */}
       <div className="absolute inset-0 z-0">
@@ -173,7 +173,7 @@ export default function Register() {
                       placeholder="Örn: Dr. Barış Tuncer"
                       value={formData.fullName}
                       onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                      className="w-full bg-white border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300"
+                      className="w-full bg-white/80 backdrop-blur-xl border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300"
                     />
                   </div>
                 </div>
@@ -191,7 +191,7 @@ export default function Register() {
                       placeholder="ornek@email.com"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full bg-white border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300"
+                      className="w-full bg-white/80 backdrop-blur-xl border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300"
                     />
                   </div>
                 </div>
@@ -210,7 +210,7 @@ export default function Register() {
                       placeholder="En az 6 karakter"
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="w-full bg-white border border-slate-200 rounded-xl py-3.5 pl-12 pr-12 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300"
+                      className="w-full bg-white/80 backdrop-blur-xl border border-slate-200 rounded-xl py-3.5 pl-12 pr-12 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300"
                     />
                     <button
                       type="button"
@@ -234,7 +234,7 @@ export default function Register() {
                       placeholder="05XX XXX XX XX"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full bg-white border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300"
+                      className="w-full bg-white/80 backdrop-blur-xl border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300"
                     />
                   </div>
                 </div>
@@ -252,7 +252,7 @@ export default function Register() {
                       placeholder="KODU GİRİN"
                       value={formData.inviteCode}
                       onChange={(e) => setFormData({ ...formData, inviteCode: e.target.value.toUpperCase() })}
-                      className="w-full bg-[#FDFBF7] border-2 border-dashed border-[#D4AF37]/40 rounded-xl py-3.5 pl-12 pr-4 text-[#0F172A] font-mono text-center tracking-[0.2em] uppercase text-lg focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300 placeholder:text-sm placeholder:tracking-normal placeholder:font-sans"
+                      className="w-full bg-[#FDFBF7]/80 backdrop-blur-xl border-2 border-dashed border-[#D4AF37]/40 rounded-xl py-3.5 pl-12 pr-4 text-[#0F172A] font-mono text-center tracking-[0.2em] uppercase text-lg focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300 placeholder:text-sm placeholder:tracking-normal placeholder:font-sans"
                     />
                   </div>
                 </div>

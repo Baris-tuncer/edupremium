@@ -61,7 +61,7 @@ const FeaturesSection = () => {
   ];
 
   return (
-    <section className="section bg-white">
+    <section className="section bg-white/80 backdrop-blur-xl">
       <div className="container-wide">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="inline-block text-sm font-semibold text-gold-600 uppercase tracking-wider mb-4">

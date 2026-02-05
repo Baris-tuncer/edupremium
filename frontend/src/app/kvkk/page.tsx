@@ -6,7 +6,7 @@ export default function KvkkPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen relative bg-[#FDFBF7] overflow-hidden">
+      <main className="min-h-screen relative bg-[#FDFBF7]/80 backdrop-blur-xl overflow-hidden">
 
         {/* --- ARKA PLAN --- */}
         <div className="absolute inset-0 z-0">
@@ -91,7 +91,7 @@ export default function KvkkPage() {
                   </ul>
                 </section>
 
-                <div className="bg-[#FDFBF7] p-6 rounded-xl border border-[#D4AF37]/20">
+                <div className="bg-[#FDFBF7]/80 backdrop-blur-xl p-6 rounded-xl border border-[#D4AF37]/20">
                   <div className="flex items-center gap-3 mb-3">
                     <ShieldCheck className="w-5 h-5 text-[#D4AF37]" />
                     <p className="text-sm text-[#0F172A] font-bold uppercase tracking-wider">İletişim</p>

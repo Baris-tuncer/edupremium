@@ -37,7 +37,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen pt-20 pb-20 bg-[#FDFBF7]">
+    <div className="min-h-screen pt-20 pb-20 bg-[#FDFBF7]/80 backdrop-blur-xl">
       {/* Üst Başlık (Daha Alçak) */}
       <div className="bg-[#020617] py-16 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent opacity-80"></div>
@@ -49,7 +49,7 @@ export default function ContactPage() {
 
       <div className="container mx-auto px-4 -mt-8 relative z-20">
         {/* KUTUYU KÜÇÜLTTÜK: max-w-4xl yaptık (eskiden tam genişlikti) */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row border border-[#D4AF37]/10 max-w-5xl mx-auto">
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row border border-[#D4AF37]/10 max-w-5xl mx-auto">
 
           {/* Sol Taraf (Bilgiler - Daha Kompakt) */}
           <div className="bg-[#0F172A] text-white p-8 md:w-5/12 flex flex-col justify-center">
@@ -71,7 +71,7 @@ export default function ContactPage() {
           </div>
 
           {/* Sağ Taraf (Form - SLIM FIT) */}
-          <div className="p-8 md:w-7/12 bg-white">
+          <div className="p-8 md:w-7/12 bg-white/80 backdrop-blur-xl">
             <h3 className="text-lg font-bold font-serif text-[#0F172A] mb-1">Hızlı Mesaj</h3>
             <p className="text-slate-500 mb-5 text-xs">Size en kısa sürede dönüş yapacağız.</p>
 
@@ -81,7 +81,7 @@ export default function ContactPage() {
                 <input
                   type="text"
                   placeholder="Adınız Soyadınız"
-                  className="w-full bg-[#FDFBF7] border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-[#D4AF37] outline-none transition-colors"
+                  className="w-full bg-[#FDFBF7]/80 backdrop-blur-xl border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-[#D4AF37] outline-none transition-colors"
                   value={formData.name}
                   onChange={e => setFormData({...formData, name: e.target.value})}
                   required
@@ -89,7 +89,7 @@ export default function ContactPage() {
                 <input
                   type="email"
                   placeholder="E-Posta Adresiniz"
-                  className="w-full bg-[#FDFBF7] border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-[#D4AF37] outline-none transition-colors"
+                  className="w-full bg-[#FDFBF7]/80 backdrop-blur-xl border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-[#D4AF37] outline-none transition-colors"
                   value={formData.email}
                   onChange={e => setFormData({...formData, email: e.target.value})}
                   required
@@ -100,7 +100,7 @@ export default function ContactPage() {
               <textarea
                 rows={3}
                 placeholder="Mesajınız..."
-                className="w-full bg-[#FDFBF7] border border-slate-200 rounded-lg px-3 py-2.5 text-sm resize-none focus:border-[#D4AF37] outline-none transition-colors"
+                className="w-full bg-[#FDFBF7]/80 backdrop-blur-xl border border-slate-200 rounded-lg px-3 py-2.5 text-sm resize-none focus:border-[#D4AF37] outline-none transition-colors"
                 value={formData.message}
                 onChange={e => setFormData({...formData, message: e.target.value})}
                 required

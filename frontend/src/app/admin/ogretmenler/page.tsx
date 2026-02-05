@@ -144,7 +144,7 @@ export default function AdminTeachersPage() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               filter === f
                 ? 'bg-[#0F172A] text-white'
-                : 'bg-white text-slate-600 hover:bg-slate-50'
+                : 'bg-white/80 backdrop-blur-xl text-slate-600 hover:bg-slate-50'
             }`}
           >
             {f === 'all' ? 'Tümü' : f === 'pending_approval' ? '⏳ Onay Bekleyen' : f === 'approved' ? '✅ Onaylı' : f === 'verified' ? 'Doğrulanmış' : 'Doğrulanmamış'}

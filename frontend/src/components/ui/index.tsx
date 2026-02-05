@@ -32,7 +32,7 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   const variants = {
     primary: 'bg-navy-900 text-white hover:bg-navy-800 hover:shadow-elevated hover:-translate-y-0.5 active:translate-y-0',
-    secondary: 'bg-white text-navy-900 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 hover:shadow-card',
+    secondary: 'bg-white/80 backdrop-blur-xl text-navy-900 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 hover:shadow-card',
     ghost: 'text-navy-700 hover:bg-navy-50 hover:text-navy-900',
     gold: 'bg-gradient-gold text-white hover:shadow-elevated hover:-translate-y-0.5',
     danger: 'bg-red-600 text-white hover:bg-red-700',
@@ -96,7 +96,7 @@ export const Input: React.FC<InputProps> = ({
       <input
         id={inputId}
         className={cn(
-          'w-full px-4 py-3 bg-white border rounded-xl text-slate-800 placeholder:text-slate-400',
+          'w-full px-4 py-3 bg-white/80 backdrop-blur-xl border rounded-xl text-slate-800 placeholder:text-slate-400',
           'transition-all duration-200',
           'hover:border-slate-300',
           'focus:border-navy-500 focus:ring-2 focus:ring-navy-500/20 focus:outline-none',
@@ -140,7 +140,7 @@ export const Select: React.FC<SelectProps> = ({
       <select
         id={selectId}
         className={cn(
-          'w-full px-4 py-3 bg-white border rounded-xl text-slate-800',
+          'w-full px-4 py-3 bg-white/80 backdrop-blur-xl border rounded-xl text-slate-800',
           'transition-all duration-200',
           'hover:border-slate-300',
           'focus:border-navy-500 focus:ring-2 focus:ring-navy-500/20 focus:outline-none',
@@ -173,7 +173,7 @@ interface CardProps {
 export const Card: React.FC<CardProps> = ({ children, className, hover = false, onClick }) => (
   <div
     className={cn(
-      'bg-white rounded-2xl border border-slate-100 shadow-card',
+      'bg-white/80 backdrop-blur-xl rounded-2xl border border-slate-100 shadow-card',
       hover && 'transition-all duration-300 hover:shadow-elevated hover:-translate-y-1 hover:border-slate-200 cursor-pointer',
       className
     )}
@@ -232,9 +232,9 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-navy-950/60 backdrop-blur-sm" onClick={onClose} />
-      <div className={cn('relative bg-white rounded-3xl shadow-elevated w-full max-h-[90vh] overflow-y-auto animate-scale-in', sizes[size])}>
+      <div className={cn('relative bg-white/80 backdrop-blur-xl rounded-3xl shadow-elevated w-full max-h-[90vh] overflow-y-auto animate-scale-in', sizes[size])}>
         {title && (
-          <div className="sticky top-0 bg-white border-b border-slate-100 px-8 py-6 flex items-center justify-between rounded-t-3xl">
+          <div className="sticky top-0 bg-white/80 backdrop-blur-xl border-b border-slate-100 px-8 py-6 flex items-center justify-between rounded-t-3xl">
             <h2 className="font-display text-2xl font-semibold text-navy-900">{title}</h2>
             <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
               <svg className="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">

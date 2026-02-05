@@ -106,7 +106,7 @@ const FeaturedCard = ({ teacher, index }: { teacher: FeaturedTeacher; index: num
           ? 'bg-gradient-to-br from-gold-500 via-gold-300 to-gold-500 shadow-xl' 
           : 'bg-gradient-to-br from-navy-200/30 via-gold-400/30 to-navy-200/30 shadow-md'
       }`}>
-        <div className="bg-white rounded-[14px] p-5 h-full flex flex-col gap-4 relative overflow-hidden">
+        <div className="bg-white/80 backdrop-blur-xl rounded-[14px] p-5 h-full flex flex-col gap-4 relative overflow-hidden">
           <div className="absolute -top-8 -right-8 w-[100px] h-[100px] rounded-full bg-gold-100/20" />
 
           {/* Badge */}
@@ -368,7 +368,7 @@ function TeachersContent() {
               placeholder="İsim ile ara..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300"
+              className="w-full bg-white/80 backdrop-blur-xl border border-slate-200 rounded-xl py-3 px-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300"
             />
           </div>
 
@@ -377,7 +377,7 @@ function TeachersContent() {
             <select
               value={selectedLevel}
               onChange={(e) => { setSelectedLevel(e.target.value); setSelectedSubject(''); }}
-              className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all"
+              className="w-full bg-white/80 backdrop-blur-xl border border-slate-200 rounded-xl py-3 px-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all"
             >
               <option value="">Tümü</option>
               {Object.entries(EDUCATION_LEVELS).map(([key, value]) => (
@@ -392,7 +392,7 @@ function TeachersContent() {
               <select
                 value={selectedSubject}
                 onChange={(e) => setSelectedSubject(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all"
+                className="w-full bg-white/80 backdrop-blur-xl border border-slate-200 rounded-xl py-3 px-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all"
               >
                 <option value="">Tümü</option>
                 {currentSubjects.map((subject) => (
@@ -415,7 +415,7 @@ function TeachersContent() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-white border border-slate-200 rounded-xl py-2 px-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all"
+              className="bg-white/80 backdrop-blur-xl border border-slate-200 rounded-xl py-2 px-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all"
             >
               <option value="recommended">Önerilen</option>
               <option value="rating">En Yüksek Puan</option>
@@ -526,7 +526,7 @@ export default function TeachersPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen relative bg-[#FDFBF7] overflow-hidden">
+      <main className="min-h-screen relative bg-[#FDFBF7]/80 backdrop-blur-xl overflow-hidden">
         {/* --- ARKA PLAN --- */}
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2228&auto=format&fit=crop')` }}></div>

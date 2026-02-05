@@ -6,7 +6,7 @@ export default function BlogPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen relative bg-[#FDFBF7] overflow-hidden">
+      <main className="min-h-screen relative bg-[#FDFBF7]/80 backdrop-blur-xl overflow-hidden">
 
         {/* --- ARKA PLAN --- */}
         <div className="absolute inset-0 z-0">
@@ -35,7 +35,7 @@ export default function BlogPage() {
 
             {/* İçerik */}
             <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-8 md:p-12 shadow-2xl shadow-[#0F172A]/5 text-center">
-              <div className="w-16 h-16 bg-[#FDFBF7] border border-[#D4AF37]/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <div className="w-16 h-16 bg-[#FDFBF7]/80 backdrop-blur-xl border border-[#D4AF37]/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <BookOpen className="w-8 h-8 text-[#D4AF37]" />
               </div>
               <p className="text-slate-600 text-lg italic">

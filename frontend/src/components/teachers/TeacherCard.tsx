@@ -68,7 +68,7 @@ const TeacherCard: React.FC<TeacherCardProps> = ({ teacher }) => {
       </div>
 
       {/* --- 2. KART GÖVDESİ --- */}
-      <div className="bg-[#FDFBF7] rounded-t-[3rem] rounded-b-2xl pt-20 pb-6 px-6 shadow-2xl border border-[#D4AF37]/20 relative overflow-hidden h-full flex flex-col justify-between group-hover:-translate-y-2 transition-transform duration-500">
+      <div className="bg-[#FDFBF7]/80 backdrop-blur-xl rounded-t-[3rem] rounded-b-2xl pt-20 pb-6 px-6 shadow-2xl border border-[#D4AF37]/20 relative overflow-hidden h-full flex flex-col justify-between group-hover:-translate-y-2 transition-transform duration-500">
 
         {/* Dekoratif Arka Plan İzi */}
         <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-[#D4AF37]/5 to-transparent"></div>
@@ -84,18 +84,18 @@ const TeacherCard: React.FC<TeacherCardProps> = ({ teacher }) => {
 
           {/* Puan & Tecrübe & Üniversite */}
           <div className="flex justify-center gap-2 mb-4 flex-wrap">
-            <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-md border border-slate-100 shadow-sm">
+            <div className="flex items-center gap-1 bg-white/80 backdrop-blur-xl px-2 py-1 rounded-md border border-slate-100 shadow-sm">
               <Star className="w-3.5 h-3.5 text-[#D4AF37] fill-current" />
               <span className="font-bold text-sm text-[#0F172A]">{teacher.rating?.toFixed(1) || 'N/A'}</span>
             </div>
             {teacher.experience_years && (
-              <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-md border border-slate-100 shadow-sm">
+              <div className="flex items-center gap-1 bg-white/80 backdrop-blur-xl px-2 py-1 rounded-md border border-slate-100 shadow-sm">
                 <Clock className="w-3.5 h-3.5 text-slate-400" />
                 <span className="font-bold text-sm text-[#0F172A]">{teacher.experience_years} Yıl</span>
               </div>
             )}
             {teacher.university && (
-              <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-md border border-slate-100 shadow-sm">
+              <div className="flex items-center gap-1 bg-white/80 backdrop-blur-xl px-2 py-1 rounded-md border border-slate-100 shadow-sm">
                 <GraduationCap className="w-3.5 h-3.5 text-slate-400" />
                 <span className="font-bold text-xs text-[#0F172A] truncate max-w-[100px]">{teacher.university}</span>
               </div>

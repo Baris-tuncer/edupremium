@@ -38,7 +38,7 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center bg-[#FDFBF7] overflow-hidden">
+    <div className="min-h-screen relative flex items-center justify-center bg-[#FDFBF7]/80 backdrop-blur-xl overflow-hidden">
 
       {/* --- ARKA PLAN --- */}
       <div className="absolute inset-0 z-0">
@@ -119,7 +119,7 @@ export default function ForgotPassword() {
                       placeholder="ornek@email.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-white border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300"
+                      className="w-full bg-white/80 backdrop-blur-xl border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300"
                     />
                   </div>
                 </div>

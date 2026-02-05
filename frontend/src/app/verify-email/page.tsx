@@ -55,7 +55,7 @@ export default function VerifyEmailPage() {
   }
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center bg-[#FDFBF7] overflow-hidden">
+    <div className="min-h-screen relative flex items-center justify-center bg-[#FDFBF7]/80 backdrop-blur-xl overflow-hidden">
 
       {/* --- ARKA PLAN --- */}
       <div className="absolute inset-0 z-0">
@@ -94,7 +94,7 @@ export default function VerifyEmailPage() {
 
             {/* Email Info */}
             {email && (
-              <div className="bg-[#FDFBF7] rounded-xl p-4 mb-6 border border-[#D4AF37]/20">
+              <div className="bg-[#FDFBF7]/80 backdrop-blur-xl rounded-xl p-4 mb-6 border border-[#D4AF37]/20">
                 <p className="text-xs text-slate-500 text-center uppercase tracking-wider font-bold mb-1">
                   Doğrulama e-postası şu adrese gönderildi:
                 </p>
@@ -162,7 +162,7 @@ export default function VerifyEmailPage() {
             </button>
 
             {/* Spam Notice */}
-            <div className="mt-5 p-3 bg-[#FDFBF7] rounded-xl border border-slate-200">
+            <div className="mt-5 p-3 bg-[#FDFBF7]/80 backdrop-blur-xl rounded-xl border border-slate-200">
               <p className="text-xs text-slate-400 text-center">
                 E-posta gelmediyse spam / gereksiz klasörünüzü kontrol edin. Bazen e-postalar bu klasöre düşebilir.
               </p>
