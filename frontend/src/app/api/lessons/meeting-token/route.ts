@@ -11,7 +11,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'lessonId gerekli' }, { status: 400 });
     }
 
-    const supabase = createRouteHandlerClient({ cookies });
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
 
     // Kullanıcıyı kontrol et
     const { data: { user }, error: authError } = await supabase.auth.getUser();

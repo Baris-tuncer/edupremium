@@ -109,6 +109,12 @@ export default function TeacherLessonsPage() {
   const handleConsentAndJoin = async () => {
     if (!consentChecked || !pendingLessonId) return;
 
+    const lesson = lessons.find(l => l.id === pendingLessonId);
+    if (!lesson?.meeting_link) {
+      toast.error('Meeting linki bulunamadı');
+      return;
+    }
+
     setJoiningMeeting(true);
     try {
       const response = await fetch('/api/lessons/meeting-token', {
@@ -119,18 +125,25 @@ export default function TeacherLessonsPage() {
 
       const data = await response.json();
 
-      if (!response.ok) {
-        toast.error(data.error || 'Derse katılırken hata oluştu');
-        return;
+      if (response.ok && data.meetingUrl) {
+        // Token'lı URL ile derse katıl
+        window.open(data.meetingUrl, '_blank', 'noopener,noreferrer');
+      } else {
+        // Token alınamazsa direkt meeting link ile gir
+        console.warn('Token alınamadı, direkt link kullanılıyor:', data.error);
+        window.open(lesson.meeting_link, '_blank', 'noopener,noreferrer');
       }
 
-      // Token'lı URL ile derse katıl
-      window.open(data.meetingUrl, '_blank', 'noopener,noreferrer');
       setShowConsentModal(false);
       setPendingLessonId(null);
       setConsentChecked(false);
     } catch (error) {
-      toast.error('Derse katılırken hata oluştu');
+      // Hata durumunda da direkt meeting link ile gir
+      console.error('API hatası, direkt link kullanılıyor:', error);
+      window.open(lesson.meeting_link, '_blank', 'noopener,noreferrer');
+      setShowConsentModal(false);
+      setPendingLessonId(null);
+      setConsentChecked(false);
     } finally {
       setJoiningMeeting(false);
     }
