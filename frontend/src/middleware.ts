@@ -52,6 +52,11 @@ export async function middleware(req: NextRequest) {
     return res
   }
 
+  // Admin sayfalarına oturumsuz erişimde admin login'e yönlendir
+  if (!session && path.startsWith('/admin')) {
+    return NextResponse.redirect(new URL('/admin/login', req.url))
+  }
+
   // Eğer public değilse ve oturum yoksa -> Login'e yönlendir
   if (!session) {
     return NextResponse.redirect(new URL('/login', req.url))
