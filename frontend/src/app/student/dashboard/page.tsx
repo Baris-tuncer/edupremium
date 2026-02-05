@@ -149,12 +149,12 @@ export default function StudentDashboardPage() {
     return (
       <div className="flex flex-wrap gap-1.5">
         {displayed.map((subject, idx) => (
-          <span key={idx} className="text-[10px] font-bold bg-[#FDFBF7] text-slate-600 px-2 py-1 rounded border border-slate-100 whitespace-nowrap">
+          <span key={idx} className="text-[10px] font-bold bg-[#FDFBF7]/50 text-slate-600 px-2 py-1 rounded border border-slate-200/50 whitespace-nowrap">
             {subject}
           </span>
         ))}
         {subjects.length > 3 && (
-          <span className="text-[10px] font-bold bg-slate-50 text-slate-400 px-2 py-1 rounded border border-slate-100">
+          <span className="text-[10px] font-bold bg-slate-50/50 text-slate-400 px-2 py-1 rounded border border-slate-100/50">
             +{subjects.length - 3}
           </span>
         )}
@@ -181,288 +181,311 @@ export default function StudentDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7]">
+    <div className="min-h-screen bg-[#FDFBF7] relative overflow-hidden">
 
-      {/* --- HEADER --- */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm">
-        <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-[#0F172A] rounded-xl flex items-center justify-center text-[#D4AF37]">
-              <span className="font-serif font-bold text-xl">E</span>
-            </div>
-            <span className="font-serif font-bold text-xl text-[#0F172A] hidden md:block">EduPremium</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/student/lessons" className="text-sm font-medium text-slate-600 hover:text-[#D4AF37] transition-colors hidden md:block">
-              Derslerim
+      {/* --- PREMIUM ARKA PLAN (Kütüphane + %60 Opak Filtre) --- */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2228&auto=format&fit=crop')`
+          }}
+        ></div>
+        <div className="absolute inset-0 bg-[#FDFBF7]/60 backdrop-blur-[6px]"></div>
+      </div>
+
+      <div className="relative z-10">
+
+        {/* --- HEADER --- */}
+        <nav className="sticky top-0 z-50 bg-white/70 backdrop-blur-lg border-b border-slate-200/50 shadow-sm">
+          <div className="container mx-auto px-6 h-20 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-10 h-10 bg-[#0F172A] rounded-xl flex items-center justify-center text-[#D4AF37]">
+                <span className="font-serif font-bold text-xl">E</span>
+              </div>
+              <span className="font-serif font-bold text-xl text-[#0F172A] hidden md:block">EduPremium</span>
             </Link>
-            <button className="relative p-2 text-slate-500 hover:text-[#D4AF37] transition-colors">
-              <Bell className="w-5 h-5" />
-            </button>
-            <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
-              <div className="text-right hidden md:block">
-                <p className="text-sm font-bold text-[#0F172A]">{studentName}</p>
-                <p className="text-[10px] text-slate-500 uppercase tracking-wider">Öğrenci</p>
-              </div>
-              <div className="w-10 h-10 bg-slate-100 rounded-full border border-slate-200 flex items-center justify-center text-slate-500">
-                <User className="w-5 h-5" />
-              </div>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="p-2 text-slate-400 hover:text-red-500 transition-colors"
-              title="Çıkış Yap"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      <div className="container mx-auto px-6 py-10">
-
-        {/* --- 1. BÖLÜM: PREMİUM VİTRİN (KATEGORİ KATEGORİ) --- */}
-        {featuredTeachers.length > 0 && !searchQuery && !selectedLevel && !priceRange && (
-          <div className="mb-20">
-            <h1 className="text-3xl font-bold text-[#0F172A] font-serif mb-2">Öne Çıkan Eğitmenler</h1>
-            <p className="text-slate-500 mb-10">Alanında uzman, seçkin eğitmenlerimizi inceleyin.</p>
-
-            {Object.entries(EDUCATION_LEVELS).map(([levelKey, levelData]) => {
-              const categoryTeachers = featuredByLevel[levelKey];
-              if (!categoryTeachers || categoryTeachers.length === 0) return null;
-
-              return (
-                <div key={levelKey} className="mb-12 border-b border-slate-100 pb-12 last:border-0">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-1 h-8 bg-[#D4AF37] rounded-full"></div>
-                    <h2 className="text-xl font-bold text-[#0F172A] font-serif">{levelData.label}</h2>
-                    <span className="text-[10px] bg-[#D4AF37]/10 text-[#D4AF37] px-2 py-1 rounded font-bold uppercase tracking-wider">Özel Koleksiyon</span>
-                  </div>
-
-                  {/* PREMIUM KART GRID */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {categoryTeachers.map((teacher: any) => (
-                      <div key={teacher.id} className="bg-white rounded-3xl p-5 border border-[#D4AF37]/30 shadow-xl shadow-[#D4AF37]/5 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
-                        {/* Altın Işık */}
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#D4AF37] via-yellow-200 to-[#D4AF37]"></div>
-                        <div className="absolute top-4 right-4 z-10">
-                          <Star className="w-5 h-5 text-[#D4AF37] fill-current drop-shadow-sm" />
-                        </div>
-
-                        <div className="flex items-center gap-4 mb-4">
-                          <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-[#D4AF37]/20 flex-shrink-0">
-                            {teacher.avatar_url ? (
-                              <img src={teacher.avatar_url} alt="" className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full bg-amber-50 flex items-center justify-center">
-                                <span className="text-xl font-bold text-[#D4AF37]">{teacher.full_name?.charAt(0) || '?'}</span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <h3 className="font-bold text-[#0F172A] leading-tight truncate">{teacher.full_name}</h3>
-                            <p className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-wider mt-1 truncate">{teacher.title || 'Eğitmen'}</p>
-                          </div>
-                        </div>
-
-                        {teacher.featured_headline && (
-                          <p className="text-xs text-slate-500 italic mb-3 line-clamp-2 border-l-2 border-[#D4AF37]/30 pl-2">&ldquo;{teacher.featured_headline}&rdquo;</p>
-                        )}
-
-                        <div className="mb-4 overflow-hidden">
-                          {displaySubjectTags(teacher.subjects)}
-                        </div>
-
-                        <div className="flex items-center justify-between pt-4 border-t border-slate-50">
-                          <div className="font-bold text-[#0F172A]">
-                            {teacher.hourly_rate_display || teacher.price_per_hour || '—'} <span className="text-xs font-normal text-slate-400">TL/s</span>
-                          </div>
-                          <Link
-                            href={'/student/teacher/' + teacher.id}
-                            className="px-4 py-2 bg-[#0F172A] text-white text-xs font-bold rounded-lg hover:bg-[#D4AF37] hover:text-[#0F172A] transition-colors"
-                          >
-                            İncele
-                          </Link>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* --- 2. BÖLÜM: ARAMA VE FİLTRELEME --- */}
-        <div id="search-section" className="bg-white rounded-[40px] p-8 md:p-12 shadow-sm border border-slate-100">
-
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-            <div>
-              <h2 className="text-2xl font-bold text-[#0F172A] font-serif">Tüm Eğitmenlerde Ara</h2>
-              <p className="text-slate-500 text-sm mt-1">
-                <span className="font-bold text-[#0F172A]">{filteredTeachers.length}</span> eğitmen bulundu
-              </p>
-            </div>
-            {(searchQuery || selectedLevel || selectedSubject || priceRange) && (
-              <button
-                onClick={clearFilters}
-                className="text-sm text-[#D4AF37] hover:text-[#0F172A] font-bold transition-colors"
-              >
-                Filtreleri Temizle
+            <div className="flex items-center gap-4">
+              <Link href="/student/lessons" className="text-sm font-medium text-slate-600 hover:text-[#D4AF37] transition-colors hidden md:block">
+                Derslerim
+              </Link>
+              <button className="relative p-2 text-slate-500 hover:text-[#D4AF37] transition-colors">
+                <Bell className="w-5 h-5" />
               </button>
-            )}
-          </div>
-
-          {/* FİLTRE ÇUBUĞU */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10 bg-[#FDFBF7] p-4 rounded-2xl border border-slate-200">
-
-            {/* 1. İsim ile Ara */}
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-400 uppercase ml-1">İsim ile Ara</label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Öğretmen adı..."
-                  className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-[#0F172A] font-medium focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all placeholder:text-slate-300"
-                />
+              <div className="flex items-center gap-3 pl-4 border-l border-slate-200/50">
+                <div className="text-right hidden md:block">
+                  <p className="text-sm font-bold text-[#0F172A]">{studentName}</p>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider">Öğrenci</p>
+                </div>
+                <div className="w-10 h-10 bg-slate-100/50 rounded-full border border-slate-200/50 flex items-center justify-center text-slate-500">
+                  <User className="w-5 h-5" />
+                </div>
               </div>
-            </div>
-
-            {/* 2. Eğitim Seviyesi */}
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-400 uppercase ml-1">Eğitim Seviyesi</label>
-              <select
-                className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-[#0F172A] font-medium focus:border-[#D4AF37] outline-none"
-                value={selectedLevel}
-                onChange={(e) => { setSelectedLevel(e.target.value); setSelectedSubject(''); }}
+              <button
+                onClick={handleLogout}
+                className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                title="Çıkış Yap"
               >
-                <option value="">Tüm Seviyeler</option>
-                {Object.entries(EDUCATION_LEVELS).map(([key, value]) => (
-                  <option key={key} value={key}>{value.label}</option>
-                ))}
-              </select>
+                <LogOut className="w-5 h-5" />
+              </button>
             </div>
-
-            {/* 3. Ders / Branş */}
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-400 uppercase ml-1">Ders / Branş</label>
-              <select
-                className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-[#0F172A] font-medium focus:border-[#D4AF37] outline-none disabled:bg-slate-50 disabled:text-slate-400"
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
-                disabled={!selectedLevel}
-              >
-                <option value="">Tüm Dersler</option>
-                {availableSubjects.map((subject) => (
-                  <option key={subject} value={subject}>{subject}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* 4. Fiyat Aralığı */}
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-400 uppercase ml-1">Fiyat Aralığı</label>
-              <select
-                className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-[#0F172A] font-medium focus:border-[#D4AF37] outline-none"
-                value={priceRange}
-                onChange={(e) => setPriceRange(e.target.value)}
-              >
-                <option value="">Tümü</option>
-                <option value="0-300">0 - 300 TL</option>
-                <option value="300-500">300 - 500 TL</option>
-                <option value="500-1000">500 - 1.000 TL</option>
-                <option value="1000+">1.000 TL ve üzeri</option>
-              </select>
-            </div>
-
           </div>
+        </nav>
 
-          {/* ÖĞRETMEN LİSTE GRID */}
-          {currentItems.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
-              {currentItems.map((teacher) => (
-                <div key={teacher.id} className="bg-white rounded-2xl p-6 border border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all group">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0">
-                      {teacher.avatar_url ? (
-                        <img src={teacher.avatar_url} alt="" className="w-14 h-14 rounded-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-slate-100 flex items-center justify-center">
-                          <span className="text-lg font-bold text-slate-400">{teacher.full_name?.charAt(0) || '?'}</span>
+        <div className="container mx-auto px-6 py-10">
+
+          {/* --- 1. BÖLÜM: PREMİUM VİTRİN (KATEGORİ KATEGORİ) --- */}
+          {featuredTeachers.length > 0 && !searchQuery && !selectedLevel && !priceRange && (
+            <div className="mb-20">
+              <h1 className="text-3xl font-bold text-[#0F172A] font-serif mb-2">Öne Çıkan Eğitmenler</h1>
+              <p className="text-slate-600 mb-10 font-medium">Alanında uzman, seçkin eğitmenlerimizi inceleyin.</p>
+
+              {Object.entries(EDUCATION_LEVELS).map(([levelKey, levelData]) => {
+                const categoryTeachers = featuredByLevel[levelKey];
+                if (!categoryTeachers || categoryTeachers.length === 0) return null;
+
+                return (
+                  <div key={levelKey} className="mb-12 border-b border-slate-200/50 pb-12 last:border-0">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-1 h-8 bg-[#D4AF37] rounded-full"></div>
+                      <h2 className="text-xl font-bold text-[#0F172A] font-serif">{levelData.label}</h2>
+                      <span className="text-[10px] bg-[#D4AF37]/10 text-[#D4AF37] px-2 py-1 rounded font-bold uppercase tracking-wider">Özel Koleksiyon</span>
+                    </div>
+
+                    {/* PREMIUM KART GRID */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                      {categoryTeachers.map((teacher: any) => (
+                        <div key={teacher.id} className="bg-white/80 backdrop-blur-md rounded-3xl p-5 border border-[#D4AF37]/30 shadow-xl shadow-[#D4AF37]/5 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+                          {/* Altın Işık */}
+                          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#D4AF37] via-yellow-200 to-[#D4AF37]"></div>
+                          <div className="absolute top-4 right-4 z-10">
+                            <Star className="w-5 h-5 text-[#D4AF37] fill-current drop-shadow-sm" />
+                          </div>
+
+                          <div className="flex items-center gap-4 mb-4">
+                            <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-[#D4AF37]/20 shadow-sm flex-shrink-0">
+                              {teacher.avatar_url ? (
+                                <img src={teacher.avatar_url} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full bg-amber-50 flex items-center justify-center">
+                                  <span className="text-xl font-bold text-[#D4AF37]">{teacher.full_name?.charAt(0) || '?'}</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <h3 className="font-bold text-[#0F172A] leading-tight truncate">{teacher.full_name}</h3>
+                              <p className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-wider mt-1 truncate">{teacher.title || 'Eğitmen'}</p>
+                            </div>
+                          </div>
+
+                          {/* Hakkında Yazısı */}
+                          {(teacher.featured_headline || teacher.bio) && (
+                            <p className="text-slate-600 text-xs mb-4 line-clamp-2 leading-relaxed font-medium">
+                              &ldquo;{teacher.featured_headline || teacher.bio}&rdquo;
+                            </p>
+                          )}
+
+                          <div className="mb-4 overflow-hidden">
+                            {displaySubjectTags(teacher.subjects)}
+                          </div>
+
+                          <div className="flex items-center justify-between pt-4 border-t border-slate-100/50">
+                            <div className="font-bold text-[#0F172A]">
+                              {teacher.hourly_rate_display || teacher.price_per_hour || '—'} <span className="text-xs font-normal text-slate-500">TL/s</span>
+                            </div>
+                            <Link
+                              href={'/student/teacher/' + teacher.id}
+                              className="px-4 py-2 bg-[#0F172A] text-white text-xs font-bold rounded-lg hover:bg-[#D4AF37] hover:text-[#0F172A] transition-colors shadow-sm"
+                            >
+                              İncele
+                            </Link>
+                          </div>
                         </div>
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="font-bold text-[#0F172A] text-sm group-hover:text-[#D4AF37] transition-colors truncate">{teacher.full_name}</h3>
-                      <p className="text-xs text-slate-500 truncate">{teacher.title || 'Eğitmen'}</p>
+                      ))}
                     </div>
                   </div>
+                );
+              })}
+            </div>
+          )}
 
-                  <div className="mb-4 h-8 overflow-hidden">
-                    {displaySubjectTags(teacher.subjects)}
-                  </div>
+          {/* --- 2. BÖLÜM: ARAMA VE FİLTRELEME --- */}
+          <div id="search-section" className="bg-white/70 backdrop-blur-lg rounded-[40px] p-8 md:p-12 shadow-sm border border-slate-200/50">
 
-                  {teacher.bio && (
-                    <p className="text-xs text-slate-500 mb-4 line-clamp-2">{teacher.bio}</p>
-                  )}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+              <div>
+                <h2 className="text-2xl font-bold text-[#0F172A] font-serif">Tüm Eğitmenlerde Ara</h2>
+                <p className="text-slate-600 text-sm mt-1 font-medium">
+                  <span className="font-bold text-[#0F172A]">{filteredTeachers.length}</span> eğitmen bulundu
+                </p>
+              </div>
+              {(searchQuery || selectedLevel || selectedSubject || priceRange) && (
+                <button
+                  onClick={clearFilters}
+                  className="text-sm text-[#D4AF37] hover:text-[#0F172A] font-bold transition-colors"
+                >
+                  Filtreleri Temizle
+                </button>
+              )}
+            </div>
 
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                    <div>
-                      <span className="text-sm font-bold text-[#0F172A]">{teacher.hourly_rate_display || teacher.price_per_hour || '—'}</span>
-                      <span className="text-xs text-slate-400"> TL/s</span>
+            {/* FİLTRE ÇUBUĞU */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10 bg-[#FDFBF7]/50 p-4 rounded-2xl border border-slate-200/50">
+
+              {/* 1. İsim ile Ara */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-500 uppercase ml-1">İsim ile Ara</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Öğretmen adı..."
+                    className="w-full bg-white/80 border border-slate-200/50 rounded-xl py-3 pl-10 pr-4 text-[#0F172A] font-medium focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all placeholder:text-slate-300"
+                  />
+                </div>
+              </div>
+
+              {/* 2. Eğitim Seviyesi */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-500 uppercase ml-1">Eğitim Seviyesi</label>
+                <select
+                  className="w-full bg-white/80 border border-slate-200/50 rounded-xl py-3 px-4 text-[#0F172A] font-medium focus:border-[#D4AF37] outline-none"
+                  value={selectedLevel}
+                  onChange={(e) => { setSelectedLevel(e.target.value); setSelectedSubject(''); }}
+                >
+                  <option value="">Tüm Seviyeler</option>
+                  {Object.entries(EDUCATION_LEVELS).map(([key, value]) => (
+                    <option key={key} value={key}>{value.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 3. Ders / Branş */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-500 uppercase ml-1">Ders / Branş</label>
+                <select
+                  className="w-full bg-white/80 border border-slate-200/50 rounded-xl py-3 px-4 text-[#0F172A] font-medium focus:border-[#D4AF37] outline-none disabled:bg-slate-50/50 disabled:text-slate-400"
+                  value={selectedSubject}
+                  onChange={(e) => setSelectedSubject(e.target.value)}
+                  disabled={!selectedLevel}
+                >
+                  <option value="">Tüm Dersler</option>
+                  {availableSubjects.map((subject) => (
+                    <option key={subject} value={subject}>{subject}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 4. Fiyat Aralığı */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-500 uppercase ml-1">Fiyat Aralığı</label>
+                <select
+                  className="w-full bg-white/80 border border-slate-200/50 rounded-xl py-3 px-4 text-[#0F172A] font-medium focus:border-[#D4AF37] outline-none"
+                  value={priceRange}
+                  onChange={(e) => setPriceRange(e.target.value)}
+                >
+                  <option value="">Tümü</option>
+                  <option value="0-300">0 - 300 TL</option>
+                  <option value="300-500">300 - 500 TL</option>
+                  <option value="500-1000">500 - 1.000 TL</option>
+                  <option value="1000+">1.000 TL ve üzeri</option>
+                </select>
+              </div>
+
+            </div>
+
+            {/* ÖĞRETMEN LİSTE GRID */}
+            {currentItems.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+                {currentItems.map((teacher) => (
+                  <div key={teacher.id} className="bg-white/80 backdrop-blur-md rounded-2xl p-6 border border-slate-200/50 hover:border-slate-300 hover:shadow-lg transition-all group">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 shadow-sm">
+                        {teacher.avatar_url ? (
+                          <img src={teacher.avatar_url} alt="" className="w-14 h-14 rounded-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-slate-100/50 flex items-center justify-center">
+                            <span className="text-lg font-bold text-slate-400">{teacher.full_name?.charAt(0) || '?'}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-[#0F172A] text-sm group-hover:text-[#D4AF37] transition-colors truncate">{teacher.full_name}</h3>
+                        <p className="text-xs text-slate-500 truncate">{teacher.title || 'Eğitmen'}</p>
+                      </div>
+                    </div>
+
+                    {/* Hakkında Yazısı */}
+                    {teacher.bio && (
+                      <p className="text-slate-600 text-xs mb-4 line-clamp-2 leading-relaxed font-medium">
+                        &ldquo;{teacher.bio}&rdquo;
+                      </p>
+                    )}
+
+                    <div className="mb-4 h-8 overflow-hidden">
+                      {displaySubjectTags(teacher.subjects)}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-100/50">
+                      <div className="flex items-center gap-1">
+                        <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                        <span className="text-xs font-bold text-slate-700">{teacher.rating || '—'}</span>
+                      </div>
+                      <div className="text-sm font-bold text-[#0F172A]">
+                        {teacher.hourly_rate_display || teacher.price_per_hour || '—'} <span className="text-xs font-normal text-slate-500">TL</span>
+                      </div>
                     </div>
                     <Link
                       href={'/student/teacher/' + teacher.id}
-                      className="px-4 py-2 bg-white border border-[#0F172A] text-[#0F172A] text-xs font-bold rounded-lg hover:bg-[#0F172A] hover:text-white transition-colors"
+                      className="w-full mt-4 bg-white/50 border border-[#0F172A] text-[#0F172A] py-2 rounded-lg text-xs font-bold hover:bg-[#0F172A] hover:text-white transition-colors block text-center"
                     >
-                      İncele
+                      Profili Gör
                     </Link>
                   </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="py-16 text-center mb-12">
-              <p className="text-slate-400 font-medium mb-4">Aramanıza uygun eğitmen bulunamadı</p>
-              <button
-                onClick={clearFilters}
-                className="text-sm text-[#D4AF37] hover:text-[#0F172A] font-bold transition-colors"
-              >
-                Filtreleri Temizle
-              </button>
-            </div>
-          )}
+                ))}
+              </div>
+            ) : (
+              <div className="py-16 text-center mb-12">
+                <p className="text-slate-400 font-medium mb-4">Aramanıza uygun eğitmen bulunamadı</p>
+                <button
+                  onClick={clearFilters}
+                  className="text-sm text-[#D4AF37] hover:text-[#0F172A] font-bold transition-colors"
+                >
+                  Filtreleri Temizle
+                </button>
+              </div>
+            )}
 
-          {/* SAYFALAMA */}
-          {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2">
-              <button
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 transition-colors"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
+            {/* SAYFALAMA */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-lg border border-slate-200/50 hover:bg-slate-50/50 disabled:opacity-50 bg-white/50 transition-colors"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
 
-              <span className="px-4 py-2 bg-[#0F172A] text-white rounded-lg text-sm font-bold">
-                {currentPage} / {totalPages}
-              </span>
+                <span className="px-4 py-2 bg-[#0F172A] text-white rounded-lg text-sm font-bold shadow-sm">
+                  {currentPage} / {totalPages}
+                </span>
 
-              <button
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 transition-colors"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-          )}
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-2 rounded-lg border border-slate-200/50 hover:bg-slate-50/50 disabled:opacity-50 bg-white/50 transition-colors"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            )}
+
+          </div>
 
         </div>
-
       </div>
     </div>
   );
