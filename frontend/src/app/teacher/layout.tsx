@@ -50,8 +50,12 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FDFBF7]/80 backdrop-blur-xl flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
+        <div className="fixed inset-0 z-0">
+          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2228&auto=format&fit=crop')` }}></div>
+          <div className="absolute inset-0 bg-[#FDFBF7]/60 backdrop-blur-[6px]"></div>
+        </div>
+        <div className="text-center relative z-10">
           <div className="w-12 h-12 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-slate-600">Yükleniyor...</p>
         </div>
@@ -67,10 +71,15 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
   const activeItem = pathname.split('/')[2] || 'dashboard';
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7]/80 backdrop-blur-xl">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Kütüphane Arka Plan */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2228&auto=format&fit=crop')` }}></div>
+        <div className="absolute inset-0 bg-[#FDFBF7]/60 backdrop-blur-[6px]"></div>
+      </div>
       <TeacherSidebar activeItem={activeItem} user={user} />
       <TeacherHeader user={user} />
-      <main className="ml-64 pt-16">
+      <main className="ml-64 pt-16 relative z-10">
         {children}
       </main>
     </div>

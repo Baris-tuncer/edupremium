@@ -37,7 +37,12 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen pt-20 pb-20 bg-[#FDFBF7]/80 backdrop-blur-xl">
+    <div className="min-h-screen pt-20 pb-20 relative overflow-hidden">
+      {/* Kütüphane Arka Plan */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2228&auto=format&fit=crop')` }}></div>
+        <div className="absolute inset-0 bg-[#FDFBF7]/60 backdrop-blur-[6px]"></div>
+      </div>
       {/* Üst Başlık (Daha Alçak) */}
       <div className="bg-[#020617] py-16 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent opacity-80"></div>
