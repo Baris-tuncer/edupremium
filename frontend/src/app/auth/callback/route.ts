@@ -25,7 +25,19 @@ export async function GET(request: NextRequest) {
 
     // Başarılı doğrulama sonrası yönlendirme
     if (type === 'signup' || type === 'email') {
-      // Email doğrulama başarılı - login sayfasına yönlendir
+      // Kullanıcının rolüne göre doğru login sayfasına yönlendir
+      const role = data?.user?.user_metadata?.role;
+      if (role === 'teacher') {
+        return NextResponse.redirect(
+          new URL('/teacher/login?verified=true', requestUrl.origin)
+        );
+      }
+      if (role === 'student') {
+        return NextResponse.redirect(
+          new URL('/student/login?verified=true', requestUrl.origin)
+        );
+      }
+      // Varsayılan
       return NextResponse.redirect(
         new URL('/login?verified=true', requestUrl.origin)
       );

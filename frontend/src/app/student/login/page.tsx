@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, Star, ChevronRight } from 'lucide-react';
@@ -10,6 +10,13 @@ export default function StudentLoginPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [formData, setFormData] = useState({ email: '', password: '' });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('verified') === 'true') {
+      setSuccess('E-posta doğrulaması başarılı! Şimdi giriş yapabilirsiniz.');
+    }
+  }, []);
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');

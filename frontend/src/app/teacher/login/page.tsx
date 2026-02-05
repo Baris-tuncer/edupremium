@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -12,8 +12,16 @@ export default function TeacherLoginPage() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClientComponentClient()
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('verified') === 'true') {
+      setSuccess('E-posta doğrulaması başarılı! Şimdi giriş yapabilirsiniz.')
+    }
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -86,6 +94,12 @@ export default function TeacherLoginPage() {
             {error && (
               <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-sm font-medium">
                 {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="mb-4 p-3 bg-green-50 text-green-600 rounded-xl text-sm font-medium">
+                {success}
               </div>
             )}
 

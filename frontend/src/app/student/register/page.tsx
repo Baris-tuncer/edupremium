@@ -5,13 +5,15 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ChevronRight, Star, User, Mail, Lock, Phone, GraduationCap, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Star, User, Mail, Lock, Phone, GraduationCap, Eye, EyeOff, CheckCircle } from 'lucide-react';
 
 export default function StudentRegisterPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const [showVerifyEmail, setShowVerifyEmail] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -46,13 +48,27 @@ export default function StudentRegisterPage() {
     setIsLoading(true);
 
     try {
-      // 1. Supabase Auth ile kullanıcı oluştur
+      // 1. Supabase Auth ile kullanıcı oluştur (metadata ile)
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
+        options: {
+          data: {
+            full_name: formData.fullName,
+            role: 'student',
+          },
+          emailRedirectTo: `${window.location.origin}/auth/callback?type=signup`,
+        },
       });
 
+      // "Email not confirmed" hatası = kayıt başarılı, doğrulama gerekiyor
       if (authError) {
+        if (authError.message.toLowerCase().includes('email not confirmed')) {
+          setRegisteredEmail(formData.email);
+          setShowVerifyEmail(true);
+          setIsLoading(false);
+          return;
+        }
         toast.error(authError.message);
         setIsLoading(false);
         return;
@@ -64,7 +80,15 @@ export default function StudentRegisterPage() {
         return;
       }
 
-      // 2. Student profile oluştur
+      // Email doğrulama gerekiyorsa (session null döner)
+      if (!authData.session) {
+        setRegisteredEmail(formData.email);
+        setShowVerifyEmail(true);
+        setIsLoading(false);
+        return;
+      }
+
+      // 2. Session varsa (email doğrulama kapalıysa) student profile oluştur
       const { error: profileError } = await supabase
         .from('student_profiles')
         .insert({
@@ -77,9 +101,6 @@ export default function StudentRegisterPage() {
 
       if (profileError) {
         console.error('Profile error:', profileError);
-        toast.error('Profil oluşturulamadı: ' + profileError.message);
-        setIsLoading(false);
-        return;
       }
 
       toast.success('Kayıt başarılı! Giriş yapabilirsiniz.');
@@ -128,6 +149,60 @@ export default function StudentRegisterPage() {
           {/* FORM KARTI */}
           <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-8 md:p-10 shadow-2xl shadow-[#0F172A]/5">
 
+            {showVerifyEmail ? (
+              /* E-POSTA DOĞRULAMA BAŞARI EKRANI */
+              <div className="text-center py-8">
+                <div className="w-20 h-20 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-100">
+                  <CheckCircle className="w-10 h-10" />
+                </div>
+                <h2 className="text-2xl font-bold text-[#0F172A] font-serif mb-3">Kayıt Başarılı!</h2>
+                <p className="text-slate-500 text-sm mb-6">
+                  Hesabınızı aktif hale getirmek için e-posta adresinize gönderilen doğrulama bağlantısına tıklayın.
+                </p>
+
+                {registeredEmail && (
+                  <div className="bg-[#FDFBF7]/80 backdrop-blur-xl rounded-xl p-4 mb-6 border border-[#D4AF37]/20">
+                    <p className="text-xs text-slate-500 uppercase tracking-wider font-bold mb-1">
+                      Doğrulama e-postası gönderildi:
+                    </p>
+                    <p className="text-sm font-bold text-[#0F172A]">{registeredEmail}</p>
+                  </div>
+                )}
+
+                <div className="space-y-3 text-left mb-8">
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-[#0F172A] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-xs font-bold text-white">1</span>
+                    </div>
+                    <p className="text-sm text-slate-600">E-posta kutunuzu kontrol edin</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-[#0F172A] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-xs font-bold text-white">2</span>
+                    </div>
+                    <p className="text-sm text-slate-600">Doğrulama bağlantısına tıklayın</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-[#0F172A] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-xs font-bold text-white">3</span>
+                    </div>
+                    <p className="text-sm text-slate-600">Ardından giriş yapabilirsiniz</p>
+                  </div>
+                </div>
+
+                <Link
+                  href="/student/login"
+                  className="inline-flex items-center gap-2 bg-[#0F172A] text-white font-bold py-3.5 px-8 rounded-xl hover:bg-[#D4AF37] hover:text-[#0F172A] transition-all shadow-lg"
+                >
+                  Giriş Sayfasına Git <ChevronRight className="w-4 h-4" />
+                </Link>
+
+                <p className="text-xs text-slate-400 mt-6">
+                  E-posta gelmediyse spam klasörünüzü kontrol edin.
+                </p>
+              </div>
+            ) : (
+            <>
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-[#0F172A] font-serif mb-2">Öğrenci Kaydı</h1>
               <p className="text-slate-500 text-sm">EduPremium hesabınızı oluşturun</p>
@@ -279,6 +354,8 @@ export default function StudentRegisterPage() {
                 Öğretmen misiniz? <Link href="/teacher/register" className="text-[#0F172A] font-bold hover:text-[#D4AF37] transition-colors">Başvuru Yapın</Link>
               </p>
             </div>
+            </>
+            )}
 
           </div>
         </div>

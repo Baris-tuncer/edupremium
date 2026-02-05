@@ -45,19 +45,36 @@ export default function Register() {
           data: {
             full_name: formData.fullName,
             phone: formData.phone,
+            role: 'teacher',
           },
+          emailRedirectTo: `${window.location.origin}/auth/callback?type=signup`,
         },
       })
 
       if (authError) throw authError
 
-      // 3. ADIM: Otomatik Giriş
+      // 3. ADIM: Otomatik Giriş (email doğrulama kapalıysa)
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       })
 
-      if (signInError) throw signInError
+      if (signInError) {
+        // Email doğrulama gerekiyorsa, kullanıcıyı doğrulama sayfasına yönlendir
+        if (signInError.message.toLowerCase().includes('email not confirmed')) {
+          setSuccess(true)
+          setTimeout(() => {
+            window.location.href = '/verify-email'
+          }, 1500)
+          // Davet kodunu yak (kullanıcı zaten oluştu)
+          await supabase
+            .from('invitation_codes')
+            .update({ is_used: true })
+            .eq('id', codeData.id)
+          return
+        }
+        throw signInError
+      }
 
       // 4. ADIM: Teacher Profile Oluştur
       const { data: { user } } = await supabase.auth.getUser()
