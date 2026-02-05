@@ -13,6 +13,8 @@ const publicPaths = [
   '/teacher/register',
   '/admin/login',
   '/forgot-password',
+  '/reset-password',
+  '/update-password',
   '/verify-email',
   '/auth/callback',
   '/teachers',
