@@ -76,7 +76,14 @@ export default function StudentDashboardPage() {
   }, [selectedLevel]);
 
   const filteredTeachers = useMemo(() => {
+    const now = new Date().toISOString();
     return teachers.filter((teacher) => {
+      // Featured öğretmenleri normal listeden çıkar (filtre yoksa)
+      if (!searchQuery && !selectedLevel && !priceRange) {
+        if (teacher.is_featured === true && teacher.featured_until && teacher.featured_until >= now) {
+          return false;
+        }
+      }
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         const nameMatch = teacher.full_name?.toLowerCase().includes(query);
@@ -127,6 +134,10 @@ export default function StudentDashboardPage() {
           const parsed = parseSubject(s);
           if (parsed) levels.add(parsed.level);
         });
+      }
+      // subjects boşsa featured_category'yi kullan
+      if (levels.size === 0 && teacher.featured_category) {
+        levels.add(teacher.featured_category);
       }
       if (levels.size === 0) {
         if (!grouped['diger']) grouped['diger'] = [];
