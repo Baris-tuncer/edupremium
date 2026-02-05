@@ -66,9 +66,9 @@ export default function TeacherHeader({ user }: HeaderProps) {
   };
 
   return (
-    <header className="fixed top-0 left-64 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-slate-100 z-30 px-8 flex items-center justify-between">
+    <header className="fixed top-0 left-64 right-0 h-16 bg-[#0F172A]/80 backdrop-blur-xl border-b border-[#D4AF37]/20 z-30 px-8 flex items-center justify-between">
       <div>
-        <h1 className="text-xl font-serif font-semibold text-[#0F172A]">Öğretmen Paneli</h1>
+        <h1 className="text-xl font-serif font-semibold text-white">Öğretmen Paneli</h1>
       </div>
 
       <div className="flex items-center gap-4">
@@ -76,7 +76,7 @@ export default function TeacherHeader({ user }: HeaderProps) {
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="relative p-2 text-slate-500 hover:text-[#0F172A] hover:bg-slate-50 rounded-lg transition-colors"
+            className="relative p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -123,7 +123,7 @@ export default function TeacherHeader({ user }: HeaderProps) {
 
         {/* User Info */}
         <div className="flex items-center gap-3 text-sm">
-          <span className="text-slate-600">
+          <span className="text-slate-300">
             {user?.fullName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Kullanıcı'}
           </span>
         </div>

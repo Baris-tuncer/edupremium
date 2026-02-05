@@ -42,8 +42,8 @@ export default function TeacherSidebar({ activeItem, user }: SidebarProps) {
   };
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-64 bg-gradient-navy flex flex-col z-40">
-      <div className="p-6 border-b border-white/10">
+    <aside className="fixed left-0 top-0 h-full w-64 bg-[#0F172A]/80 backdrop-blur-xl border-r border-[#D4AF37]/20 flex flex-col z-40">
+      <div className="p-6 border-b border-[#D4AF37]/20">
         <Link href="/" className="flex items-center gap-3">
           <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
             <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -64,8 +64,8 @@ export default function TeacherSidebar({ activeItem, user }: SidebarProps) {
             href={`/teacher/${item.id}`}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
               activeItem === item.id
-                ? 'bg-white/10 text-white'
-                : 'text-white/60 hover:bg-white/5 hover:text-white'
+                ? 'bg-[#D4AF37]/10 text-[#D4AF37]'
+                : 'text-slate-400 hover:bg-white/5 hover:text-white'
             }`}
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -79,7 +79,7 @@ export default function TeacherSidebar({ activeItem, user }: SidebarProps) {
         ))}
       </nav>
 
-      <div className="p-4 border-t border-white/10">
+      <div className="p-4 border-t border-[#D4AF37]/20">
         <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors group">
           {user?.avatarUrl ? (
             <img
