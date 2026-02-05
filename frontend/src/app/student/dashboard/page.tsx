@@ -97,10 +97,12 @@ export default function StudentDashboardPage() {
       }
       if (priceRange) {
         const price = teacher.price_per_hour || 0;
-        if (priceRange === '0-300' && price > 300) return false;
-        if (priceRange === '300-500' && (price < 300 || price > 500)) return false;
-        if (priceRange === '500-1000' && (price < 500 || price > 1000)) return false;
-        if (priceRange === '1000+' && price < 1000) return false;
+        if (priceRange === '5000+') {
+          if (price < 5000) return false;
+        } else {
+          const [min, max] = priceRange.split('-').map(p => parseInt(p.trim()));
+          if (price < min || price > max) return false;
+        }
       }
       return true;
     });
@@ -319,35 +321,35 @@ export default function StudentDashboardPage() {
                   <span className="font-bold text-[#0F172A]">{filteredTeachers.length}</span> eğitmen bulundu
                 </p>
               </div>
-              {(searchQuery || selectedLevel || selectedSubject || priceRange) && (
-                <button
-                  onClick={clearFilters}
-                  className="text-sm text-[#D4AF37] hover:text-[#0F172A] font-bold transition-colors"
-                >
-                  Filtreleri Temizle
-                </button>
-              )}
+              <div className="flex items-center gap-4">
+                {(searchQuery || selectedLevel || selectedSubject || priceRange) && (
+                  <button
+                    onClick={clearFilters}
+                    className="text-sm text-[#D4AF37] hover:text-[#0F172A] font-bold transition-colors"
+                  >
+                    Filtreleri Temizle
+                  </button>
+                )}
+                {/* İsim Arama */}
+                <div className="relative group w-full md:w-auto">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#D4AF37] transition-colors">
+                    <Search className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Öğretmen ara..."
+                    className="w-full md:w-64 bg-white border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm focus:border-[#D4AF37] outline-none"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
             </div>
 
             {/* FİLTRE ÇUBUĞU */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10 bg-[#FDFBF7]/50 p-4 rounded-2xl border border-slate-200/50">
 
-              {/* 1. İsim ile Ara */}
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 uppercase ml-1">İsim ile Ara</label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Öğretmen adı..."
-                    className="w-full bg-white/80 border border-slate-200/50 rounded-xl py-3 pl-10 pr-4 text-[#0F172A] font-medium focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all placeholder:text-slate-300"
-                  />
-                </div>
-              </div>
-
-              {/* 2. Eğitim Seviyesi */}
+              {/* 1. Eğitim Seviyesi */}
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-500 uppercase ml-1">Eğitim Seviyesi</label>
                 <select
@@ -362,7 +364,7 @@ export default function StudentDashboardPage() {
                 </select>
               </div>
 
-              {/* 3. Ders / Branş */}
+              {/* 2. Ders / Branş */}
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-500 uppercase ml-1">Ders / Branş</label>
                 <select
@@ -378,7 +380,7 @@ export default function StudentDashboardPage() {
                 </select>
               </div>
 
-              {/* 4. Fiyat Aralığı */}
+              {/* 3. Fiyat Aralığı (Güncel Aralıklar) */}
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-500 uppercase ml-1">Fiyat Aralığı</label>
                 <select
@@ -386,12 +388,30 @@ export default function StudentDashboardPage() {
                   value={priceRange}
                   onChange={(e) => setPriceRange(e.target.value)}
                 >
-                  <option value="">Tümü</option>
-                  <option value="0-300">0 - 300 TL</option>
-                  <option value="300-500">300 - 500 TL</option>
-                  <option value="500-1000">500 - 1.000 TL</option>
-                  <option value="1000+">1.000 TL ve üzeri</option>
+                  <option value="">Farketmez</option>
+                  <option value="1500-2000">1.500 TL - 2.000 TL</option>
+                  <option value="2000-3000">2.000 TL - 3.000 TL</option>
+                  <option value="3000-5000">3.000 TL - 5.000 TL</option>
+                  <option value="5000+">5.000 TL ve üzeri</option>
                 </select>
+              </div>
+
+              {/* 4. Müsaitlik Günü */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-500 uppercase ml-1">Müsaitlik Günü</label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <select className="w-full bg-white/80 border border-slate-200/50 rounded-xl py-3 pl-10 pr-4 text-[#0F172A] font-medium focus:border-[#D4AF37] outline-none">
+                    <option value="">Farketmez</option>
+                    <option value="Pazartesi">Pazartesi</option>
+                    <option value="Salı">Salı</option>
+                    <option value="Çarşamba">Çarşamba</option>
+                    <option value="Perşembe">Perşembe</option>
+                    <option value="Cuma">Cuma</option>
+                    <option value="Cumartesi">Cumartesi</option>
+                    <option value="Pazar">Pazar</option>
+                  </select>
+                </div>
               </div>
 
             </div>
