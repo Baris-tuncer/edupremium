@@ -6,6 +6,33 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Lock, Eye, EyeOff, ChevronRight, CheckCircle, AlertCircle, KeyRound, Loader2, XCircle } from 'lucide-react'
 
+// --- ARKA PLAN WRAPPER (Component dışında tanımlanmalı - focus kaybını önler) ---
+function BackgroundWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen relative flex items-center justify-center bg-[#FDFBF7]/80 backdrop-blur-xl overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2228&auto=format&fit=crop')`
+          }}
+        ></div>
+        <div className="absolute inset-0 bg-[#FDFBF7]/60 backdrop-blur-[6px]"></div>
+      </div>
+      <div className="relative z-10 container mx-auto px-4">
+        <div className="max-w-md mx-auto">
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#0F172A]/10 text-[#0F172A] text-xs font-bold uppercase tracking-widest bg-white/40 backdrop-blur-md shadow-sm">
+              <KeyRound className="w-3 h-3 text-[#D4AF37]" /> Şifre Güncelleme
+            </div>
+          </div>
+          {children}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function UpdatePassword() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -78,31 +105,6 @@ export default function UpdatePassword() {
       setLoading(false)
     }
   }
-
-  // --- ARKA PLAN WRAPPER ---
-  const BackgroundWrapper = ({ children }: { children: React.ReactNode }) => (
-    <div className="min-h-screen relative flex items-center justify-center bg-[#FDFBF7]/80 backdrop-blur-xl overflow-hidden">
-      <div className="absolute inset-0 z-0">
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2228&auto=format&fit=crop')`
-          }}
-        ></div>
-        <div className="absolute inset-0 bg-[#FDFBF7]/60 backdrop-blur-[6px]"></div>
-      </div>
-      <div className="relative z-10 container mx-auto px-4">
-        <div className="max-w-md mx-auto">
-          <div className="flex justify-center mb-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#0F172A]/10 text-[#0F172A] text-xs font-bold uppercase tracking-widest bg-white/40 backdrop-blur-md shadow-sm">
-              <KeyRound className="w-3 h-3 text-[#D4AF37]" /> Şifre Güncelleme
-            </div>
-          </div>
-          {children}
-        </div>
-      </div>
-    </div>
-  )
 
   // --- LOADING STATE ---
   if (checking) {
