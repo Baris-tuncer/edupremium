@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     // ========================================
     const { data: teacherData, error: teacherError } = await supabase
       .from('teacher_profiles')
-      .select('hourly_rate_net, commission_rate')
+      .select('hourly_rate_net, hourly_rate_display, base_price, commission_rate')
       .eq('id', teacherId)
       .single();
 
@@ -71,21 +71,27 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Sunucu tarafında fiyat hesapla
-    const serverCalculatedPrice = calculateDisplayPrice(
-      teacherData.hourly_rate_net || 0,
-      teacherData.commission_rate || 0.25
-    );
+    // Kabul edilebilir fiyatları belirle:
+    // 1. Veritabanındaki hourly_rate_display (eski sistem)
+    // 2. Yeni algoritmadan hesaplanan fiyat
+    const storedDisplayPrice = teacherData.hourly_rate_display || 0;
+    const netPrice = teacherData.hourly_rate_net || teacherData.base_price || 0;
+    const calculatedPrice = calculateDisplayPrice(netPrice, teacherData.commission_rate || 0.25);
 
-    // İstemciden gelen fiyat ile sunucu hesaplamasını karşılaştır
-    // 50 TL tolerans (yuvarlama farkları için)
-    if (Math.abs(amount - serverCalculatedPrice) > 50) {
-      console.error(`Price mismatch! Client: ${amount}, Server: ${serverCalculatedPrice}`);
+    // İstemciden gelen fiyat, kabul edilebilir değerlerden birine yakın mı?
+    const matchesStored = storedDisplayPrice > 0 && Math.abs(amount - storedDisplayPrice) <= 50;
+    const matchesCalculated = calculatedPrice > 0 && Math.abs(amount - calculatedPrice) <= 50;
+
+    if (!matchesStored && !matchesCalculated) {
+      console.error(`Price mismatch! Client: ${amount}, Stored: ${storedDisplayPrice}, Calculated: ${calculatedPrice}`);
       return NextResponse.json({
         success: false,
         error: 'Fiyat doğrulaması başarısız. Lütfen sayfayı yenileyin.',
       }, { status: 400 });
     }
+
+    // Geçerli fiyatı belirle (stored varsa onu kullan, yoksa calculated)
+    const serverCalculatedPrice = storedDisplayPrice > 0 ? storedDisplayPrice : calculatedPrice;
 
     const orderId = `EDU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.visserr.com';
@@ -99,8 +105,8 @@ export async function POST(request: NextRequest) {
         student_id: studentId,
         subject: subject,
         scheduled_at: scheduledAt,
-        amount: serverCalculatedPrice,  // Sunucu hesaplı fiyat kullan
-        teacher_earnings: teacherData.hourly_rate_net,  // Öğretmenin net kazancı
+        amount: serverCalculatedPrice,  // Sunucu doğrulanmış fiyat
+        teacher_earnings: netPrice,     // Öğretmenin net kazancı (hourly_rate_net veya base_price)
         availability_id: availabilityId,
         status: 'PENDING',
         created_at: new Date().toISOString(),
