@@ -60,17 +60,43 @@ const FooterPremium = () => {
 
             {/* Sosyal Medya Linkleri */}
             <div className="flex gap-3">
-              {socialLinks.map((item, i) => (
-                <a
-                  key={i}
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#D4AF37] hover:text-[#020617] hover:border-[#D4AF37] transition-all duration-300 group"
-                >
-                  <item.icon className="w-4 h-4 text-slate-400 group-hover:text-[#020617]" />
-                </a>
-              ))}
+              {/* Facebook */}
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-full bg-[#1877F2] flex items-center justify-center hover:opacity-80 transition-all duration-300"
+              >
+                <Facebook className="w-4 h-4 text-white" />
+              </a>
+              {/* Twitter/X */}
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-full bg-black flex items-center justify-center hover:opacity-80 transition-all duration-300"
+              >
+                <Twitter className="w-4 h-4 text-white" />
+              </a>
+              {/* Instagram */}
+              <a
+                href="https://instagram.com/edupremium_official"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-full flex items-center justify-center hover:opacity-80 transition-all duration-300"
+                style={{ background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)' }}
+              >
+                <Instagram className="w-4 h-4 text-white" />
+              </a>
+              {/* LinkedIn */}
+              <a
+                href="https://linkedin.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-full bg-[#0A66C2] flex items-center justify-center hover:opacity-80 transition-all duration-300"
+              >
+                <Linkedin className="w-4 h-4 text-white" />
+              </a>
             </div>
 
             {/* Mobil Uygulama Butonları */}
