@@ -350,7 +350,7 @@ export default function OneCikPage() {
               </div>
               <div>
                 <p className="font-semibold text-white text-sm">Öğrenci Portalı Vitrini</p>
-                <p className="text-white/50 text-xs">Aktif öğrencilere doğrudan ulaşın</p>
+                <p className="text-white/50 text-xs">Kayıtlı öğrencilerin ana ekranında öne çıkın</p>
               </div>
             </div>
 
