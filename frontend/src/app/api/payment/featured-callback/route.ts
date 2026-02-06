@@ -62,7 +62,9 @@ export async function POST(request: NextRequest) {
 
       if (payment) {
         const now = new Date();
-        const endsAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 gün
+        // plan_days varsa kullan, yoksa varsayılan 30 gün
+        const planDays = payment.plan_days || 30;
+        const endsAt = new Date(now.getTime() + planDays * 24 * 60 * 60 * 1000);
 
         // featured_payments güncelle
         await supabase

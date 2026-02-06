@@ -12,6 +12,13 @@ const CATEGORIES = [
   { key: 'yabanci-dil', label: 'Yabancı Dil' },
 ];
 
+const PRICING_PLANS = [
+  { key: '30', days: 30, price: 4500, label: '1 Ay', perDay: 150, popular: false },
+  { key: '90', days: 90, price: 12000, label: '3 Ay', perDay: 133, popular: true },
+  { key: '180', days: 180, price: 21000, label: '6 Ay', perDay: 117, popular: false },
+  { key: '365', days: 365, price: 37000, label: '1 Yıl', perDay: 101, popular: false },
+];
+
 const BANK_INFO = {
   bankName: 'AKBANK',
   accountHolder: 'Mac Elt Özel Eğitim Yayıncılık Dağ. Paz. ve Tic. Ltd. Şti.',
@@ -29,9 +36,12 @@ export default function OneCikPage() {
   // Form
   const [category, setCategory] = useState('');
   const [headline, setHeadline] = useState('');
+  const [selectedPlan, setSelectedPlan] = useState('90'); // Default: 3 ay (en popüler)
   const [paymentMethod, setPaymentMethod] = useState<'paratika' | 'havale'>('paratika');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  const currentPlan = PRICING_PLANS.find(p => p.key === selectedPlan) || PRICING_PLANS[1];
 
   useEffect(() => {
     fetchData();
@@ -79,7 +89,8 @@ export default function OneCikPage() {
           teacher_id: user.id,
           category,
           headline,
-          amount: 4500,
+          amount: currentPlan.price,
+          plan_days: currentPlan.days,
           payment_method: 'havale',
           payment_status: 'pending',
         });
@@ -109,6 +120,7 @@ export default function OneCikPage() {
             teacherId: user.id,
             category,
             headline,
+            planKey: selectedPlan,
           }),
         });
 
@@ -240,7 +252,7 @@ export default function OneCikPage() {
             </div>
             <div className="flex justify-between items-center pt-2 border-t border-slate-100">
               <span className="text-slate-500">Tutar</span>
-              <span className="font-bold text-[#0F172A] text-lg">4.500 ₺</span>
+              <span className="font-bold text-[#0F172A] text-lg">{currentPlan.price.toLocaleString('tr-TR')} ₺</span>
             </div>
             <div className="flex flex-col gap-1">
               <span className="text-slate-500 text-sm">Açıklama</span>
@@ -258,19 +270,13 @@ export default function OneCikPage() {
       <h1 className="text-2xl font-bold text-[#0F172A] mb-2">Öne Çık</h1>
       <p className="text-slate-600 mb-8">Profilinizi öne çıkararak daha fazla öğrenciye ulaşın.</p>
 
-      {/* Paket Bilgisi */}
-      <div className="bg-gradient-to-br from-[#0F172A] to-[#0F172A]/80 rounded-2xl p-6 mb-8 text-white">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <svg className="w-8 h-8 text-[#D4AF37]" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-            </svg>
-            <h2 className="text-xl font-bold">Editörün Seçimi Paketi</h2>
-          </div>
-          <div className="text-right">
-            <div className="text-3xl font-bold text-[#D4AF37]">4.500 ₺</div>
-            <div className="text-sm text-white/50">/ay</div>
-          </div>
+      {/* Avantajlar */}
+      <div className="bg-gradient-to-br from-[#0F172A] to-[#0F172A]/80 rounded-2xl p-6 mb-6 text-white">
+        <div className="flex items-center gap-3 mb-4">
+          <svg className="w-8 h-8 text-[#D4AF37]" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+          <h2 className="text-xl font-bold">Editörün Seçimi Avantajları</h2>
         </div>
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div className="flex items-center gap-2">
@@ -289,6 +295,39 @@ export default function OneCikPage() {
             <svg className="w-4 h-4 text-[#D4AF37]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
             <span>Öncelikli destek</span>
           </div>
+        </div>
+      </div>
+
+      {/* Fiyat Planları */}
+      <div className="mb-8">
+        <h3 className="text-lg font-bold text-[#0F172A] mb-4">Süre Seçin</h3>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {PRICING_PLANS.map((plan) => (
+            <button
+              key={plan.key}
+              onClick={() => setSelectedPlan(plan.key)}
+              className={`relative p-4 rounded-xl border-2 text-left transition-all ${
+                selectedPlan === plan.key
+                  ? 'border-[#D4AF37] bg-[#D4AF37]/5 shadow-lg'
+                  : 'border-slate-200 hover:border-slate-300'
+              }`}
+            >
+              {plan.popular && (
+                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#D4AF37] text-[#0F172A] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  EN POPÜLER
+                </div>
+              )}
+              <div className="text-center">
+                <p className="font-bold text-[#0F172A] text-lg">{plan.label}</p>
+                <p className="text-2xl font-bold text-[#D4AF37] mt-1">
+                  {plan.price.toLocaleString('tr-TR')} ₺
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  Günlük {plan.perDay} ₺
+                </p>
+              </div>
+            </button>
+          ))}
         </div>
       </div>
 
@@ -392,8 +431,8 @@ export default function OneCikPage() {
               </div>
             </div>
             <div className="flex justify-between items-center pt-2 border-t border-slate-200">
-              <span className="text-slate-500">Tutar</span>
-              <span className="font-bold text-[#0F172A]">4.500 ₺</span>
+              <span className="text-slate-500">Tutar ({currentPlan.label})</span>
+              <span className="font-bold text-[#0F172A]">{currentPlan.price.toLocaleString('tr-TR')} ₺</span>
             </div>
           </div>
         )}
@@ -404,7 +443,9 @@ export default function OneCikPage() {
           disabled={submitting || !category || !headline}
           className="w-full bg-[#0F172A] text-white py-3.5 rounded-xl font-semibold hover:bg-[#D4AF37] hover:text-[#0F172A] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
-          {submitting ? 'İşleniyor...' : paymentMethod === 'paratika' ? 'Ödemeye Geç (4.500 ₺)' : 'Başvuruyu Gönder'}
+          {submitting ? 'İşleniyor...' : paymentMethod === 'paratika'
+            ? `Ödemeye Geç (${currentPlan.price.toLocaleString('tr-TR')} ₺ - ${currentPlan.label})`
+            : `Başvuruyu Gönder (${currentPlan.label})`}
         </button>
       </div>
     </div>

@@ -9,8 +9,13 @@ function getSupabase() {
   );
 }
 
-// Sabit fiyat - client manipülasyonunu engeller
-const FEATURED_PRICE = 4500;
+// Fiyat planları - sunucu tarafında tanımlı, client manipülasyonunu engeller
+const PRICING_PLANS: Record<string, { days: number; price: number; label: string }> = {
+  '30': { days: 30, price: 4500, label: '1 Ay' },
+  '90': { days: 90, price: 12000, label: '3 Ay' },
+  '180': { days: 180, price: 21000, label: '6 Ay' },
+  '365': { days: 365, price: 37000, label: '1 Yıl' },
+};
 
 export async function POST(request: NextRequest) {
   const supabase = getSupabase();
@@ -38,7 +43,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { teacherId, category, headline } = body;
+    const { teacherId, category, headline, planKey = '30' } = body;
 
     // Öğretmenin kendi hesabı için satın aldığını doğrula
     if (user.id !== teacherId) {
@@ -48,8 +53,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fiyat her zaman server tarafından belirlenir
-    const amount = FEATURED_PRICE;
+    // Plan doğrulaması - geçersiz plan gönderilirse varsayılan kullan
+    const plan = PRICING_PLANS[planKey] || PRICING_PLANS['30'];
+    const amount = plan.price;
+    const planDays = plan.days;
 
     // Öğretmen bilgilerini al
     const { data: teacher } = await supabase
@@ -73,6 +80,7 @@ export async function POST(request: NextRequest) {
         category,
         headline,
         amount,
+        plan_days: planDays,
         payment_method: 'paratika',
         payment_status: 'pending',
         paratika_payment_id: orderId,
@@ -99,8 +107,8 @@ export async function POST(request: NextRequest) {
       MERCHANTPAYMENTID: orderId,
       ORDERITEMS: JSON.stringify([{
         code: 'FEATURED',
-        name: 'Editörün Seçimi Paketi',
-        description: `Editörün Seçimi - ${category} - 30 gün`,
+        name: `Editörün Seçimi Paketi - ${plan.label}`,
+        description: `Editörün Seçimi - ${category} - ${planDays} gün`,
         quantity: '1',
         amount: amount,
       }]),

@@ -30,6 +30,7 @@ interface Payment {
   category: string;
   headline: string;
   amount: number;
+  plan_days?: number;
   payment_method: string;
   payment_status: string;
   created_at: string;
@@ -39,6 +40,14 @@ interface Payment {
     rating: number | null;
   };
 }
+
+// Fiyat planları
+const PRICING_PLANS = [
+  { key: '30', days: 30, price: 4500, label: '1 Ay' },
+  { key: '90', days: 90, price: 12000, label: '3 Ay' },
+  { key: '180', days: 180, price: 21000, label: '6 Ay' },
+  { key: '365', days: 365, price: 37000, label: '1 Yıl' },
+];
 
 export default function SponsorluPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'payments' | 'add'>('overview');
@@ -136,12 +145,16 @@ export default function SponsorluPage() {
       return;
     }
 
+    // Seçilen plana göre fiyat bul
+    const selectedPlan = PRICING_PLANS.find(p => p.days === duration) || PRICING_PLANS[0];
+
     // Ödeme kaydı oluştur
     await supabase.from('featured_payments').insert({
       teacher_id: selectedTeacher,
       category: selectedCategory,
       headline: headline,
-      amount: 4500,
+      amount: selectedPlan.price,
+      plan_days: duration,
       payment_method: 'admin',
       payment_status: 'completed',
       starts_at: startsAt.toISOString(),
@@ -178,7 +191,8 @@ export default function SponsorluPage() {
   const handleApprovePayment = async (payment: Payment) => {
     const startsAt = new Date();
     const endsAt = new Date();
-    endsAt.setDate(endsAt.getDate() + 30);
+    const planDays = payment.plan_days || 30; // Varsayılan 30 gün
+    endsAt.setDate(endsAt.getDate() + planDays);
 
     // Ödemeyi onayla
     await supabase
@@ -242,7 +256,7 @@ export default function SponsorluPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Sponsorlu Vitrin Yönetimi</h1>
-          <p className="text-slate-500 mt-1">Editörün Seçimi öğretmenlerini yönetin • 4.500 ₺/ay</p>
+          <p className="text-slate-500 mt-1">Editörün Seçimi öğretmenlerini yönetin</p>
         </div>
       </div>
 
@@ -385,8 +399,11 @@ export default function SponsorluPage() {
                     {CATEGORIES.find(c => c.key === payment.category)?.label || payment.category}
                   </span>
 
-                  {/* Amount */}
-                  <span className="font-bold text-slate-900">₺{payment.amount.toLocaleString('tr-TR')}</span>
+                  {/* Amount & Plan */}
+                  <div className="text-right">
+                    <span className="font-bold text-slate-900">₺{payment.amount.toLocaleString('tr-TR')}</span>
+                    <p className="text-xs text-slate-500">{payment.plan_days || 30} gün</p>
+                  </div>
 
                   {/* Status */}
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -482,15 +499,17 @@ export default function SponsorluPage() {
 
             {/* Süre */}
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Süre (gün)</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Süre</label>
               <select
                 value={duration}
                 onChange={e => setDuration(Number(e.target.value))}
                 className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37]"
               >
-                <option value={30}>30 gün (1 ay) - 4.500 ₺</option>
-                <option value={60}>60 gün (2 ay) - 9.000 ₺</option>
-                <option value={90}>90 gün (3 ay) - 13.500 ₺</option>
+                {PRICING_PLANS.map(plan => (
+                  <option key={plan.key} value={plan.days}>
+                    {plan.label} ({plan.days} gün) - {plan.price.toLocaleString('tr-TR')} ₺
+                  </option>
+                ))}
               </select>
             </div>
 
