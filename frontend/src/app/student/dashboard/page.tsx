@@ -459,11 +459,7 @@ export default function StudentDashboardPage() {
                       {displaySubjectTags(teacher.subjects)}
                     </div>
 
-                    <div className="flex items-center justify-between pt-4 border-t border-slate-100/50">
-                      <div className="flex items-center gap-1">
-                        <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                        <span className="text-xs font-bold text-slate-700">{teacher.rating || '—'}</span>
-                      </div>
+                    <div className="flex items-center justify-end pt-4 border-t border-slate-100/50">
                       <div className="text-sm font-bold text-[#0F172A]">
                         {teacher.hourly_rate_display || teacher.price_per_hour || '—'} <span className="text-xs font-normal text-slate-500">TL</span>
                       </div>

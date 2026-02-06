@@ -82,12 +82,8 @@ const TeacherCard: React.FC<TeacherCardProps> = ({ teacher }) => {
             {teacher.title || 'Eğitmen'}
           </p>
 
-          {/* Puan & Tecrübe & Üniversite */}
+          {/* Tecrübe & Üniversite */}
           <div className="flex justify-center gap-2 mb-4 flex-wrap">
-            <div className="flex items-center gap-1 bg-white/80 backdrop-blur-xl px-2 py-1 rounded-md border border-slate-100 shadow-sm">
-              <Star className="w-3.5 h-3.5 text-[#D4AF37] fill-current" />
-              <span className="font-bold text-sm text-[#0F172A]">{teacher.rating?.toFixed(1) || 'N/A'}</span>
-            </div>
             {teacher.experience_years && (
               <div className="flex items-center gap-1 bg-white/80 backdrop-blur-xl px-2 py-1 rounded-md border border-slate-100 shadow-sm">
                 <Clock className="w-3.5 h-3.5 text-slate-400" />

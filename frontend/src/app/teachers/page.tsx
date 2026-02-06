@@ -124,10 +124,6 @@ const FeaturedCard = ({ teacher, index }: { teacher: FeaturedTeacher; index: num
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="text-[15px] font-bold text-navy-900 leading-tight truncate">{teacher.full_name}</h4>
-              <div className="flex items-center gap-1 mt-0.5">
-                <StarIcon />
-                <span className="text-xs font-bold text-amber-700">{teacher.rating || '4.5'}</span>
-              </div>
             </div>
           </div>
 
@@ -307,8 +303,6 @@ function TeachersContent() {
         filteredTeachers.sort((a, b) => (a.base_price || 0) - (b.base_price || 0));
       } else if (sortBy === 'price-high') {
         filteredTeachers.sort((a, b) => (b.base_price || 0) - (a.base_price || 0));
-      } else if (sortBy === 'rating') {
-        filteredTeachers.sort((a, b) => (b.rating || 0) - (a.rating || 0));
       } else if (sortBy === 'experience') {
         filteredTeachers.sort((a, b) => (b.experience_years || 0) - (a.experience_years || 0));
       }
@@ -418,7 +412,6 @@ function TeachersContent() {
               className="bg-white/80 backdrop-blur-xl border border-slate-200 rounded-xl py-2 px-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all"
             >
               <option value="recommended">Önerilen</option>
-              <option value="rating">En Yüksek Puan</option>
               <option value="price-low">Fiyat: Düşükten Yükseğe</option>
               <option value="price-high">Fiyat: Yüksekten Düşüğe</option>
               <option value="experience">Deneyim</option>
@@ -470,12 +463,6 @@ function TeachersContent() {
                           </h3>
                           <p className="text-slate-500">{levelDisplay || 'Öğretmen'}</p>
                         </div>
-                        {teacher.rating && (
-                          <div className="flex items-center gap-1 bg-gold-50 px-3 py-1 rounded-full">
-                            <span className="text-gold-500">★</span>
-                            <span className="font-semibold text-gold-700">{teacher.rating}</span>
-                          </div>
-                        )}
                       </div>
 
                       {teacher.bio && (
