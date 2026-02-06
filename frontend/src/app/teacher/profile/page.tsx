@@ -35,6 +35,7 @@ export default function TeacherProfilePage() {
   const [diplomaUrl, setDiplomaUrl] = useState('');
   const [completedLessons, setCompletedLessons] = useState(0);
   const [commissionRate, setCommissionRate] = useState(0.25);
+  const [experienceYears, setExperienceYears] = useState<number | ''>('');
 
   useEffect(() => {
     loadProfile();
@@ -68,6 +69,7 @@ export default function TeacherProfilePage() {
         setDiplomaUrl(data.diploma_url || '');
         setCompletedLessons(data.completed_lessons_count || 0);
         setCommissionRate(data.commission_rate || 0.25);
+        setExperienceYears(data.experience_years || '');
       }
     } catch (error) {
       console.error('Load error:', error);
@@ -242,6 +244,7 @@ export default function TeacherProfilePage() {
           avatar_url: avatarUrl,
           video_url: videoUrl,
           diploma_url: diplomaUrl,
+          experience_years: experienceYears || null,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
@@ -378,13 +381,25 @@ export default function TeacherProfilePage() {
                 className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#D4AF37] outline-none"
               />
             </div>
-            <div className="md:col-span-2">
+            <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Telefon</label>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="05XX XXX XX XX"
+                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#D4AF37] outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Deneyim (Yıl)</label>
+              <input
+                type="number"
+                value={experienceYears}
+                onChange={(e) => setExperienceYears(e.target.value ? parseInt(e.target.value) : '')}
+                min={0}
+                max={50}
+                placeholder="Örneğin: 5"
                 className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#D4AF37] outline-none"
               />
             </div>
