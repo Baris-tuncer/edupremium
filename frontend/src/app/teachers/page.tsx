@@ -39,6 +39,8 @@ interface FeaturedTeacher {
   avatar_url: string | null;
   is_verified: boolean;
   featured_category: string | null;
+  hourly_rate_display: number | null;
+  base_price: number | null;
 }
 
 // ============================================
@@ -145,6 +147,14 @@ const FeaturedCard = ({ teacher, index }: { teacher: FeaturedTeacher; index: num
                 </>
               )}
             </div>
+          </div>
+
+          {/* Price */}
+          <div className="bg-gradient-to-r from-amber-50 to-gold-50 border border-gold-200/40 rounded-xl p-3 text-center">
+            <div className="text-xl font-bold text-navy-900">
+              ₺{(teacher.hourly_rate_display || calculateDisplayPrice(teacher.base_price || 0, 0.25)).toLocaleString('tr-TR')}
+            </div>
+            <div className="text-[10px] text-slate-500">/saat <span className="text-slate-400">(KDV Dahil)</span></div>
           </div>
 
           {/* Subjects */}
