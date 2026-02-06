@@ -266,34 +266,117 @@ export default function OneCikPage() {
 
   // Yeni başvuru formu
   return (
-    <div className="p-8 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold text-[#0F172A] mb-2">Öne Çık</h1>
-      <p className="text-slate-600 mb-8">Profilinizi öne çıkararak daha fazla öğrenciye ulaşın.</p>
-
-      {/* Avantajlar */}
-      <div className="bg-gradient-to-br from-[#0F172A] to-[#0F172A]/80 rounded-2xl p-6 mb-6 text-white">
-        <div className="flex items-center gap-3 mb-4">
-          <svg className="w-8 h-8 text-[#D4AF37]" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+    <div className="p-8 max-w-3xl mx-auto">
+      {/* Başlık */}
+      <div className="flex items-center gap-4 mb-2">
+        <div className="w-12 h-12 bg-gradient-to-br from-[#D4AF37] to-[#F5D572] rounded-xl flex items-center justify-center shadow-lg shadow-[#D4AF37]/30">
+          <svg className="w-6 h-6 text-[#0F172A]" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6 2L1 8l11 13L23 8l-5-6H6zm3.5 1h5l2.5 3h-10l2.5-3zM12 19L3.5 9h17L12 19z" />
           </svg>
-          <h2 className="text-xl font-bold">Editörün Seçimi Avantajları</h2>
         </div>
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="flex items-center gap-2">
-            <svg className="w-4 h-4 text-[#D4AF37]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-            <span>Ana sayfa vitrini</span>
+        <div>
+          <h1 className="text-2xl font-bold text-[#0F172A]">Premium Vitrin</h1>
+          <span className="inline-block bg-[#D4AF37] text-[#0F172A] text-[10px] font-bold px-2 py-0.5 rounded mt-1">PRO ÜYELİK</span>
+        </div>
+      </div>
+      <p className="text-slate-600 mb-8 ml-16">Profilinizi binlerce öğrenciye öne çıkarın ve ders taleplerinizi katlayın.</p>
+
+      {/* Nedir ve Avantajlar */}
+      <div className="bg-gradient-to-br from-[#0F172A] to-[#1e293b] rounded-2xl p-6 mb-6 text-white relative overflow-hidden">
+        {/* Dekoratif elementler */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#D4AF37]/5 rounded-full blur-2xl"></div>
+
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-4">
+            <svg className="w-8 h-8 text-[#D4AF37]" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 2L1 8l11 13L23 8l-5-6H6zm3.5 1h5l2.5 3h-10l2.5-3zM12 19L3.5 9h17L12 19z" />
+            </svg>
+            <div>
+              <h2 className="text-xl font-bold">Premium Vitrin Nedir?</h2>
+              <p className="text-white/60 text-sm">Editörün Seçimi Programı</p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <svg className="w-4 h-4 text-[#D4AF37]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-            <span>Öğretmenler sayfası üst sıra</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <svg className="w-4 h-4 text-[#D4AF37]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-            <span>Editörün Seçimi rozeti</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <svg className="w-4 h-4 text-[#D4AF37]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-            <span>Öncelikli destek</span>
+
+          <p className="text-white/80 text-sm mb-6 leading-relaxed">
+            Premium Vitrin, profilinizi EduPremium'un en görünür alanlarına taşıyarak öğrenci erişiminizi maksimize eder.
+            Seçtiğiniz kategoride "Editörün Seçimi" rozetiyle öne çıkar, güvenilirliğinizi ve görünürlüğünüzü artırırsınız.
+          </p>
+
+          <h3 className="text-sm font-bold text-[#D4AF37] uppercase tracking-wider mb-4">Üyelik Avantajları</h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex gap-3 bg-white/5 rounded-xl p-3">
+              <div className="w-8 h-8 bg-[#D4AF37]/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-semibold text-white text-sm">Ana Sayfa Vitrini</p>
+                <p className="text-white/50 text-xs">Ziyaretçilerin ilk gördüğü premium bölümde yer alın</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 bg-white/5 rounded-xl p-3">
+              <div className="w-8 h-8 bg-[#D4AF37]/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-semibold text-white text-sm">Editörün Seçimi Rozeti</p>
+                <p className="text-white/50 text-xs">Profilinizde güven veren altın rozet</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 bg-white/5 rounded-xl p-3">
+              <div className="w-8 h-8 bg-[#D4AF37]/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-semibold text-white text-sm">Arama Sonuçlarında Üst Sıra</p>
+                <p className="text-white/50 text-xs">Öğretmenler sayfasında öncelikli gösterim</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 bg-white/5 rounded-xl p-3">
+              <div className="w-8 h-8 bg-[#D4AF37]/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-semibold text-white text-sm">Öğrenci Portalı Vitrini</p>
+                <p className="text-white/50 text-xs">Aktif öğrencilere doğrudan ulaşın</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 bg-white/5 rounded-xl p-3">
+              <div className="w-8 h-8 bg-[#D4AF37]/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-semibold text-white text-sm">Öncelikli Destek</p>
+                <p className="text-white/50 text-xs">Sorularınıza hızlı yanıt garantisi</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 bg-white/5 rounded-xl p-3">
+              <div className="w-8 h-8 bg-[#D4AF37]/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-semibold text-white text-sm">Güvenilirlik Artışı</p>
+                <p className="text-white/50 text-xs">Velilerin gözünde daha güvenilir profil</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
