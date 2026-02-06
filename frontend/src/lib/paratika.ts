@@ -16,8 +16,8 @@ export const PARATIKA_CONFIG = {
   PROD_PAYMENT_URL: 'https://vpos.paratika.com.tr/payment',
 };
 
-// Test modunda mı?
-export const IS_TEST_MODE = true;
+// Test modunda mı? (Production için false yapın)
+export const IS_TEST_MODE = false;
 
 export const getApiUrl = () => IS_TEST_MODE ? PARATIKA_CONFIG.TEST_API_URL : PARATIKA_CONFIG.PROD_API_URL;
 export const getPaymentPageUrl = (sessionToken: string) => {
