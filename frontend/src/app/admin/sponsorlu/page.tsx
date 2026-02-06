@@ -118,11 +118,12 @@ export default function SponsorluPage() {
     const endsAt = new Date();
     endsAt.setDate(endsAt.getDate() + duration);
 
-    // teacher_profiles güncelle
+    // teacher_profiles güncelle (featured + verified)
     const { error: updateError } = await supabase
       .from('teacher_profiles')
       .update({
         is_featured: true,
+        is_verified: true,
         featured_category: selectedCategory,
         featured_headline: headline,
         featured_until: endsAt.toISOString(),
@@ -190,18 +191,19 @@ export default function SponsorluPage() {
       })
       .eq('id', payment.id);
 
-    // Öğretmeni featured yap
+    // Öğretmeni featured yap ve otomatik onayla
     await supabase
       .from('teacher_profiles')
       .update({
         is_featured: true,
+        is_verified: true,
         featured_category: payment.category,
         featured_headline: payment.headline,
         featured_until: endsAt.toISOString(),
       })
       .eq('id', payment.teacher_id);
 
-    alert('Ödeme onaylandı ve öğretmen öne çıkarıldı!');
+    alert('Ödeme onaylandı, öğretmen onaylandı ve öne çıkarıldı!');
     fetchData();
   };
 
