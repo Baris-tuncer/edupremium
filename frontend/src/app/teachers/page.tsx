@@ -18,7 +18,8 @@ interface Teacher {
   email: string;
   phone: string | null;
   subjects: string[];
-  base_price: number;  // Bu artık net_price olarak kullanılıyor
+  base_price: number;
+  hourly_rate_display: number | null;  // Veliye gösterilecek fiyat (öncelikli)
   bio: string | null;
   experience_years: number | null;
   completed_lessons_count: number;
@@ -460,8 +461,8 @@ function TeachersContent() {
           ) : (
             <div className="space-y-4">
               {teachers.map((teacher) => {
-                // base_price artık öğretmenin net tutarı olarak kullanılıyor
-                const parentPrice = calculateDisplayPrice(teacher.base_price || 0, 0.25);
+                // Önce hourly_rate_display varsa onu kullan, yoksa hesapla
+                const parentPrice = teacher.hourly_rate_display || calculateDisplayPrice(teacher.base_price || 0, 0.25);
                 const initials = teacher.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2) || '??';
                 const subjectDisplay = getSubjectDisplay(teacher.subjects || []);
                 const levelDisplay = getLevelDisplay(teacher.subjects || []);
