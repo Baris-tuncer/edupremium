@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
-import { calculateDisplayPrice, formatPrice } from '@/lib/pricing';
+import { calculateDisplayPrice, formatPrice } from '@/lib/price-calculator';
 
 interface Teacher {
   id: string;

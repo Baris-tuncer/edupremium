@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PARATIKA_CONFIG, getApiUrl, getPaymentPageUrl } from '@/lib/paratika';
 import { createClient } from '@supabase/supabase-js';
+import { calculateDisplayPrice } from '@/lib/price-calculator';
 
 function getSupabase() {
   return createClient(
@@ -53,6 +54,39 @@ export async function POST(request: NextRequest) {
       // İzin veriyoruz ama logluyoruz - veli öğrenci adına ödeme yapabilir
     }
 
+    // ========================================
+    // SUNUCU TARAFI FİYAT DOĞRULAMASI
+    // Hash mismatch'i önlemek için kritik
+    // ========================================
+    const { data: teacherData, error: teacherError } = await supabase
+      .from('teacher_profiles')
+      .select('hourly_rate_net, commission_rate')
+      .eq('id', teacherId)
+      .single();
+
+    if (teacherError || !teacherData) {
+      return NextResponse.json({
+        success: false,
+        error: 'Öğretmen bilgisi bulunamadı',
+      }, { status: 400 });
+    }
+
+    // Sunucu tarafında fiyat hesapla
+    const serverCalculatedPrice = calculateDisplayPrice(
+      teacherData.hourly_rate_net || 0,
+      teacherData.commission_rate || 0.25
+    );
+
+    // İstemciden gelen fiyat ile sunucu hesaplamasını karşılaştır
+    // 50 TL tolerans (yuvarlama farkları için)
+    if (Math.abs(amount - serverCalculatedPrice) > 50) {
+      console.error(`Price mismatch! Client: ${amount}, Server: ${serverCalculatedPrice}`);
+      return NextResponse.json({
+        success: false,
+        error: 'Fiyat doğrulaması başarısız. Lütfen sayfayı yenileyin.',
+      }, { status: 400 });
+    }
+
     const orderId = `EDU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.visserr.com';
 
@@ -65,7 +99,8 @@ export async function POST(request: NextRequest) {
         student_id: studentId,
         subject: subject,
         scheduled_at: scheduledAt,
-        amount: amount,
+        amount: serverCalculatedPrice,  // Sunucu hesaplı fiyat kullan
+        teacher_earnings: teacherData.hourly_rate_net,  // Öğretmenin net kazancı
         availability_id: availabilityId,
         status: 'PENDING',
         created_at: new Date().toISOString(),
@@ -90,13 +125,13 @@ export async function POST(request: NextRequest) {
       MERCHANTPASSWORD: PARATIKA_CONFIG.MERCHANT_PASSWORD,
       SESSIONTYPE: 'PAYMENTSESSION',
       RETURNURL: `${baseUrl}/api/payment/callback`,
-      AMOUNT: amount.toFixed(2),
+      AMOUNT: serverCalculatedPrice.toFixed(2),  // Sunucu hesaplı fiyat
       CURRENCY: 'TRY',
       CUSTOMER: studentName,
       CUSTOMEREMAIL: studentEmail,
       CUSTOMERPHONE: studentPhone || '',
       MERCHANTPAYMENTID: orderId,
-      ORDERITEMS: JSON.stringify([{ code: 'DERS', name: subject, description: subject + ' dersi', quantity: '1', amount: amount }]),
+      ORDERITEMS: JSON.stringify([{ code: 'DERS', name: subject, description: subject + ' dersi', quantity: '1', amount: serverCalculatedPrice }]),
     });
 
     const response = await fetch(getApiUrl(), {

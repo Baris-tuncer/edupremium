@@ -7,6 +7,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { supabase } from '@/lib/supabase';
 import { EDUCATION_LEVELS, LevelKey } from '@/lib/constants';
+import { calculateDisplayPrice } from '@/lib/price-calculator';
 
 // ============================================
 // INTERFACES
@@ -17,7 +18,7 @@ interface Teacher {
   email: string;
   phone: string | null;
   subjects: string[];
-  base_price: number;
+  base_price: number;  // Bu artık net_price olarak kullanılıyor
   bio: string | null;
   experience_years: number | null;
   completed_lessons_count: number;
@@ -38,16 +39,6 @@ interface FeaturedTeacher {
   is_verified: boolean;
   featured_category: string | null;
 }
-
-// ============================================
-// HELPERS
-// ============================================
-const calculateParentPrice = (basePrice: number) => {
-  const commission = basePrice * 0.20;
-  const subtotal = basePrice + commission;
-  const tax = subtotal * 0.20;
-  return Math.round((subtotal + tax) / 100) * 100;
-};
 
 // ============================================
 // ICONS
@@ -469,7 +460,8 @@ function TeachersContent() {
           ) : (
             <div className="space-y-4">
               {teachers.map((teacher) => {
-                const parentPrice = calculateParentPrice(teacher.base_price || 0);
+                // base_price artık öğretmenin net tutarı olarak kullanılıyor
+                const parentPrice = calculateDisplayPrice(teacher.base_price || 0, 0.25);
                 const initials = teacher.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2) || '??';
                 const subjectDisplay = getSubjectDisplay(teacher.subjects || []);
                 const levelDisplay = getLevelDisplay(teacher.subjects || []);

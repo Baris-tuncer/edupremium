@@ -72,7 +72,7 @@ async function sendEmails(pendingPayment: any, orderId: string, meetingLink: str
 
     const { data: teacher, error: teacherError } = await supabase
       .from('teacher_profiles')
-      .select('full_name, email, commission_rate')
+      .select('full_name, email, hourly_rate_net')
       .eq('id', pendingPayment.teacher_id)
       .single();
 
@@ -85,8 +85,8 @@ async function sendEmails(pendingPayment: any, orderId: string, meetingLink: str
 
     const date = formatDate(pendingPayment.scheduled_at);
     const time = formatTime(pendingPayment.scheduled_at);
-    const commissionRate = teacher.commission_rate || 0.25;
-    const teacherEarnings = Math.round(pendingPayment.amount * (1 - commissionRate));
+    // Yeni algoritma: Öğretmenin net tutarı doğrudan DB'den alınır
+    const teacherEarnings = teacher.hourly_rate_net || Math.round(pendingPayment.amount * 0.58); // fallback hesaplama
 
     // Öğrenciye email
     console.log('Sending student email to:', student.email);
@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
       console.log('Pending Payment:', pendingPayment, 'Error:', fetchError);
 
       if (pendingPayment) {
-        // Ders oluştur
+        // Ders oluştur - teacher_earnings artık pending_payment'tan alınır
         const { data: lesson, error: lessonError } = await supabase
           .from('lessons')
           .insert({
@@ -184,6 +184,7 @@ export async function POST(request: NextRequest) {
             scheduled_at: pendingPayment.scheduled_at,
             duration_minutes: 60,
             price: pendingPayment.amount,
+            teacher_earnings: pendingPayment.teacher_earnings,  // Öğretmenin net kazancı
             status: 'CONFIRMED',
             payment_status: 'PAID',
             payment_id: data.pgTranId || merchantPaymentId,

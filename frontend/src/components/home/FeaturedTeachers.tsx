@@ -29,8 +29,9 @@ async function getFeaturedTeachers() {
     else if (p.featured_category) finalSubjects = [p.featured_category];
     else finalSubjects = ['Genel'];
 
-    // 2. FİYATI BUL (hourly_rate, base_price, price veya rate olabilir)
-    const finalPrice = p.hourly_rate || p.base_price || p.price || p.rate || 0;
+    // 2. FİYATI BUL - Veliye gösterilecek fiyat (hourly_rate_display)
+    // Önce hourly_rate_display, yoksa eski alanlardan hesaplama
+    const finalPrice = p.hourly_rate_display || p.hourly_rate || p.base_price || p.price || p.rate || 0;
 
     // 3. ÜNİVERSİTEYİ BUL
     const finalUniversity = p.university || p.school || p.university_name || null;

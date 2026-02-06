@@ -8,15 +8,14 @@ import {
   formatSubject 
 } from '@/lib/constants';
 import {
-  calculatePriceDetails,
+  calculatePriceFromNet,
   calculateDisplayPrice,
-  calculateTeacherNet,
-  validateBasePrice,
+  validateNetPrice,
   formatPrice,
-  PRICING_CONSTANTS,
+  PRICE_CONSTANTS,
   getCommissionTier,
-  getLessonsUntilNextTier
-} from '@/lib/pricing';
+  COMMISSION_TIERS
+} from '@/lib/price-calculator';
 
 export default function TeacherProfilePage() {
   const [loading, setLoading] = useState(true);
@@ -28,7 +27,7 @@ export default function TeacherProfilePage() {
   const [title, setTitle] = useState('');
   const [bio, setBio] = useState('');
   const [phone, setPhone] = useState('');
-  const [basePrice, setBasePrice] = useState<number>(0);
+  const [netPrice, setNetPrice] = useState<number>(0);  // Öğretmenin almak istediği net tutar
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
   const [avatarUrl, setAvatarUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
@@ -62,7 +61,8 @@ export default function TeacherProfilePage() {
         setTitle(data.title || '');
         setBio(data.bio || '');
         setPhone(data.phone || '');
-        setBasePrice(data.base_price || data.price_per_hour || 0);
+        // Önce hourly_rate_net varsa onu kullan, yoksa base_price'ı net olarak kabul et
+        setNetPrice(data.hourly_rate_net || data.base_price || data.price_per_hour || 0);
         setSelectedSubjects(data.subjects || []);
         setAvatarUrl(data.avatar_url || '');
         setVideoUrl(data.video_url || '');
@@ -78,19 +78,28 @@ export default function TeacherProfilePage() {
     }
   };
 
-  // Fiyat hesaplaması (canlı)
-  const priceDetails = useMemo(() => {
-    return calculatePriceDetails(basePrice, commissionRate);
-  }, [basePrice, commissionRate]);
+  // Fiyat hesaplaması (canlı) - Yeni algoritma: Net tutar üzerine ekleme
+  const priceBreakdown = useMemo(() => {
+    return calculatePriceFromNet(netPrice, commissionRate);
+  }, [netPrice, commissionRate]);
 
   // Validasyon
   const priceValidation = useMemo(() => {
-    return validateBasePrice(basePrice);
-  }, [basePrice]);
+    return validateNetPrice(netPrice);
+  }, [netPrice]);
 
   // Komisyon bilgileri
   const commissionTier = getCommissionTier(completedLessons);
-  const nextTierInfo = getLessonsUntilNextTier(completedLessons);
+
+  // Sonraki seviye bilgisi
+  const getNextTierInfo = () => {
+    if (completedLessons > 200) return null;
+    if (completedLessons <= 100) {
+      return { nextTier: 'Standart', lessonsNeeded: 101 - completedLessons, nextRate: '20' };
+    }
+    return { nextTier: 'Premium', lessonsNeeded: 201 - completedLessons, nextRate: '15' };
+  };
+  const nextTierInfo = getNextTierInfo();
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -226,8 +235,8 @@ export default function TeacherProfilePage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const teacherNet = calculateTeacherNet(basePrice, commissionRate);
-      const displayPrice = calculateDisplayPrice(basePrice, commissionRate);
+      // Yeni algoritma: netPrice öğretmenin alacağı tutar
+      const displayPrice = calculateDisplayPrice(netPrice, commissionRate);
 
       const { error } = await supabase
         .from('teacher_profiles')
@@ -236,10 +245,10 @@ export default function TeacherProfilePage() {
           title,
           bio,
           phone,
-          base_price: basePrice,
-          hourly_rate_net: teacherNet,
-          hourly_rate_display: displayPrice,
-          price_per_hour: basePrice, // backward compatibility
+          base_price: netPrice,              // Geriye dönük uyumluluk için base_price = net
+          hourly_rate_net: netPrice,          // Öğretmenin net tutarı
+          hourly_rate_display: displayPrice,  // Veliye görünecek fiyat
+          price_per_hour: netPrice,           // Eski alan uyumluluğu
           subjects: selectedSubjects,
           avatar_url: avatarUrl,
           video_url: videoUrl,
@@ -419,56 +428,73 @@ export default function TeacherProfilePage() {
         {/* Fiyatlandırma */}
         <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6">
           <h2 className="text-lg font-semibold text-slate-900 mb-4">Fiyatlandırma</h2>
-          
+
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Baz Fiyat Input */}
+            {/* Net Tutar Input */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Ders Bedeli (Baz Fiyat)
+                Almak İstediğiniz Net Tutar
               </label>
+              <p className="text-xs text-slate-500 mb-2">
+                Her ders sonunda cebinize girecek tutar
+              </p>
               <div className="relative">
                 <input
                   type="number"
-                  value={basePrice || ''}
-                  onChange={(e) => setBasePrice(parseInt(e.target.value) || 0)}
-                  min={PRICING_CONSTANTS.MIN_BASE_PRICE}
-                  placeholder={`Minimum ${PRICING_CONSTANTS.MIN_BASE_PRICE}`}
+                  value={netPrice || ''}
+                  onChange={(e) => setNetPrice(parseInt(e.target.value) || 0)}
+                  min={PRICE_CONSTANTS.MIN_NET_PRICE}
+                  placeholder={`Minimum ${PRICE_CONSTANTS.MIN_NET_PRICE}`}
                   className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#D4AF37] outline-none text-lg font-semibold ${
-                    !priceValidation.valid && basePrice > 0 ? 'border-red-300 bg-red-50' : 'border-slate-200'
+                    !priceValidation.valid && netPrice > 0 ? 'border-red-300 bg-red-50' : 'border-slate-200'
                   }`}
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">TL</span>
               </div>
-              {!priceValidation.valid && basePrice > 0 && (
+              {!priceValidation.valid && netPrice > 0 && (
                 <p className="mt-1 text-sm text-red-600">{priceValidation.error}</p>
               )}
             </div>
 
             {/* Fiyat Dökümü Kartı */}
-            {basePrice >= PRICING_CONSTANTS.MIN_BASE_PRICE && (
+            {netPrice >= PRICE_CONSTANTS.MIN_NET_PRICE && (
               <div className="bg-slate-50 rounded-xl p-4 space-y-3">
-                {/* Kesinti */}
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-600 flex items-center gap-2">
-                    <span className="text-red-500">📉</span> Kesinti (Komisyon %{commissionTier.percentage})
-                  </span>
-                  <span className="font-medium text-red-600">-{formatPrice(priceDetails.commissionAmount)}</span>
-                </div>
-
-                {/* Öğretmene Kalan */}
-                <div className="flex justify-between items-center py-2 border-t border-b border-slate-200">
+                {/* Sizin Net Tutarınız */}
+                <div className="flex justify-between items-center py-2 border-b border-slate-200">
                   <span className="text-slate-800 font-medium flex items-center gap-2">
-                    <span className="text-green-500">✅</span> Elinize Geçecek Net
+                    <span className="text-green-500">✅</span> Sizin Net Kazancınız
                   </span>
-                  <span className="font-bold text-lg text-green-600">{formatPrice(priceDetails.teacherNet)}</span>
+                  <span className="font-bold text-lg text-green-600">{formatPrice(priceBreakdown.netPrice)}</span>
                 </div>
 
-                {/* Vergiler */}
+                {/* Stopaj */}
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-slate-500 flex items-center gap-2">
-                    <span>🏛️</span> Vergiler (Veli Öder)
+                    <span>🏛️</span> Stopaj (%20)
                   </span>
-                  <span className="text-slate-500">+{formatPrice(priceDetails.taxTotal)}</span>
+                  <span className="text-slate-500">+{formatPrice(priceBreakdown.stopaj)}</span>
+                </div>
+
+                {/* Komisyon */}
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-500 flex items-center gap-2">
+                    <span>💼</span> Platform Komisyonu (%{commissionTier.percentage})
+                  </span>
+                  <span className="text-slate-500">+{formatPrice(priceBreakdown.komisyon)}</span>
+                </div>
+
+                {/* Ara Toplam */}
+                <div className="flex justify-between items-center text-sm border-t border-slate-200 pt-2">
+                  <span className="text-slate-600">Ara Toplam (KDV Hariç)</span>
+                  <span className="text-slate-600">{formatPrice(priceBreakdown.araToplam)}</span>
+                </div>
+
+                {/* KDV */}
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-500 flex items-center gap-2">
+                    <span>📋</span> KDV (%20)
+                  </span>
+                  <span className="text-slate-500">+{formatPrice(priceBreakdown.kdv)}</span>
                 </div>
 
                 {/* Veli Fiyatı */}
@@ -476,25 +502,25 @@ export default function TeacherProfilePage() {
                   <span className="text-slate-800 font-medium flex items-center gap-2">
                     <span>🏷️</span> Veliye Görünecek Fiyat
                   </span>
-                  <span className="font-bold text-xl text-[#D4AF37]">{formatPrice(priceDetails.displayPrice)}</span>
+                  <span className="font-bold text-xl text-[#D4AF37]">{formatPrice(priceBreakdown.displayPrice)}</span>
                 </div>
               </div>
             )}
           </div>
 
           {/* Bilgilendirme */}
-          <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+          <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-xl">
             <div className="flex items-start gap-3">
               <span className="text-xl">💡</span>
-              <div className="text-sm text-amber-800">
+              <div className="text-sm text-green-800">
                 <p className="font-medium">Nasıl Çalışır?</p>
                 <p className="mt-1">
-                  Belirlediğiniz ders bedelinden <strong>%{commissionTier.percentage} komisyon</strong> kesilir, 
-                  kalan tutar size ödenir. Vergiler veliye yansıtılır.
+                  Belirlediğiniz <strong>net tutar</strong> her ders sonunda doğrudan cebinize geçer.
+                  Stopaj, komisyon ve KDV bu tutarın <strong>üzerine eklenerek</strong> veliye yansıtılır.
                 </p>
-                <p className="mt-2 text-amber-700">
-                  Daha fazla ders verdikçe komisyon oranınız düşer: 
-                  <strong> 101+ ders: %20</strong>, 
+                <p className="mt-2 text-green-700">
+                  Daha fazla ders verdikçe komisyon oranınız düşer:
+                  <strong> 101+ ders: %20</strong>,
                   <strong> 201+ ders: %15</strong>
                 </p>
               </div>
