@@ -3,9 +3,10 @@ import { createClient } from '@supabase/supabase-js';
 import { verifyParatikaCallback } from '@/lib/paratika';
 
 function getSupabase() {
+  // Service role key kullan - RLS'yi bypass eder, callback'ler için gerekli
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 }
 

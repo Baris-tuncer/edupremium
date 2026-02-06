@@ -3,9 +3,10 @@ import { PARATIKA_CONFIG, getApiUrl, getPaymentPageUrl } from '@/lib/paratika';
 import { createClient } from '@supabase/supabase-js';
 
 function getSupabase() {
+  // Service role key kullan - RLS'yi bypass eder
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 }
 
