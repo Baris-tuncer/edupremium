@@ -24,7 +24,7 @@ const FooterPremium = () => {
   const socialLinks = [
     { icon: Facebook, href: 'https://facebook.com' },
     { icon: Twitter, href: 'https://twitter.com' },
-    { icon: Instagram, href: 'https://instagram.com' },
+    { icon: Instagram, href: 'https://instagram.com/edupremium_official' },
     { icon: Linkedin, href: 'https://linkedin.com' }
   ];
 
