@@ -184,6 +184,18 @@ const FeaturedCard = ({ teacher, index }: { teacher: FeaturedTeacher; index: num
 const FeaturedTeachersSection = () => {
   const [teachers, setTeachers] = useState<FeaturedTeacher[]>([]);
   const [loading, setLoading] = useState(true);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollAmount = 300;
+      const currentScroll = scrollRef.current.scrollLeft;
+      scrollRef.current.scrollTo({
+        left: direction === 'left' ? currentScroll - scrollAmount : currentScroll + scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   useEffect(() => {
     const fetchFeatured = async () => {
@@ -226,11 +238,38 @@ const FeaturedTeachersSection = () => {
         <div className="flex-1 h-px bg-gradient-to-r from-gold-200 to-transparent" />
       </div>
 
-      {/* Cards */}
-      <div className="flex gap-5 overflow-x-auto pb-4 -mx-2 px-2" style={{ scrollbarWidth: 'none' }}>
-        {teachers.map((teacher, index) => (
-          <FeaturedCard key={teacher.id} teacher={teacher} index={index} />
-        ))}
+      {/* Cards with Navigation */}
+      <div className="relative px-12">
+        {/* Sol Ok */}
+        <button
+          onClick={() => scroll('left')}
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-[#0F172A] border border-[#D4AF37]/50 text-[#D4AF37] flex items-center justify-center rounded-full hover:bg-[#D4AF37] hover:text-[#0F172A] transition-all shadow-lg"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        {/* Sağ Ok */}
+        <button
+          onClick={() => scroll('right')}
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-[#0F172A] border border-[#D4AF37]/50 text-[#D4AF37] flex items-center justify-center rounded-full hover:bg-[#D4AF37] hover:text-[#0F172A] transition-all shadow-lg"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
+        {/* Cards */}
+        <div
+          ref={scrollRef}
+          className="flex gap-5 overflow-x-auto pb-4 scroll-smooth"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {teachers.map((teacher, index) => (
+            <FeaturedCard key={teacher.id} teacher={teacher} index={index} />
+          ))}
+        </div>
       </div>
 
       {/* Divider */}
