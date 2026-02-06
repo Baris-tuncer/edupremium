@@ -57,6 +57,9 @@ async function getFeaturedTeachers() {
       // CategoryShowcase ve TeacherCard için branches formatı
       branches: finalSubjects.map((s: string) => ({ branch: { name: s } })),
 
+      // Kategoriye göre gruplama için
+      featured_category: p.featured_category,
+
       verified: p.is_verified,
       slug: p.slug || p.id,
     };
