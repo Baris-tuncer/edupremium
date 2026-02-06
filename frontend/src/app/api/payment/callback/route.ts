@@ -174,7 +174,16 @@ export async function POST(request: NextRequest) {
       console.log('Pending Payment:', pendingPayment, 'Error:', fetchError);
 
       if (pendingPayment) {
-        // Ders oluştur - teacher_earnings artık pending_payment'tan alınır
+        // Öğretmenin net kazancını al
+        const { data: teacherData } = await supabase
+          .from('teacher_profiles')
+          .select('hourly_rate_net, base_price')
+          .eq('id', pendingPayment.teacher_id)
+          .single();
+
+        const teacherNetEarnings = teacherData?.hourly_rate_net || teacherData?.base_price || 0;
+
+        // Ders oluştur
         const { data: lesson, error: lessonError } = await supabase
           .from('lessons')
           .insert({
@@ -184,7 +193,7 @@ export async function POST(request: NextRequest) {
             scheduled_at: pendingPayment.scheduled_at,
             duration_minutes: 60,
             price: pendingPayment.amount,
-            teacher_earnings: pendingPayment.teacher_earnings,  // Öğretmenin net kazancı
+            teacher_earnings: teacherNetEarnings,  // Öğretmenin net kazancı
             status: 'CONFIRMED',
             payment_status: 'PAID',
             payment_id: data.pgTranId || merchantPaymentId,

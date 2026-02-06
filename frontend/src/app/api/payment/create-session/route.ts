@@ -106,7 +106,6 @@ export async function POST(request: NextRequest) {
         subject: subject,
         scheduled_at: scheduledAt,
         amount: serverCalculatedPrice,  // Sunucu doğrulanmış fiyat
-        teacher_earnings: netPrice,     // Öğretmenin net kazancı (hourly_rate_net veya base_price)
         availability_id: availabilityId,
         status: 'PENDING',
         created_at: new Date().toISOString(),
