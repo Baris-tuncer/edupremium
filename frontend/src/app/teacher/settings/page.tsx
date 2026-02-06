@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
 
 export default function TeacherSettingsPage() {
   const router = useRouter();
@@ -11,11 +12,19 @@ export default function TeacherSettingsPage() {
     appointments: true,
     payments: true,
   });
+  const [loggingOut, setLoggingOut] = useState(false);
 
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    router.push('/login');
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.push('/teacher/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Fallback: yine de yönlendir
+      router.push('/teacher/login');
+    }
   };
 
   return (
@@ -77,9 +86,10 @@ export default function TeacherSettingsPage() {
           <h2 className="font-serif text-xl font-semibold text-red-600 mb-4">Tehlikeli Bölge</h2>
           <button
             onClick={handleLogout}
-            className="px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors"
+            disabled={loggingOut}
+            className="px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50"
           >
-            Çıkış Yap
+            {loggingOut ? 'Çıkış yapılıyor...' : 'Çıkış Yap'}
           </button>
         </div>
       </div>

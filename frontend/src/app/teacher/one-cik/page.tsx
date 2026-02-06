@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/utils/supabase/client';
 
 const CATEGORIES = [
   { key: 'ilkokul', label: 'İlkokul (1-4)' },
@@ -40,6 +40,8 @@ export default function OneCikPage() {
   const [paymentMethod, setPaymentMethod] = useState<'paratika' | 'havale'>('paratika');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [copiedIban, setCopiedIban] = useState(false);
 
   const currentPlan = PRICING_PLANS.find(p => p.key === selectedPlan) || PRICING_PLANS[1];
 
@@ -48,6 +50,7 @@ export default function OneCikPage() {
   }, []);
 
   const fetchData = async () => {
+    const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     setUser(user);
@@ -77,12 +80,21 @@ export default function OneCikPage() {
     setLoading(false);
   };
 
+  const copyIban = () => {
+    navigator.clipboard.writeText(BANK_INFO.iban.replace(/\s/g, ''));
+    setCopiedIban(true);
+    setTimeout(() => setCopiedIban(false), 2000);
+  };
+
   const handleSubmit = async () => {
     if (!category || !headline || !user) return;
 
     setSubmitting(true);
+    setErrorMessage('');
 
     try {
+      const supabase = createClient();
+
       if (paymentMethod === 'havale') {
         // Havale seçildi - başvuru oluştur, admin onayı bekle
         const { error } = await supabase.from('featured_payments').insert({
@@ -96,7 +108,7 @@ export default function OneCikPage() {
         });
 
         if (error) {
-          alert('Hata: ' + error.message);
+          setErrorMessage('Hata: ' + error.message);
           return;
         }
 
@@ -106,7 +118,7 @@ export default function OneCikPage() {
         // Paratika ile ödeme - Auth token al
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.access_token) {
-          alert('Oturum hatası. Lütfen tekrar giriş yapın.');
+          setErrorMessage('Oturum hatası. Lütfen tekrar giriş yapın.');
           return;
         }
 
@@ -130,12 +142,12 @@ export default function OneCikPage() {
           // Ödeme sayfasına yönlendir
           window.location.href = result.paymentUrl;
         } else {
-          alert('Ödeme oturumu oluşturulamadı. Lütfen tekrar deneyin.');
+          setErrorMessage('Ödeme oturumu oluşturulamadı. Lütfen tekrar deneyin.');
         }
       }
     } catch (err) {
       console.error('Error:', err);
-      alert('Bir hata oluştu.');
+      setErrorMessage('Bir hata oluştu. Lütfen tekrar deneyin.');
     } finally {
       setSubmitting(false);
     }
@@ -240,13 +252,10 @@ export default function OneCikPage() {
                 <span className="font-mono font-semibold text-[#0F172A] tracking-wide">{BANK_INFO.iban}</span>
                 <button
                   type="button"
-                  onClick={() => {
-                    navigator.clipboard.writeText(BANK_INFO.iban.replace(/\s/g, ''));
-                    alert('IBAN kopyalandı!');
-                  }}
+                  onClick={copyIban}
                   className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1 rounded transition-colors"
                 >
-                  Kopyala
+                  {copiedIban ? '✓ Kopyalandı' : 'Kopyala'}
                 </button>
               </div>
             </div>
@@ -504,12 +513,11 @@ export default function OneCikPage() {
                   type="button"
                   onClick={(e) => {
                     e.preventDefault();
-                    navigator.clipboard.writeText(BANK_INFO.iban.replace(/\s/g, ''));
-                    alert('IBAN kopyalandı!');
+                    copyIban();
                   }}
                   className="text-xs bg-white/80 backdrop-blur-xl hover:bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 transition-colors"
                 >
-                  Kopyala
+                  {copiedIban ? '✓ Kopyalandı' : 'Kopyala'}
                 </button>
               </div>
             </div>
@@ -517,6 +525,13 @@ export default function OneCikPage() {
               <span className="text-slate-500">Tutar ({currentPlan.label})</span>
               <span className="font-bold text-[#0F172A]">{currentPlan.price.toLocaleString('tr-TR')} ₺</span>
             </div>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+            <p className="text-red-600 text-sm text-center">{errorMessage}</p>
           </div>
         )}
 

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle } from 'lucide-react';
-import { getSupabase } from '@/lib/supabase';
+import { createClient } from '@/utils/supabase/client';
 
 export default function ContactPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -15,7 +15,7 @@ export default function ContactPage() {
     setStatus('idle');
 
     try {
-      const supabase = getSupabase();
+      const supabase = createClient();
       const { error } = await supabase
         .from('contact_messages')
         .insert([{

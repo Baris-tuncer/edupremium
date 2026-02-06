@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, Star, ChevronRight } from 'lucide-react';
 
 export default function StudentLoginPage() {
+  const supabase = createClient();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');

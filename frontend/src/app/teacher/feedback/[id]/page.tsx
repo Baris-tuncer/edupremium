@@ -1,18 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
 
 // ============================================
 // RATING STARS
 // ============================================
-const RatingStars = ({ 
-  label, 
-  value, 
-  onChange 
-}: { 
-  label: string; 
-  value: number; 
+const RatingStars = ({
+  label,
+  value,
+  onChange
+}: {
+  label: string;
+  value: number;
   onChange: (val: number) => void;
 }) => {
   const [hover, setHover] = useState(0);
@@ -52,6 +54,15 @@ const RatingStars = ({
 // MAIN FEEDBACK FORM
 // ============================================
 export default function TeacherFeedbackPage() {
+  const params = useParams();
+  const router = useRouter();
+  const lessonId = params.id as string;
+
+  const [loading, setLoading] = useState(true);
+  const [lesson, setLesson] = useState<any>(null);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
   const [comprehension, setComprehension] = useState(0);
   const [engagement, setEngagement] = useState(0);
   const [participation, setParticipation] = useState(0);
@@ -63,12 +74,54 @@ export default function TeacherFeedbackPage() {
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const lesson = {
-    student: 'Ali Yılmaz',
-    subject: 'Matematik - 11. Sınıf',
-    date: '14 Ocak 2026',
-    time: '14:00 - 15:00',
-  };
+  // Ders bilgilerini yükle
+  useEffect(() => {
+    async function fetchLesson() {
+      if (!lessonId) {
+        setError('Ders ID bulunamadı');
+        setLoading(false);
+        return;
+      }
+
+      const supabase = createClient();
+
+      // Önce oturum kontrolü
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/teacher/login');
+        return;
+      }
+
+      // Ders bilgilerini al
+      const { data: lessonData, error: lessonError } = await supabase
+        .from('lessons')
+        .select(`
+          *,
+          student:student_profiles(id, full_name, email),
+          teacher:teacher_profiles(id, full_name, user_id)
+        `)
+        .eq('id', lessonId)
+        .single();
+
+      if (lessonError || !lessonData) {
+        setError('Ders bulunamadı');
+        setLoading(false);
+        return;
+      }
+
+      // Bu öğretmenin dersi mi kontrol et
+      if (lessonData.teacher?.user_id !== user.id) {
+        setError('Bu derse erişim yetkiniz yok');
+        setLoading(false);
+        return;
+      }
+
+      setLesson(lessonData);
+      setLoading(false);
+    }
+
+    fetchLesson();
+  }, [lessonId, router]);
 
   const handleAddTopic = () => {
     if (newTopic.trim()) {
@@ -87,10 +140,112 @@ export default function TeacherFeedbackPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsSubmitting(false);
-    // Redirect or show success
+    setError('');
+
+    try {
+      const supabase = createClient();
+
+      // Feedback kaydı oluştur
+      const { error: feedbackError } = await supabase
+        .from('lesson_feedback')
+        .insert({
+          lesson_id: lessonId,
+          teacher_id: lesson.teacher_id,
+          student_id: lesson.student_id,
+          comprehension_rating: comprehension,
+          engagement_rating: engagement,
+          participation_rating: participation,
+          homework_status: homeworkStatus,
+          topics_covered: topics,
+          areas_for_improvement: improvements,
+          teacher_notes: notes,
+          created_at: new Date().toISOString(),
+        });
+
+      if (feedbackError) {
+        // Tablo yoksa veya hata varsa, lessons tablosuna feedback bilgisi ekle
+        const { error: updateError } = await supabase
+          .from('lessons')
+          .update({
+            feedback_submitted: true,
+            feedback_data: {
+              comprehension,
+              engagement,
+              participation,
+              homeworkStatus,
+              topics,
+              improvements,
+              notes,
+              submittedAt: new Date().toISOString(),
+            }
+          })
+          .eq('id', lessonId);
+
+        if (updateError) {
+          throw new Error('Değerlendirme kaydedilemedi: ' + updateError.message);
+        }
+      }
+
+      setSuccessMessage('Değerlendirme başarıyla kaydedildi!');
+
+      // 2 saniye sonra dashboard'a yönlendir
+      setTimeout(() => {
+        router.push('/teacher/dashboard');
+      }, 2000);
+
+    } catch (err: any) {
+      setError(err.message || 'Bir hata oluştu');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  // Tarih formatlama
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('tr-TR', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: 'Europe/Istanbul'
+    });
+  };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('tr-TR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Europe/Istanbul'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#FDFBF7]/80 backdrop-blur-xl py-12 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">Ders bilgileri yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !lesson) {
+    return (
+      <div className="min-h-screen bg-[#FDFBF7]/80 backdrop-blur-xl py-12">
+        <div className="max-w-3xl mx-auto px-4">
+          <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+            <p className="text-red-600 mb-4">{error}</p>
+            <Link href="/teacher/dashboard" className="text-[#D4AF37] hover:underline">
+              Dashboard'a Dön
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FDFBF7]/80 backdrop-blur-xl py-12">
@@ -109,16 +264,34 @@ export default function TeacherFeedbackPage() {
           </p>
         </div>
 
+        {/* Success Message */}
+        {successMessage && (
+          <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+            <p className="text-green-700 text-center font-medium">{successMessage}</p>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+            <p className="text-red-600 text-center">{error}</p>
+          </div>
+        )}
+
         {/* Lesson Info Card */}
         <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6 mb-8">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-[#D4AF37]/10 rounded-2xl flex items-center justify-center font-serif text-2xl font-semibold text-[#D4AF37]">
-              {lesson.student.split(' ').map(n => n[0]).join('')}
+              {lesson?.student?.full_name?.split(' ').map((n: string) => n[0]).join('') || '??'}
             </div>
             <div>
-              <h2 className="font-serif text-xl font-semibold text-[#0F172A]">{lesson.student}</h2>
-              <p className="text-slate-500">{lesson.subject}</p>
-              <p className="text-sm text-slate-400">{lesson.date} • {lesson.time}</p>
+              <h2 className="font-serif text-xl font-semibold text-[#0F172A]">
+                {lesson?.student?.full_name || 'Öğrenci'}
+              </h2>
+              <p className="text-slate-500">{lesson?.subject || 'Ders'}</p>
+              <p className="text-sm text-slate-400">
+                {lesson?.scheduled_at ? formatDate(lesson.scheduled_at) : ''} • {lesson?.scheduled_at ? formatTime(lesson.scheduled_at) : ''}
+              </p>
             </div>
           </div>
         </div>
@@ -128,19 +301,19 @@ export default function TeacherFeedbackPage() {
           {/* Ratings Section */}
           <div className="mb-8">
             <h3 className="font-serif text-lg font-semibold text-[#0F172A] mb-6">Performans Değerlendirmesi</h3>
-            
+
             <RatingStars
               label="Konuyu Anlama Düzeyi"
               value={comprehension}
               onChange={setComprehension}
             />
-            
+
             <RatingStars
               label="Derse İlgi ve Motivasyon"
               value={engagement}
               onChange={setEngagement}
             />
-            
+
             <RatingStars
               label="Aktif Katılım"
               value={participation}
@@ -272,7 +445,7 @@ export default function TeacherFeedbackPage() {
               <div>
                 <h4 className="font-serif font-semibold text-[#0F172A]">AI Rapor Oluşturma</h4>
                 <p className="text-sm text-[#0F172A]/70">
-                  Bu değerlendirme gönderildikten sonra, yapay zeka tarafından veliye yönelik 
+                  Bu değerlendirme gönderildikten sonra, yapay zeka tarafından veliye yönelik
                   profesyonel bir rapor otomatik olarak oluşturulacak ve e-posta ile gönderilecektir.
                 </p>
               </div>
