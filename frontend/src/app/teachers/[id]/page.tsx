@@ -7,6 +7,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { supabase } from '@/lib/supabase';
 import { toast, Toaster } from 'react-hot-toast';
+import { calculateDisplayPrice } from '@/lib/price-calculator';
 
 interface Teacher {
   id: string;
@@ -16,6 +17,7 @@ interface Teacher {
   diploma_url: string | null;
   bio: string | null;
   base_price: number;
+  hourly_rate_display: number | null;
   subjects: string[];
   education_levels: string[];
   experience_years: number | null;
@@ -230,11 +232,8 @@ export default function TeacherProfilePage() {
     );
   }
 
-  const basePrice = teacher.base_price || 0;
-  const commission = basePrice * 0.20;
-  const subtotal = basePrice + commission;
-  const tax = subtotal * 0.20;
-  const price = Math.round((subtotal + tax) / 100) * 100;
+  // Fiyat: hourly_rate_display varsa onu kullan, yoksa hesapla
+  const price = teacher.hourly_rate_display || calculateDisplayPrice(teacher.base_price || 0, 0.25);
 
   return (
     <>
@@ -387,6 +386,7 @@ export default function TeacherProfilePage() {
                     ₺{price.toLocaleString('tr-TR')}
                   </div>
                   <div className="text-slate-500">/saat</div>
+                  <div className="text-xs text-slate-400">(KDV Dahil)</div>
                 </div>
 
                 <button
@@ -565,7 +565,10 @@ export default function TeacherProfilePage() {
                 <h3 className="font-semibold text-navy-900 mb-4">Ödeme Özeti</h3>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-600">1 Saatlik Ders</span>
-                  <span className="text-2xl font-bold text-navy-900">₺{price.toLocaleString('tr-TR')}</span>
+                  <div className="text-right">
+                    <span className="text-2xl font-bold text-navy-900">₺{price.toLocaleString('tr-TR')}</span>
+                    <span className="block text-xs text-slate-400">(KDV Dahil)</span>
+                  </div>
                 </div>
               </div>
 
