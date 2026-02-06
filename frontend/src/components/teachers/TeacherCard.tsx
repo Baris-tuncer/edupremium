@@ -127,6 +127,7 @@ const TeacherCard: React.FC<TeacherCardProps> = ({ teacher }) => {
             <p className="text-lg font-bold text-[#0F172A]">
               {teacher.hourly_rate ? `₺${teacher.hourly_rate.toLocaleString('tr-TR')}` : '-'}
             </p>
+            {teacher.hourly_rate && <p className="text-[9px] text-slate-400">(KDV Dahil)</p>}
           </div>
         </div>
         <Link

@@ -522,6 +522,7 @@ function TeachersContent() {
                           ₺{parentPrice.toLocaleString('tr-TR')}
                         </div>
                         <div className="text-sm text-slate-500">/saat</div>
+                        <div className="text-[10px] text-slate-400">(KDV Dahil)</div>
                       </div>
                       <span className="bg-[#0F172A] text-white font-bold py-2 px-4 text-sm rounded-xl hover:bg-[#D4AF37] hover:text-[#0F172A] transition-all">
                         Profili Gör

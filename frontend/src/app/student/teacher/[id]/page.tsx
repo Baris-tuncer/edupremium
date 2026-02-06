@@ -197,7 +197,7 @@ export default function TeacherDetailPage() {
                     {teacher.is_verified && <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">✓ Onaylı</span>}
                   </div>
                   <p className="text-slate-600 mt-1">{teacher.title}</p>
-                  <span className="text-2xl font-bold text-[#D4AF37] mt-3 block">{formatPrice(displayPrice)}<span className="text-sm font-normal text-slate-500">/ders</span></span>
+                  <span className="text-2xl font-bold text-[#D4AF37] mt-3 block">{formatPrice(displayPrice)}<span className="text-sm font-normal text-slate-500">/ders</span><span className="text-xs font-normal text-slate-400 ml-1">(KDV Dahil)</span></span>
                 </div>
               </div>
             </div>
@@ -255,7 +255,7 @@ export default function TeacherDetailPage() {
                 <p className="text-xs text-slate-400 mt-1 text-right">{lessonNote.length}/500</p>
               </div>
 
-              <div className="border-t pt-4 mb-4"><div className="flex justify-between items-center"><span className="text-slate-600">Ders Ücreti</span><span className="text-2xl font-bold">{formatPrice(displayPrice)}</span></div></div>
+              <div className="border-t pt-4 mb-4"><div className="flex justify-between items-center"><span className="text-slate-600">Ders Ücreti</span><div className="text-right"><span className="text-2xl font-bold">{formatPrice(displayPrice)}</span><span className="block text-xs text-slate-400">(KDV Dahil)</span></div></div></div>
 
               <div className="bg-green-50 border border-green-200 rounded-xl p-3 mb-4"><div className="flex items-start gap-2"><span>🛡️</span><div className="text-sm"><p className="font-medium text-green-800">EduPremium Güvencesi</p><p className="text-green-700">Ödemeniz güvence altındadır.</p></div></div></div>
 
