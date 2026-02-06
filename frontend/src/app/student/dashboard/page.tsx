@@ -124,30 +124,14 @@ export default function StudentDashboardPage() {
     setCurrentPage(1);
   }, [searchQuery, selectedLevel, selectedSubject, priceRange]);
 
-  // Featured öğretmenleri seviyeye göre grupla
+  // Featured öğretmenleri featured_category'ye göre grupla
   const featuredByLevel = useMemo(() => {
     const grouped: Record<string, any[]> = {};
     featuredTeachers.forEach((teacher) => {
-      const levels = new Set<string>();
-      if (teacher.subjects && teacher.subjects.length > 0) {
-        teacher.subjects.forEach((s: string) => {
-          const parsed = parseSubject(s);
-          if (parsed) levels.add(parsed.level);
-        });
-      }
-      // subjects boşsa featured_category'yi kullan
-      if (levels.size === 0 && teacher.featured_category) {
-        levels.add(teacher.featured_category);
-      }
-      if (levels.size === 0) {
-        if (!grouped['diger']) grouped['diger'] = [];
-        grouped['diger'].push(teacher);
-      } else {
-        levels.forEach((level) => {
-          if (!grouped[level]) grouped[level] = [];
-          grouped[level].push(teacher);
-        });
-      }
+      // Sadece featured_category kullan (öğretmenin ödeme yaptığı kategori)
+      const categoryKey = teacher.featured_category || 'diger';
+      if (!grouped[categoryKey]) grouped[categoryKey] = [];
+      grouped[categoryKey].push(teacher);
     });
     return grouped;
   }, [featuredTeachers]);
