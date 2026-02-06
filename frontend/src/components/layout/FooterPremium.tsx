@@ -170,18 +170,18 @@ const FooterPremium = () => {
             <ul className="space-y-4 mb-8">
               <li className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-[#D4AF37] mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-slate-400">Maslak Mah. Büyükdere Cad. No:123, Sarıyer/İstanbul</span>
+                <span className="text-sm text-slate-300">Maslak Mah. Büyükdere Cad. No:123, Sarıyer/İstanbul</span>
               </li>
               <li className="flex items-center gap-3">
                 <a href="tel:+902123456789" className="flex items-center gap-3 hover:text-white transition-colors">
                   <Phone className="w-5 h-5 text-[#D4AF37] flex-shrink-0" />
-                  <span className="text-sm text-slate-400">+90 (212) 345 67 89</span>
+                  <span className="text-sm text-slate-300">+90 (212) 345 67 89</span>
                 </a>
               </li>
               <li className="flex items-center gap-3">
-                <a href="mailto:info@edupremium.com" className="flex items-center gap-3 hover:text-white transition-colors">
+                <a href="mailto:info@visserr.com" className="flex items-center gap-3 hover:text-white transition-colors">
                   <Mail className="w-5 h-5 text-[#D4AF37] flex-shrink-0" />
-                  <span className="text-sm text-slate-400">info@edupremium.com</span>
+                  <span className="text-sm text-slate-300">info@visserr.com</span>
                 </a>
               </li>
             </ul>

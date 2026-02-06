@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle } from 'lucide-react';
-import { createClient } from '@/utils/supabase/client';
 
 export default function ContactPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -15,17 +14,19 @@ export default function ContactPage() {
     setStatus('idle');
 
     try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from('contact_messages')
-        .insert([{
-            full_name: formData.name,
-            email: formData.email,
-            message: formData.message,
-            created_at: new Date().toISOString()
-        }]);
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          subject: 'general',
+          message: formData.message,
+        }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) throw new Error('Mesaj gönderilemedi');
+
       setStatus('success');
       setFormData({ name: '', email: '', message: '' });
     } catch (error) {
@@ -62,15 +63,15 @@ export default function ContactPage() {
             <div className="space-y-6">
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-[#D4AF37] mt-1" />
-                <div><h4 className="font-bold text-sm">Adres</h4><p className="text-slate-400 text-xs leading-relaxed">Maslak Mah. Büyükdere Cad.<br/>No:123 Sarıyer/İstanbul</p></div>
+                <div><h4 className="font-bold text-sm text-white">Adres</h4><p className="text-slate-300 text-xs leading-relaxed">Maslak Mah. Büyükdere Cad.<br/>No:123 Sarıyer/İstanbul</p></div>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-[#D4AF37]" />
-                <div><h4 className="font-bold text-sm">Telefon</h4><p className="text-slate-400 text-xs">+90 (212) 345 67 89</p></div>
+                <div><h4 className="font-bold text-sm text-white">Telefon</h4><p className="text-slate-300 text-xs">+90 (212) 345 67 89</p></div>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-[#D4AF37]" />
-                <div><h4 className="font-bold text-sm">E-Posta</h4><p className="text-slate-400 text-xs">info@edupremium.com</p></div>
+                <div><h4 className="font-bold text-sm text-white">E-Posta</h4><p className="text-slate-300 text-xs">info@visserr.com</p></div>
               </div>
             </div>
           </div>
