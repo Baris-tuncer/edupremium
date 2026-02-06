@@ -6,6 +6,16 @@ import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { EDUCATION_LEVELS, LevelKey, parseSubject } from '@/lib/constants';
+
+// Featured kategori etiketleri (ödeme sistemindeki key'ler)
+const FEATURED_CATEGORY_LABELS: Record<string, string> = {
+  'ilkokul': 'İlkokul (1-4)',
+  'ortaokul': 'Ortaokul (5-8)',
+  'lise': 'Lise (9-12)',
+  'lgs': 'LGS Hazırlık',
+  'tyt-ayt': 'TYT-AYT Hazırlık',
+  'yabanci-dil': 'Yabancı Dil',
+};
 import { Search, Star, Bell, User, Calendar, Clock, ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
 
 export default function StudentDashboardPage() {
@@ -237,15 +247,15 @@ export default function StudentDashboardPage() {
               <h1 className="text-3xl font-bold text-[#0F172A] font-serif mb-2">Öne Çıkan Eğitmenler</h1>
               <p className="text-slate-600 mb-10 font-medium">Alanında uzman, seçkin eğitmenlerimizi inceleyin.</p>
 
-              {Object.entries(EDUCATION_LEVELS).map(([levelKey, levelData]) => {
-                const categoryTeachers = featuredByLevel[levelKey];
+              {Object.entries(featuredByLevel).map(([categoryKey, categoryTeachers]) => {
                 if (!categoryTeachers || categoryTeachers.length === 0) return null;
+                const categoryLabel = FEATURED_CATEGORY_LABELS[categoryKey] || categoryKey;
 
                 return (
-                  <div key={levelKey} className="mb-12 border-b border-slate-200/50 pb-12 last:border-0">
+                  <div key={categoryKey} className="mb-12 border-b border-slate-200/50 pb-12 last:border-0">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-1 h-8 bg-[#D4AF37] rounded-full"></div>
-                      <h2 className="text-xl font-bold text-[#0F172A] font-serif">{levelData.label}</h2>
+                      <h2 className="text-xl font-bold text-[#0F172A] font-serif">{categoryLabel}</h2>
                       <span className="text-[10px] bg-[#D4AF37]/10 text-[#D4AF37] px-2 py-1 rounded font-bold uppercase tracking-wider">Özel Koleksiyon</span>
                     </div>
 
