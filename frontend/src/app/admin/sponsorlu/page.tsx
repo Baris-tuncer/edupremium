@@ -298,21 +298,21 @@ export default function SponsorluPage() {
           </div>
 
           {/* Aktif Öğretmenler */}
-          <h2 className="text-lg font-bold text-slate-900 mb-4">Aktif Sponsorlu Öğretmenler</h2>
+          <h2 className="text-lg font-bold text-slate-900 mb-4">Aktif Sponsorlu Öğretmenler ({featuredTeachers.length})</h2>
           {featuredTeachers.length === 0 ? (
             <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 p-8 text-center">
               <p className="text-slate-500">Henüz sponsorlu öğretmen yok.</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {featuredTeachers.map(teacher => (
-                <div key={teacher.id} className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 p-5 flex items-center gap-4">
+                <div key={teacher.id} className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-lg shadow-[#0F172A]/5 p-4 flex items-center gap-3">
                   {/* Avatar */}
-                  <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
+                  <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
                     {teacher.avatar_url ? (
                       <img src={teacher.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold">
+                      <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold text-sm">
                         {teacher.full_name?.[0]}
                       </div>
                     )}
@@ -320,22 +320,20 @@ export default function SponsorluPage() {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-slate-900">{teacher.full_name}</h3>
-                    <p className="text-sm text-slate-500 truncate">{teacher.featured_headline}</p>
+                    <h3 className="font-semibold text-slate-900 text-sm">{teacher.full_name}</h3>
+                    <p className="text-xs text-slate-500 truncate">{teacher.featured_headline}</p>
                   </div>
 
-                  {/* Category */}
-                  <span className="bg-amber-50 text-amber-700 px-3 py-1 rounded-full text-sm font-medium">
-                    {CATEGORIES.find(c => c.key === teacher.featured_category)?.label || teacher.featured_category}
-                  </span>
-
-                  {/* Expiry */}
-                  <div className="text-right">
+                  {/* Category & Expiry */}
+                  <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                    <span className="bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full text-xs font-medium">
+                      {CATEGORIES.find(c => c.key === teacher.featured_category)?.label || teacher.featured_category}
+                    </span>
                     {isExpired(teacher.featured_until) ? (
-                      <span className="text-red-500 text-sm font-medium">Süresi Dolmuş</span>
+                      <span className="text-red-500 text-xs font-medium">Süresi Dolmuş</span>
                     ) : (
-                      <span className="text-sm text-slate-500">
-                        {formatDate(teacher.featured_until!)} tarihine kadar
+                      <span className="text-xs text-slate-400">
+                        {formatDate(teacher.featured_until!)}
                       </span>
                     )}
                   </div>
@@ -343,10 +341,10 @@ export default function SponsorluPage() {
                   {/* Actions */}
                   <button
                     onClick={() => handleRemoveFeatured(teacher.id)}
-                    className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                    className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors flex-shrink-0"
                     title="Kaldır"
                   >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
