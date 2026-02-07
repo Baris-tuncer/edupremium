@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Shield } from 'lucide-react';
+import Turnstile from '@/components/Turnstile';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
@@ -14,9 +15,20 @@ export default function AdminLoginPage() {
   const [showMfaInput, setShowMfaInput] = useState(false);
   const [mfaCode, setMfaCode] = useState('');
   const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState('');
+
+  const handleTurnstileVerify = useCallback((token: string) => {
+    setTurnstileToken(token);
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!turnstileToken) {
+      setError('Lütfen güvenlik doğrulamasını tamamlayın.');
+      return;
+    }
+
     setError('');
     setLoading(true);
 
@@ -191,9 +203,11 @@ export default function AdminLoginPage() {
                 />
               </div>
 
+              <Turnstile onVerify={handleTurnstileVerify} />
+
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !turnstileToken}
                 className="w-full bg-[#0F172A] hover:bg-[#D4AF37] hover:text-[#0F172A] text-white font-semibold py-3 px-4 rounded-xl transition-colors disabled:opacity-50"
               >
                 {loading ? 'Giriş yapılıyor...' : 'Giriş Yap'}

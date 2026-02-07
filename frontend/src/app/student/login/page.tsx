@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, Star, ChevronRight } from 'lucide-react';
+import Turnstile from '@/components/Turnstile';
 
 export default function StudentLoginPage() {
   const supabase = createClient();
@@ -22,9 +23,20 @@ export default function StudentLoginPage() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [isResetting, setIsResetting] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
+
+  const handleTurnstileVerify = useCallback((token: string) => {
+    setTurnstileToken(token);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!turnstileToken) {
+      setError('Lütfen güvenlik doğrulamasını tamamlayın.');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
     setSuccess('');
@@ -179,9 +191,11 @@ export default function StudentLoginPage() {
                     </div>
                   </div>
 
+                  <Turnstile onVerify={handleTurnstileVerify} />
+
                   <button
                     type="submit"
-                    disabled={isLoading}
+                    disabled={isLoading || !turnstileToken}
                     className="w-full bg-[#0F172A] text-white font-bold py-4 rounded-xl hover:bg-[#D4AF37] hover:text-[#0F172A] transition-all shadow-lg flex items-center justify-center gap-2 group mt-4 disabled:opacity-50"
                   >
                     {isLoading ? 'Giriş Yapılıyor...' : (

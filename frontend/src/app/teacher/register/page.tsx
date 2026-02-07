@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import Link from 'next/link'
 import { Loader2, AlertCircle, CheckCircle, ArrowLeft, ChevronRight, Presentation, User, Mail, Lock, Phone, Ticket, Eye, EyeOff } from 'lucide-react'
+import Turnstile from '@/components/Turnstile'
 
 export default function Register() {
   const supabase = createClient()
@@ -21,9 +22,20 @@ export default function Register() {
   })
   const [acceptTerms, setAcceptTerms] = useState(false)
   const [acceptKvkk, setAcceptKvkk] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState('')
+
+  const handleTurnstileVerify = useCallback((token: string) => {
+    setTurnstileToken(token)
+  }, [])
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!turnstileToken) {
+      setError('Lütfen güvenlik doğrulamasını tamamlayın.')
+      return
+    }
+
     setLoading(true)
     setError(null)
 
@@ -317,9 +329,11 @@ export default function Register() {
                   </label>
                 </div>
 
+                <Turnstile onVerify={handleTurnstileVerify} />
+
                 <button
                   type="submit"
-                  disabled={loading || !acceptTerms || !acceptKvkk}
+                  disabled={loading || !acceptTerms || !acceptKvkk || !turnstileToken}
                   className="w-full bg-[#0F172A] text-white font-bold py-4 rounded-xl hover:bg-[#D4AF37] hover:text-[#0F172A] transition-all shadow-lg flex items-center justify-center gap-2 group mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (

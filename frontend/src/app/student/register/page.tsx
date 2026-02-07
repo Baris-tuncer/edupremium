@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, ChevronRight, Star, User, Mail, Lock, Phone, GraduationCap, Eye, EyeOff, CheckCircle } from 'lucide-react';
+import Turnstile from '@/components/Turnstile';
 
 export default function StudentRegisterPage() {
   const router = useRouter();
@@ -25,6 +26,11 @@ export default function StudentRegisterPage() {
   });
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptKvkk, setAcceptKvkk] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
+
+  const handleTurnstileVerify = useCallback((token: string) => {
+    setTurnstileToken(token);
+  }, []);
 
   const gradeLevels = [
     'İlkokul (1-4)',
@@ -37,6 +43,11 @@ export default function StudentRegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!turnstileToken) {
+      toast.error('Lütfen güvenlik doğrulamasını tamamlayın.');
+      return;
+    }
 
     if (formData.password !== formData.passwordConfirm) {
       toast.error('Şifreler eşleşmiyor');
@@ -363,9 +374,11 @@ export default function StudentRegisterPage() {
                 </label>
               </div>
 
+              <Turnstile onVerify={handleTurnstileVerify} />
+
               <button
                 type="submit"
-                disabled={isLoading || !acceptTerms || !acceptKvkk}
+                disabled={isLoading || !acceptTerms || !acceptKvkk || !turnstileToken}
                 className="w-full bg-[#0F172A] text-white font-bold py-4 rounded-xl hover:bg-[#D4AF37] hover:text-[#0F172A] transition-all shadow-lg flex items-center justify-center gap-2 group mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Kayıt Yapılıyor...' : (
