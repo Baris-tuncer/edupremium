@@ -24,7 +24,7 @@ export default function NasilCalisirPage() {
     {
       icon: Video,
       baslik: '4. Derse Başlayın',
-      aciklama: 'MS Teams üzerinden online dersinize katılın.'
+      aciklama: 'Panelinizdeki "Derse Katıl" butonuna tıklayarak dersinize başlayın.'
     },
   ]
 

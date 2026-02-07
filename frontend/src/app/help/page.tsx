@@ -102,8 +102,7 @@ export default function HelpPage() {
       content: `• Belirlediğiniz saatlik ücret, net olarak cebinize geçecek tutardır.
 • Platform komisyonu ve vergiler bu tutarın üzerine eklenerek veliye yansıtılır.
 • Kazançlarınızı "Kazançlarım" sayfasından takip edebilirsiniz.
-• Ödemeler haftalık olarak banka hesabınıza aktarılır.
-• Minimum çekim tutarı 500 TL'dir.`
+• Ödemeler her ayın sonunda banka hesabınıza aktarılır.`
     },
     {
       icon: Shield,

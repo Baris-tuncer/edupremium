@@ -221,9 +221,8 @@ export default function KullanimSartlariPage() {
                     Bu Sözleşme hakkında sorularınız için bizimle iletişime geçebilirsiniz:
                   </p>
                   <ul className="list-none text-slate-600 space-y-2">
-                    <li><strong>E-posta:</strong> legal@edupremium.com</li>
-                    <li><strong>Adres:</strong> [Şirket Adresi]</li>
-                    <li><strong>Telefon:</strong> [Telefon Numarası]</li>
+                    <li><strong>E-posta:</strong> info@visserr.com</li>
+                    <li><strong>Adres:</strong> Altunizade - Istanbul</li>
                   </ul>
                 </section>
 

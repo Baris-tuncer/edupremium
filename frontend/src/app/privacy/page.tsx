@@ -47,10 +47,9 @@ export default function GizlilikPolitikasiPage() {
                     doğrultusunda ve kanuna uygun şekilde işlenebilecektir.
                   </p>
                   <ul className="list-none text-slate-600 space-y-2">
-                    <li><strong>Şirket Ünvanı:</strong> [Şirket Ünvanı]</li>
-                    <li><strong>Adres:</strong> [Şirket Adresi]</li>
-                    <li><strong>E-posta:</strong> kvkk@edupremium.com</li>
-                    <li><strong>Telefon:</strong> [Telefon Numarası]</li>
+                    <li><strong>Şirket Ünvanı:</strong> Mac Elt Özel Eğitim Yayıncılık Dağ. Paz. ve Tic. Ltd. Şti.</li>
+                    <li><strong>Adres:</strong> Altunizade - Istanbul</li>
+                    <li><strong>E-posta:</strong> info@visserr.com</li>
                   </ul>
                 </section>
 
@@ -211,8 +210,8 @@ export default function GizlilikPolitikasiPage() {
                     Yukarıdaki haklarınızı kullanmak için aşağıdaki yöntemlerle başvurabilirsiniz:
                   </p>
                   <ul className="list-disc pl-6 text-slate-600 space-y-2">
-                    <li><strong>E-posta:</strong> kvkk@edupremium.com (kayıtlı e-posta adresinizden)</li>
-                    <li><strong>Posta:</strong> [Şirket Adresi] adresine noter aracılığıyla veya iadeli taahhütlü mektup ile</li>
+                    <li><strong>E-posta:</strong> info@visserr.com (kayıtlı e-posta adresinizden)</li>
+                    <li><strong>Posta:</strong> Altunizade - Istanbul adresine noter aracılığıyla veya iadeli taahhütlü mektup ile</li>
                     <li><strong>Online Form:</strong> Platform üzerindeki KVKK başvuru formu</li>
                   </ul>
                   <p className="text-slate-600 mt-4">
@@ -267,10 +266,9 @@ export default function GizlilikPolitikasiPage() {
                       <span className="font-bold text-[#0F172A]">İletişim Bilgileri</span>
                     </div>
                     <ul className="list-none text-slate-600 space-y-2">
-                      <li><strong>Veri Sorumlusu Temsilcisi:</strong> [İsim]</li>
-                      <li><strong>E-posta:</strong> kvkk@edupremium.com</li>
-                      <li><strong>Telefon:</strong> [Telefon Numarası]</li>
-                      <li><strong>Adres:</strong> [Şirket Adresi]</li>
+                      <li><strong>Veri Sorumlusu:</strong> Mehmet Ali Kafasibuyuk</li>
+                      <li><strong>E-posta:</strong> info@visserr.com</li>
+                      <li><strong>Adres:</strong> Altunizade - Istanbul</li>
                     </ul>
                   </div>
                 </section>

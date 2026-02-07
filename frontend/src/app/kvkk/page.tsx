@@ -97,7 +97,7 @@ export default function KvkkPage() {
                     <p className="text-sm text-[#0F172A] font-bold uppercase tracking-wider">İletişim</p>
                   </div>
                   <p className="text-slate-600 text-sm">
-                    Haklarınızla ilgili taleplerinizi <a href="mailto:kvkk@edupremium.com" className="text-[#D4AF37] font-bold hover:underline">kvkk@edupremium.com</a> adresine iletebilirsiniz.
+                    Haklarınızla ilgili taleplerinizi <a href="mailto:info@visserr.com" className="text-[#D4AF37] font-bold hover:underline">info@visserr.com</a> adresine iletebilirsiniz.
                   </p>
                 </div>
 
