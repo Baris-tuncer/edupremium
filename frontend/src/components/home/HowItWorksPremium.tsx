@@ -25,7 +25,7 @@ const steps = [
 
 const HowItWorksPremium = () => {
   return (
-    <section className="relative py-24 overflow-hidden">
+    <section id="how-it-works" className="relative py-24 overflow-hidden scroll-mt-20">
 
       {/* --- ARKA PLAN (AYNI KÜTÜPHANE TEMASI) --- */}
       <div className="absolute inset-0 z-0">

@@ -189,24 +189,42 @@ const FooterPremium = () => {
         </div>
 
         {/* --- ALT BÖLÜM --- */}
-        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="text-center md:text-left">
-            <p className="text-xs text-slate-500">
-              &copy; 2026 EduPremium. Tüm hakları saklıdır.
-            </p>
-            <p className="text-[10px] text-slate-600 mt-1">Tüm içerikler telif hakkı ile korunmaktadır. İzinsiz kopyalanması yasaktır.</p>
+        <div className="border-t border-white/10 pt-8">
+          {/* Güvenlik Rozetleri */}
+          <div className="flex flex-wrap justify-center gap-3 mb-6">
+            <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-white/10">
+              <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />
+              <span className="text-[11px] text-slate-300 uppercase tracking-wider font-bold">256-Bit SSL</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-white/10">
+              <svg className="w-4 h-4 text-[#F6821F]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16.5088 16.8447C15.981 17.5354 15.4068 18.2679 14.5624 18.2825C13.7179 18.2971 13.4378 17.7877 12.4596 17.7877C11.4814 17.7877 11.1686 18.2679 10.3715 18.2971C9.54217 18.3263 8.88497 17.4878 8.35257 16.8009C7.26867 15.3927 6.43207 12.8352 7.54787 11.1087C8.10097 10.2556 8.98457 9.71309 9.94457 9.69849C10.7563 9.68389 11.5214 10.2483 12.0181 10.2483C12.5148 10.2483 13.4451 9.56439 14.4233 9.66929C14.8346 9.68679 15.8636 9.82809 16.5453 10.7709C16.4836 10.8099 15.2076 11.5534 15.2222 13.0949C15.2368 14.9329 16.8174 15.5572 16.8356 15.5645C16.8174 15.6037 16.5672 16.4896 16.5088 16.8447ZM14.0232 6.36719C13.4847 7.00069 12.6329 7.49179 11.7812 7.41609C11.6667 6.56419 12.0617 5.67149 12.5548 5.10379C13.0915 4.48489 14.0268 3.99379 14.7814 3.96459C14.8814 4.85729 14.5523 5.72639 14.0232 6.36719Z"/>
+              </svg>
+              <span className="text-[11px] text-slate-300 uppercase tracking-wider font-bold">App Store Güvenli</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-white/10">
+              <svg className="w-4 h-4" viewBox="0 0 24 24">
+                <path fill="#F6821F" d="M16.557 12.667l1.037-4.413-4.787 4.413h3.75zm-5.337.006l2.17-5.467-5.44 2.067 3.27 3.4zm4.32-6.24l-4.413 1.61L7.61 6.89l7.93-.463zM5.557 8.833l2.94 2.06-2.557.69-.383-2.75zm-.267 3.377l1.18 1.233-1.66.557.48-1.79zm8.78 3.753l.903-3.67h-3.31l2.407 3.67zm-5.723-1.376l3.95.293-3.117 1.75-.833-2.043zm-2.457-.64l1.3-2.45.847 2.087-2.147.363zm4.94 4.313l.78-1.81 1.093 1.65-1.873.16zm.557-3.083l-4.517-.327-.57 1.417 4.23 2.583.857-3.673z"/>
+              </svg>
+              <span className="text-[11px] text-slate-300 uppercase tracking-wider font-bold">Cloudflare Korumalı</span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-6">
-            <Link href="/kvkk" className="text-xs text-slate-500 hover:text-[#D4AF37] transition-colors">KVKK</Link>
-            <Link href="/privacy" className="text-xs text-slate-500 hover:text-[#D4AF37] transition-colors">Gizlilik</Link>
-            <Link href="/terms" className="text-xs text-slate-500 hover:text-[#D4AF37] transition-colors">Kullanım Şartları</Link>
-          </div>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-center md:text-left">
+              <p className="text-sm text-slate-300 font-medium">
+                &copy; 2026 EduPremium. Tüm hakları saklıdır.
+              </p>
+              <p className="text-xs text-slate-400 mt-1">
+                Tüm içerikler 5846 sayılı FSEK ve uluslararası telif hakları ile korunmaktadır. İzinsiz kopyalanması yasaktır.
+              </p>
+            </div>
 
-          {/* Güvenli Ödeme Rozeti */}
-          <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded border border-white/10">
-            <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />
-            <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">256-Bit SSL Secure</span>
+            <div className="flex items-center gap-6">
+              <Link href="/kvkk" className="text-xs text-slate-400 hover:text-[#D4AF37] transition-colors">KVKK</Link>
+              <Link href="/privacy" className="text-xs text-slate-400 hover:text-[#D4AF37] transition-colors">Gizlilik</Link>
+              <Link href="/terms" className="text-xs text-slate-400 hover:text-[#D4AF37] transition-colors">Kullanım Şartları</Link>
+            </div>
           </div>
         </div>
       </div>
