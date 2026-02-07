@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Mail, Lock, Eye, EyeOff, ArrowLeft, ChevronRight, Presentation } from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff, ArrowLeft, ChevronRight, Presentation, Shield } from 'lucide-react'
 
 export default function TeacherLoginPage() {
   const [email, setEmail] = useState('')
@@ -15,6 +15,11 @@ export default function TeacherLoginPage() {
   const [success, setSuccess] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
+
+  // 2FA States
+  const [showMfaInput, setShowMfaInput] = useState(false)
+  const [mfaCode, setMfaCode] = useState('')
+  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -36,6 +41,23 @@ export default function TeacherLoginPage() {
 
       if (error) throw error
 
+      // Check if MFA is required
+      const { data: assuranceLevel } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+
+      if (assuranceLevel?.currentLevel === 'aal1' && assuranceLevel?.nextLevel === 'aal2') {
+        // MFA is required - get the factor
+        const { data: factors } = await supabase.auth.mfa.listFactors()
+        const totpFactor = factors?.totp?.find(f => f.status === 'verified')
+
+        if (totpFactor) {
+          setMfaFactorId(totpFactor.id)
+          setShowMfaInput(true)
+          setLoading(false)
+          return
+        }
+      }
+
+      // No MFA required, proceed with login
       const { data: { session } } = await supabase.auth.getSession()
 
       if (session) {
@@ -46,6 +68,40 @@ export default function TeacherLoginPage() {
     } catch (err: any) {
       setError('Giriş başarısız. Lütfen bilgilerinizi kontrol edin.')
       console.error('Login error:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleMfaVerify = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!mfaFactorId || mfaCode.length !== 6) return
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
+        factorId: mfaFactorId
+      })
+
+      if (challengeError) throw challengeError
+
+      const { error: verifyError } = await supabase.auth.mfa.verify({
+        factorId: mfaFactorId,
+        challengeId: challengeData.id,
+        code: mfaCode
+      })
+
+      if (verifyError) throw verifyError
+
+      // MFA verified, proceed
+      router.refresh()
+      router.push('/teacher/dashboard')
+
+    } catch (err: any) {
+      setError('Doğrulama kodu hatalı. Lütfen tekrar deneyin.')
+      console.error('MFA verify error:', err)
     } finally {
       setLoading(false)
     }
@@ -103,63 +159,108 @@ export default function TeacherLoginPage() {
               </div>
             )}
 
-            <form onSubmit={handleLogin} className="space-y-5">
-
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-[#0F172A] uppercase tracking-wider ml-1">E-Posta</label>
-                <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                    <Mail className="w-5 h-5" />
+            {showMfaInput ? (
+              /* 2FA Code Input */
+              <form onSubmit={handleMfaVerify} className="space-y-5">
+                <div className="flex items-center gap-3 p-4 bg-[#FDFBF7] rounded-xl border border-[#D4AF37]/20 mb-4">
+                  <Shield className="w-6 h-6 text-[#D4AF37]" />
+                  <div>
+                    <p className="font-semibold text-[#0F172A]">2FA Doğrulaması</p>
+                    <p className="text-sm text-slate-500">Authenticator uygulamanızdaki 6 haneli kodu girin</p>
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-[#0F172A] uppercase tracking-wider ml-1">Doğrulama Kodu</label>
                   <input
-                    type="email"
+                    type="text"
+                    maxLength={6}
                     required
-                    placeholder="ornek@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-white/80 backdrop-blur-xl border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300"
+                    autoFocus
+                    placeholder="000000"
+                    value={mfaCode}
+                    onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ''))}
+                    className="w-full bg-white/80 backdrop-blur-xl border border-slate-200 rounded-xl py-4 px-4 text-center text-2xl font-mono tracking-[0.5em] text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300"
                   />
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <div className="flex justify-between items-center ml-1">
-                  <label className="text-xs font-bold text-[#0F172A] uppercase tracking-wider">Şifre</label>
-                  <Link href="/forgot-password" className="text-xs text-[#D4AF37] font-bold hover:underline">Şifremi Unuttum?</Link>
-                </div>
-                <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                    <Lock className="w-5 h-5" />
-                  </div>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-white/80 backdrop-blur-xl border border-slate-200 rounded-xl py-3.5 pl-12 pr-12 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300"
-                  />
+                <div className="flex gap-3">
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#0F172A] transition-colors"
+                    onClick={() => { setShowMfaInput(false); setMfaCode(''); setError(null); }}
+                    className="flex-1 py-4 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors font-medium"
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    Geri
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading || mfaCode.length !== 6}
+                    className="flex-1 bg-[#0F172A] text-white font-bold py-4 rounded-xl hover:bg-[#D4AF37] hover:text-[#0F172A] transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {loading ? 'Doğrulanıyor...' : 'Doğrula'}
                   </button>
                 </div>
-              </div>
+              </form>
+            ) : (
+              /* Normal Login Form */
+              <form onSubmit={handleLogin} className="space-y-5">
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-[#0F172A] text-white font-bold py-4 rounded-xl hover:bg-[#D4AF37] hover:text-[#0F172A] transition-all shadow-lg flex items-center justify-center gap-2 group mt-4 disabled:opacity-50"
-              >
-                {loading ? 'Giriş Yapılıyor...' : (
-                  <>Panele Git <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>
-                )}
-              </button>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-[#0F172A] uppercase tracking-wider ml-1">E-Posta</label>
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                      <Mail className="w-5 h-5" />
+                    </div>
+                    <input
+                      type="email"
+                      required
+                      placeholder="ornek@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full bg-white/80 backdrop-blur-xl border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300"
+                    />
+                  </div>
+                </div>
 
-            </form>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center ml-1">
+                    <label className="text-xs font-bold text-[#0F172A] uppercase tracking-wider">Şifre</label>
+                    <Link href="/forgot-password" className="text-xs text-[#D4AF37] font-bold hover:underline">Şifremi Unuttum?</Link>
+                  </div>
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                      <Lock className="w-5 h-5" />
+                    </div>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full bg-white/80 backdrop-blur-xl border border-slate-200 rounded-xl py-3.5 pl-12 pr-12 text-slate-700 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-slate-300"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#0F172A] transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-[#0F172A] text-white font-bold py-4 rounded-xl hover:bg-[#D4AF37] hover:text-[#0F172A] transition-all shadow-lg flex items-center justify-center gap-2 group mt-4 disabled:opacity-50"
+                >
+                  {loading ? 'Giriş Yapılıyor...' : (
+                    <>Panele Git <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>
+                  )}
+                </button>
+
+              </form>
+            )}
 
             <div className="mt-8 text-center pt-6 border-t border-slate-100">
               <p className="text-slate-500 text-sm">
