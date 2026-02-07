@@ -137,12 +137,16 @@ export default function OneCikPage() {
         });
 
         const result = await response.json();
+        console.log('Featured payment result:', result);
 
         if (result.paymentUrl) {
           // Ödeme sayfasına yönlendir
           window.location.href = result.paymentUrl;
         } else {
-          setErrorMessage('Ödeme oturumu oluşturulamadı. Lütfen tekrar deneyin.');
+          // Paratika'dan gelen gerçek hatayı göster
+          const errorMsg = result.error || result.errorMsg || 'Ödeme oturumu oluşturulamadı';
+          console.error('Payment error:', result);
+          setErrorMessage(errorMsg);
         }
       }
     } catch (err) {

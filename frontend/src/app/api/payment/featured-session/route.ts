@@ -117,6 +117,13 @@ export async function POST(request: NextRequest) {
       }]),
     });
 
+    console.log('Featured payment - Paratika request:', {
+      orderId,
+      amount: amount.toFixed(2),
+      teacherEmail: teacher.email,
+      teacherName: teacher.full_name,
+    });
+
     const response = await fetch(getApiUrl(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -124,6 +131,8 @@ export async function POST(request: NextRequest) {
     });
 
     const responseText = await response.text();
+    console.log('Featured payment - Paratika response:', responseText);
+
     const data = JSON.parse(responseText);
 
     if (data.responseCode === '00' && data.sessionToken) {
@@ -137,9 +146,13 @@ export async function POST(request: NextRequest) {
       // Başarısız - kaydı sil
       await supabase.from('featured_payments').delete().eq('paratika_payment_id', orderId);
 
+      console.error('Featured payment - Paratika error:', data);
       return NextResponse.json({
         success: false,
         error: data.responseMsg || 'Session oluşturulamadı',
+        errorCode: data.errorCode,
+        errorMsg: data.errorMsg,
+        fullResponse: data,
       }, { status: 400 });
     }
   } catch (error: any) {
