@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Shield, ShieldCheck, ShieldOff, Loader2, Copy, Check } from 'lucide-react';
+import { calculatePriceFromNet, PRICE_CONSTANTS, COMMISSION_TIERS } from '@/lib/price-calculator';
 
 export default function AdminSettingsPage() {
   const [activeTab, setActiveTab] = useState('fiyatlandirma');
-  const [testPrice, setTestPrice] = useState(1500);
+  const [testNetPrice, setTestNetPrice] = useState(1000);
   const [testCommission, setTestCommission] = useState(0.25);
 
   // 2FA States
@@ -133,36 +134,8 @@ export default function AdminSettingsPage() {
     }
   };
 
-  // Dogru fiyatlandirma formulu (pricing.ts ile ayni)
-  const calculatePrice = (basePrice: number, commissionRate: number = 0.25) => {
-    if (!basePrice || basePrice <= 0) {
-      return {
-        basePrice: 0, commissionRate, commissionAmount: 0, teacherNet: 0,
-        teacherGross: 0, stopajAmount: 0, platformShare: 0,
-        kdvMatrah: 0, kdvAmount: 0, rawTotal: 0, displayPrice: 0
-      };
-    }
-    
-    const commissionAmount = basePrice * commissionRate;
-    const teacherNet = basePrice - commissionAmount;
-    const teacherGross = teacherNet / 0.80;
-    const stopajAmount = teacherGross - teacherNet;
-    const platformShare = commissionAmount;
-    const kdvMatrah = teacherGross + platformShare;
-    const kdvAmount = kdvMatrah * 0.20;
-    const rawTotal = kdvMatrah + kdvAmount;
-    const displayPrice = Math.round(rawTotal / 50) * 50;
-    
-    return {
-      basePrice, commissionRate, commissionAmount: Math.round(commissionAmount),
-      teacherNet: Math.round(teacherNet), teacherGross: Math.round(teacherGross),
-      stopajAmount: Math.round(stopajAmount), platformShare: Math.round(platformShare),
-      kdvMatrah: Math.round(kdvMatrah), kdvAmount: Math.round(kdvAmount),
-      rawTotal: Math.round(rawTotal), displayPrice
-    };
-  };
-
-  const priceDetails = calculatePrice(testPrice, testCommission);
+  // Yeni fiyatlandırma sistemi: Öğretmen net alır, üzerine eklenir
+  const priceDetails = calculatePriceFromNet(testNetPrice, testCommission);
   const formatCurrency = (n: number) => n.toLocaleString('tr-TR') + ' TL';
 
   const tabs = [
@@ -199,20 +172,21 @@ export default function AdminSettingsPage() {
           {activeTab === 'fiyatlandirma' && (
             <div className="space-y-6">
               <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 p-6">
-                <h2 className="text-lg font-semibold text-slate-900 mb-4">Fiyat Hesaplama Aracı</h2>
-                
+                <h2 className="text-lg font-semibold text-slate-900 mb-2">Fiyat Hesaplama Aracı</h2>
+                <p className="text-sm text-slate-500 mb-4">Öğretmen net tutarını yazar, vergiler ve komisyon üzerine eklenir.</p>
+
                 <div className="grid grid-cols-2 gap-6 mb-6">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Öğretmen Baz Fiyatı (TL)</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Öğretmen Net Tutarı (TL)</label>
                     <input
                       type="number"
-                      value={testPrice}
-                      onChange={(e) => setTestPrice(Number(e.target.value))}
-                      min={1500}
+                      value={testNetPrice}
+                      onChange={(e) => setTestNetPrice(Number(e.target.value))}
+                      min={PRICE_CONSTANTS.MIN_NET_PRICE}
                       step={50}
                       className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] outline-none"
                     />
-                    <p className="text-sm text-slate-500 mt-1">Minimum: 1.500 TL</p>
+                    <p className="text-sm text-slate-500 mt-1">Minimum: {PRICE_CONSTANTS.MIN_NET_PRICE.toLocaleString('tr-TR')} TL</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Komisyon Oranı</label>
@@ -221,70 +195,62 @@ export default function AdminSettingsPage() {
                       onChange={(e) => setTestCommission(Number(e.target.value))}
                       className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] outline-none"
                     >
-                      <option value={0.25}>%25 - Başlangıç (0-100 ders)</option>
-                      <option value={0.20}>%20 - Standart (101-200 ders)</option>
-                      <option value={0.15}>%15 - Premium (201+ ders)</option>
+                      {COMMISSION_TIERS.map(tier => (
+                        <option key={tier.rate} value={tier.rate}>
+                          %{tier.percentage} - {tier.label} ({tier.minLessons}-{tier.maxLessons === Infinity ? '∞' : tier.maxLessons} ders)
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
 
                 <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-6">
                   <h3 className="font-semibold text-[#D4AF37] mb-4 text-lg">Fiyat Hesaplama Detayı</h3>
-                  
+
                   <div className="space-y-3 text-sm">
+                    {/* Öğretmen Net Tutarı */}
+                    <div className="bg-green-50 rounded-lg p-4 border border-green-100">
+                      <h4 className="font-medium text-green-700 mb-3">1. Öğretmen Net Tutarı</h4>
+                      <div className="flex justify-between">
+                        <span className="text-green-700">Öğretmenin Alacağı (Net):</span>
+                        <span className="font-bold text-green-700 text-lg">{formatCurrency(priceDetails.netPrice)}</span>
+                      </div>
+                      <p className="text-xs text-green-600 mt-2">Öğretmen bu tutarı tam olarak alır, komisyon kesilmez.</p>
+                    </div>
+
+                    {/* Üzerine Eklenenler */}
                     <div className="bg-white/80 backdrop-blur-xl rounded-lg p-4">
-                      <h4 className="font-medium text-slate-700 mb-3">1. Öğretmen Tarafı</h4>
+                      <h4 className="font-medium text-slate-700 mb-3">2. Üzerine Eklenen Tutarlar</h4>
                       <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Baz Fiyat:</span>
-                          <span className="font-medium">{formatCurrency(priceDetails.basePrice)}</span>
+                        <div className="flex justify-between text-orange-600">
+                          <span>Stopaj (%{(PRICE_CONSTANTS.STOPAJ_RATE * 100).toFixed(0)}):</span>
+                          <span className="font-medium">+{formatCurrency(priceDetails.stopaj)}</span>
                         </div>
-                        <div className="flex justify-between text-red-600">
-                          <span>Komisyon ({(testCommission * 100).toFixed(0)}%):</span>
-                          <span className="font-medium">-{formatCurrency(priceDetails.commissionAmount)}</span>
+                        <div className="flex justify-between text-blue-600">
+                          <span>Platform Komisyonu (%{(testCommission * 100).toFixed(0)}):</span>
+                          <span className="font-medium">+{formatCurrency(priceDetails.komisyon)}</span>
                         </div>
-                        <div className="flex justify-between pt-2 border-t border-slate-200 bg-green-50 -mx-4 px-4 py-2 rounded">
-                          <span className="font-medium text-green-700">Öğretmen Net Alacağı:</span>
-                          <span className="font-bold text-green-700">{formatCurrency(priceDetails.teacherNet)}</span>
+                        <div className="flex justify-between pt-2 border-t border-slate-200">
+                          <span className="text-slate-600">Ara Toplam (KDV Hariç):</span>
+                          <span className="font-medium">{formatCurrency(priceDetails.araToplam)}</span>
+                        </div>
+                        <div className="flex justify-between text-purple-600">
+                          <span>KDV (%{(PRICE_CONSTANTS.KDV_RATE * 100).toFixed(0)}):</span>
+                          <span className="font-medium">+{formatCurrency(priceDetails.kdv)}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="bg-white/80 backdrop-blur-xl rounded-lg p-4">
-                      <h4 className="font-medium text-slate-700 mb-3">2. Vergi Hesaplama (Veliye Yansır)</h4>
+                    {/* Sonuç */}
+                    <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+                      <h4 className="font-medium text-blue-700 mb-3">3. Veli Ödeyeceği Tutar</h4>
                       <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Brütleştirme (Stopaj %20):</span>
-                          <span className="font-medium">{formatCurrency(priceDetails.teacherGross)}</span>
-                        </div>
-                        <div className="flex justify-between text-orange-600">
-                          <span>Stopaj Tutarı:</span>
-                          <span className="font-medium">{formatCurrency(priceDetails.stopajAmount)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Platform Payi:</span>
-                          <span className="font-medium">{formatCurrency(priceDetails.platformShare)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">KDV Matrahı:</span>
-                          <span className="font-medium">{formatCurrency(priceDetails.kdvMatrah)}</span>
-                        </div>
-                        <div className="flex justify-between text-orange-600">
-                          <span>KDV (%20):</span>
-                          <span className="font-medium">{formatCurrency(priceDetails.kdvAmount)}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-white/80 backdrop-blur-xl rounded-lg p-4">
-                      <h4 className="font-medium text-slate-700 mb-3">3. Sonuc</h4>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Ham Toplam:</span>
+                        <div className="flex justify-between text-slate-600">
+                          <span>Ham Toplam:</span>
                           <span className="font-medium">{formatCurrency(priceDetails.rawTotal)}</span>
                         </div>
-                        <div className="flex justify-between pt-2 border-t border-slate-200 bg-blue-50 -mx-4 px-4 py-3 rounded">
-                          <span className="font-semibold text-blue-700">Veli Ödeyeceği (50'ye Yuvarlanmış):</span>
+                        <div className="flex justify-between pt-2 border-t border-blue-200">
+                          <span className="font-semibold text-blue-700">Final (50'ye Yuvarlanmış):</span>
                           <span className="font-bold text-blue-700 text-xl">{formatCurrency(priceDetails.displayPrice)}</span>
                         </div>
                       </div>
@@ -296,17 +262,17 @@ export default function AdminSettingsPage() {
               <div className="bg-gradient-to-r from-[#0F172A] to-[#1E293B] rounded-2xl p-6 text-white">
                 <h3 className="font-semibold mb-4">Hızlı Özet</h3>
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-white/20 rounded-xl p-4">
-                    <p className="text-blue-100 text-sm">Öğretmen Alır</p>
-                    <p className="text-2xl font-bold">{formatCurrency(priceDetails.teacherNet)}</p>
+                  <div className="bg-green-500/20 rounded-xl p-4 border border-green-500/30">
+                    <p className="text-green-200 text-sm">Öğretmen Alır (Net)</p>
+                    <p className="text-2xl font-bold text-green-400">{formatCurrency(priceDetails.netPrice)}</p>
                   </div>
-                  <div className="bg-white/20 rounded-xl p-4">
-                    <p className="text-blue-100 text-sm">Platform Kazanır</p>
-                    <p className="text-2xl font-bold">{formatCurrency(priceDetails.commissionAmount)}</p>
+                  <div className="bg-blue-500/20 rounded-xl p-4 border border-blue-500/30">
+                    <p className="text-blue-200 text-sm">Platform Kazanır</p>
+                    <p className="text-2xl font-bold text-blue-400">{formatCurrency(priceDetails.komisyon)}</p>
                   </div>
-                  <div className="bg-white/20 rounded-xl p-4">
-                    <p className="text-blue-100 text-sm">Veli Öder</p>
-                    <p className="text-2xl font-bold">{formatCurrency(priceDetails.displayPrice)}</p>
+                  <div className="bg-amber-500/20 rounded-xl p-4 border border-amber-500/30">
+                    <p className="text-amber-200 text-sm">Veli Öder</p>
+                    <p className="text-2xl font-bold text-amber-400">{formatCurrency(priceDetails.displayPrice)}</p>
                   </div>
                 </div>
               </div>
@@ -315,32 +281,31 @@ export default function AdminSettingsPage() {
 
           {activeTab === 'komisyon' && (
             <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 p-6">
-              <h2 className="text-lg font-semibold text-slate-900 mb-6">Kademeli Komisyon Oranları</h2>
-              
+              <h2 className="text-lg font-semibold text-slate-900 mb-2">Kademeli Komisyon Oranları</h2>
+              <p className="text-sm text-slate-500 mb-6">Komisyon öğretmenden kesilmez, veliye yansıyan fiyata eklenir.</p>
+
               <div className="space-y-4">
-                <div className="flex items-center gap-4 p-5 bg-[#D4AF37]/10 rounded-xl border-2 border-[#D4AF37]/30">
-                  <div className="w-16 h-16 bg-[#D4AF37] rounded-full flex items-center justify-center text-white font-bold text-xl">%25</div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-slate-900 text-lg">Başlangıç</h3>
-                    <p className="text-slate-600">0 - 100 ders</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 p-5 bg-yellow-50 rounded-xl border-2 border-yellow-200">
-                  <div className="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-xl">%20</div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-slate-900 text-lg">Standart</h3>
-                    <p className="text-slate-600">101 - 200 ders</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 p-5 bg-green-50 rounded-xl border-2 border-green-200">
-                  <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-xl">%15</div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-slate-900 text-lg">Premium</h3>
-                    <p className="text-slate-600">201+ ders</p>
-                  </div>
-                </div>
+                {COMMISSION_TIERS.map((tier, index) => {
+                  const colors = [
+                    { bg: 'bg-[#D4AF37]/10', border: 'border-[#D4AF37]/30', circle: 'bg-[#D4AF37]' },
+                    { bg: 'bg-yellow-50', border: 'border-yellow-200', circle: 'bg-yellow-500' },
+                    { bg: 'bg-green-50', border: 'border-green-200', circle: 'bg-green-500' },
+                  ];
+                  const color = colors[index] || colors[0];
+                  return (
+                    <div key={tier.rate} className={`flex items-center gap-4 p-5 ${color.bg} rounded-xl border-2 ${color.border}`}>
+                      <div className={`w-16 h-16 ${color.circle} rounded-full flex items-center justify-center text-white font-bold text-xl`}>
+                        %{tier.percentage}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-slate-900 text-lg">{tier.label}</h3>
+                        <p className="text-slate-600">
+                          {tier.minLessons} - {tier.maxLessons === Infinity ? '∞' : tier.maxLessons} ders
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -350,9 +315,10 @@ export default function AdminSettingsPage() {
               <h2 className="text-lg font-semibold text-slate-900 mb-6">Genel Ayarlar</h2>
 
               <div className="grid grid-cols-2 gap-6">
-                <div className="p-4 bg-slate-50 rounded-xl">
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Minimum Ders Ücreti</label>
-                  <p className="text-2xl font-bold text-slate-900">1.500 TL</p>
+                <div className="p-4 bg-green-50 rounded-xl">
+                  <label className="block text-sm font-medium text-green-700 mb-2">Minimum Net Ders Ücreti</label>
+                  <p className="text-2xl font-bold text-green-700">{PRICE_CONSTANTS.MIN_NET_PRICE.toLocaleString('tr-TR')} TL</p>
+                  <p className="text-xs text-green-600 mt-1">Öğretmenin alacağı minimum tutar</p>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-xl">
                   <label className="block text-sm font-medium text-slate-700 mb-2">Maksimum Ders Ücreti</label>
@@ -360,11 +326,13 @@ export default function AdminSettingsPage() {
                 </div>
                 <div className="p-4 bg-orange-50 rounded-xl">
                   <label className="block text-sm font-medium text-orange-700 mb-2">Stopaj Oranı</label>
-                  <p className="text-2xl font-bold text-orange-700">%20</p>
+                  <p className="text-2xl font-bold text-orange-700">%{(PRICE_CONSTANTS.STOPAJ_RATE * 100).toFixed(0)}</p>
+                  <p className="text-xs text-orange-600 mt-1">Net tutarın üzerine eklenir</p>
                 </div>
                 <div className="p-4 bg-purple-50 rounded-xl">
                   <label className="block text-sm font-medium text-purple-700 mb-2">KDV Oranı</label>
-                  <p className="text-2xl font-bold text-purple-700">%20</p>
+                  <p className="text-2xl font-bold text-purple-700">%{(PRICE_CONSTANTS.KDV_RATE * 100).toFixed(0)}</p>
+                  <p className="text-xs text-purple-600 mt-1">Ara toplam üzerine eklenir</p>
                 </div>
               </div>
             </div>
