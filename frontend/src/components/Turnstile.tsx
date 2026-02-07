@@ -32,7 +32,7 @@ export default function Turnstile({ onVerify, onError, onExpire }: TurnstileProp
     const renderWidget = () => {
       if (containerRef.current && window.turnstile && !widgetIdRef.current) {
         widgetIdRef.current = window.turnstile.render(containerRef.current, {
-          sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+          sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim(),
           callback: (token: string) => {
             onVerify(token);
           },

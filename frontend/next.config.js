@@ -57,8 +57,8 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.tawk.to challenges.cloudflare.com",
-              "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.tawk.to challenges.cloudflare.com static.cloudflareinsights.com",
+              "style-src 'self' 'unsafe-inline' fonts.googleapis.com *.tawk.to",
               "img-src 'self' data: blob: storage.googleapis.com res.cloudinary.com images.unsplash.com *.supabase.co",
               "font-src 'self' fonts.gstatic.com",
               "connect-src 'self' *.supabase.co wss://*.supabase.co *.paratika.com.tr *.tawk.to wss://*.tawk.to",
