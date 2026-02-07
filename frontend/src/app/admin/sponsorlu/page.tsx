@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
 const CATEGORIES = [
-  { key: 'ilkokul', label: 'İlkokul', maxSlots: 5 },
-  { key: 'ortaokul', label: 'Ortaokul', maxSlots: 5 },
-  { key: 'lise', label: 'Lise', maxSlots: 5 },
-  { key: 'lgs', label: 'LGS Hazırlık', maxSlots: 5 },
-  { key: 'tyt-ayt', label: 'TYT-AYT', maxSlots: 5 },
-  { key: 'yabanci-dil', label: 'Yabancı Dil', maxSlots: 5 },
+  { key: 'ilkokul', label: 'İlkokul' },
+  { key: 'ortaokul', label: 'Ortaokul' },
+  { key: 'lise', label: 'Lise' },
+  { key: 'lgs', label: 'LGS Hazırlık' },
+  { key: 'tyt-ayt', label: 'TYT-AYT' },
+  { key: 'yabanci-dil', label: 'Yabancı Dil' },
 ];
 
 interface FeaturedTeacher {
@@ -112,12 +112,6 @@ export default function SponsorluPage() {
   const handleAddFeatured = async () => {
     if (!selectedTeacher || !selectedCategory || !headline) {
       alert('Tüm alanları doldurun.');
-      return;
-    }
-
-    const slotCount = getSlotCount(selectedCategory);
-    if (slotCount >= 5) {
-      alert('Bu kategoride slot dolu! (5/5)');
       return;
     }
 
@@ -284,28 +278,19 @@ export default function SponsorluPage() {
       {/* TAB: Genel Bakış */}
       {activeTab === 'overview' && (
         <div>
-          {/* Slot Durumu */}
+          {/* Kategori Durumu */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
             {CATEGORIES.map(cat => {
               const count = getSlotCount(cat.key);
               return (
                 <div key={cat.key} className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 p-5">
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between">
                     <h3 className="font-semibold text-slate-900">{cat.label}</h3>
                     <span className={`text-sm font-bold px-2 py-0.5 rounded-full ${
-                      count >= 5 ? 'bg-red-100 text-red-700' :
-                      count >= 3 ? 'bg-amber-100 text-amber-700' :
-                      'bg-emerald-100 text-emerald-700'
+                      count > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
                     }`}>
-                      {count}/{cat.maxSlots}
+                      {count} öğretmen
                     </span>
-                  </div>
-                  <div className="flex gap-1">
-                    {[0, 1, 2, 3, 4].map(i => (
-                      <div key={i} className={`h-2 flex-1 rounded-full ${
-                        i < count ? 'bg-amber-400' : 'bg-slate-100'
-                      }`} />
-                    ))}
                   </div>
                 </div>
               );
@@ -472,14 +457,11 @@ export default function SponsorluPage() {
                 className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37]"
               >
                 <option value="">Kategori seçin...</option>
-                {CATEGORIES.map(cat => {
-                  const count = getSlotCount(cat.key);
-                  return (
-                    <option key={cat.key} value={cat.key} disabled={count >= 5}>
-                      {cat.label} ({count}/5 dolu){count >= 5 ? ' - DOLU' : ''}
-                    </option>
-                  );
-                })}
+                {CATEGORIES.map(cat => (
+                  <option key={cat.key} value={cat.key}>
+                    {cat.label}
+                  </option>
+                ))}
               </select>
             </div>
 
