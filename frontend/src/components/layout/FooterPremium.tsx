@@ -10,7 +10,7 @@ const FooterPremium = () => {
   const platformLinks = [
     { name: 'Öğretmenler', href: '/teachers' },
     { name: 'Dersler', href: '/subjects' }, // Veya /courses
-    { name: 'Nasıl Çalışır?', href: '/#how-it-works' }, // Ana sayfadaki bölüme kaydırır
+    { name: 'Nasıl Çalışır?', href: '/how-it-works' },
     { name: 'Fiyatlandırma', href: '/pricing' },
     { name: 'Başarı Hikayeleri', href: '/success-stories' }
   ];
