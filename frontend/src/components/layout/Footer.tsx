@@ -123,7 +123,10 @@ const Footer = () => {
 
         {/* ALT ÇİZGİ & COPYRIGHT */}
         <div className="pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
-          <p>© 2026 EduPremium. Tüm hakları saklıdır.</p>
+          <div className="text-center md:text-left">
+            <p>© 2026 EduPremium. Tüm hakları saklıdır.</p>
+            <p className="text-[10px] text-slate-400 mt-1">Tüm içerikler telif hakkı ile korunmaktadır. İzinsiz kopyalanması yasaktır.</p>
+          </div>
           <div className="flex gap-6">
             <Link href="/privacy" className="hover:text-slate-900 transition-colors">KVKK Aydınlatma Metni</Link>
             <Link href="/terms" className="hover:text-slate-900 transition-colors">Kullanım Koşulları</Link>

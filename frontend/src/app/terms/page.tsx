@@ -152,16 +152,49 @@ export default function KullanimSartlariPage() {
                 </section>
 
                 <section className="mb-10">
-                  <h2 className="text-2xl font-bold text-[#0F172A] font-serif mb-4">7. Fikri Mülkiyet Hakları</h2>
+                  <h2 className="text-2xl font-bold text-[#0F172A] font-serif mb-4">7. Fikri Mülkiyet Hakları ve İçerik Koruma</h2>
                   <p className="text-slate-600 mb-4">
-                    Platform üzerindeki tüm içerik, tasarım, logo, yazı, grafik, yazılım ve diğer materyaller
-                    EduPremium&apos;un veya lisans verenlerinin mülkiyetindedir ve telif hakkı ile korunmaktadır.
+                    Platform üzerindeki tüm içerik, tasarım, logo, yazı, grafik, yazılım, kaynak kodu ve diğer materyaller
+                    EduPremium&apos;un veya lisans verenlerinin mülkiyetindedir ve ulusal/uluslararası telif hakkı yasaları ile korunmaktadır.
                   </p>
-                  <ul className="list-disc pl-6 text-slate-600 space-y-2">
-                    <li>Platform içeriğini kopyalayamazsınız, dağıtamazsınız veya ticari amaçla kullanamazsınız.</li>
-                    <li>Ders kayıtları öğretmenin izni olmadan paylaşılamaz.</li>
-                    <li>Öğretmenlerin oluşturduğu materyaller kendilerine aittir.</li>
+
+                  <h3 className="text-lg font-bold text-[#0F172A] mb-3">7.1 Yasaklanan Eylemler</h3>
+                  <p className="text-slate-600 mb-4">Aşağıdaki eylemler kesinlikle yasaktır ve yasal işlem başlatılmasına neden olabilir:</p>
+                  <ul className="list-disc pl-6 text-slate-600 space-y-2 mb-4">
+                    <li>Platform içeriğini, tasarımını veya kaynak kodunu kısmen veya tamamen kopyalamak</li>
+                    <li>Platformun benzerini veya klonunu oluşturmak</li>
+                    <li>Otomatik araçlar (bot, scraper, crawler) ile içerik toplamak</li>
+                    <li>Platform içeriğini başka sitelerde veya uygulamalarda kullanmak</li>
+                    <li>Ders kayıtlarını izinsiz paylaşmak veya dağıtmak</li>
+                    <li>Öğretmen profillerini, fotoğraflarını veya bilgilerini kopyalamak</li>
+                    <li>Platform görsellerini başka sitelerde kullanmak (hotlinking dahil)</li>
                   </ul>
+
+                  <h3 className="text-lg font-bold text-[#0F172A] mb-3">7.2 DMCA ve Telif Hakkı İhlali Bildirimi</h3>
+                  <p className="text-slate-600 mb-4">
+                    EduPremium, Digital Millennium Copyright Act (DMCA) ve 5846 sayılı Fikir ve Sanat Eserleri Kanunu
+                    kapsamında haklarını koruma hakkını saklı tutar. İçeriğimizin izinsiz kullanıldığını tespit ettiğimizde:
+                  </p>
+                  <ul className="list-disc pl-6 text-slate-600 space-y-2 mb-4">
+                    <li>İhlal eden siteye resmi uyarı göndereceğiz</li>
+                    <li>Hosting sağlayıcısına DMCA takedown bildirimi yapacağız</li>
+                    <li>Arama motorlarına içerik kaldırma talebi göndereceğiz</li>
+                    <li>Gerekli görüldüğünde yasal işlem başlatacağız</li>
+                  </ul>
+
+                  <h3 className="text-lg font-bold text-[#0F172A] mb-3">7.3 Öğretmen ve Öğrenci İçerikleri</h3>
+                  <ul className="list-disc pl-6 text-slate-600 space-y-2">
+                    <li>Öğretmenlerin oluşturduğu ders materyalleri kendilerine aittir ve Platform tarafından korunur.</li>
+                    <li>Ders kayıtları öğretmenin açık yazılı izni olmadan paylaşılamaz.</li>
+                    <li>Öğrencilerin ders sırasında aldığı notlar kişisel kullanım içindir, ticari amaçla kullanılamaz.</li>
+                  </ul>
+
+                  <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                    <p className="text-amber-800 text-sm font-medium">
+                      <strong>Uyarı:</strong> Fikri mülkiyet haklarının ihlali, Türk Ceza Kanunu&apos;nun 71. maddesi ve
+                      5846 sayılı Kanun kapsamında hapis cezası ve para cezası ile sonuçlanabilir.
+                    </p>
+                  </div>
                 </section>
 
                 <section className="mb-10">

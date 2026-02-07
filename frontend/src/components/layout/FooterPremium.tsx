@@ -190,9 +190,12 @@ const FooterPremium = () => {
 
         {/* --- ALT BÖLÜM --- */}
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-slate-500">
-            &copy; 2026 EduPremium. Tüm hakları saklıdır.
-          </p>
+          <div className="text-center md:text-left">
+            <p className="text-xs text-slate-500">
+              &copy; 2026 EduPremium. Tüm hakları saklıdır.
+            </p>
+            <p className="text-[10px] text-slate-600 mt-1">Tüm içerikler telif hakkı ile korunmaktadır. İzinsiz kopyalanması yasaktır.</p>
+          </div>
 
           <div className="flex items-center gap-6">
             <Link href="/kvkk" className="text-xs text-slate-500 hover:text-[#D4AF37] transition-colors">KVKK</Link>
