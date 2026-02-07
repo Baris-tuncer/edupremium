@@ -19,6 +19,8 @@ export default function Register() {
     phone: '',
     inviteCode: ''
   })
+  const [acceptTerms, setAcceptTerms] = useState(false)
+  const [acceptKvkk, setAcceptKvkk] = useState(false)
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -289,10 +291,36 @@ export default function Register() {
                   </div>
                 </div>
 
+                {/* Yasal Onaylar */}
+                <div className="space-y-3 pt-4 border-t border-slate-100">
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={acceptKvkk}
+                      onChange={(e) => setAcceptKvkk(e.target.checked)}
+                      className="w-5 h-5 mt-0.5 rounded border-slate-300 text-[#D4AF37] focus:ring-[#D4AF37] cursor-pointer"
+                    />
+                    <span className="text-sm text-slate-600">
+                      <Link href="/privacy" target="_blank" className="text-[#0F172A] font-semibold hover:text-[#D4AF37] underline">KVKK Aydınlatma Metni</Link>'ni okudum ve kabul ediyorum.
+                    </span>
+                  </label>
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={acceptTerms}
+                      onChange={(e) => setAcceptTerms(e.target.checked)}
+                      className="w-5 h-5 mt-0.5 rounded border-slate-300 text-[#D4AF37] focus:ring-[#D4AF37] cursor-pointer"
+                    />
+                    <span className="text-sm text-slate-600">
+                      <Link href="/terms" target="_blank" className="text-[#0F172A] font-semibold hover:text-[#D4AF37] underline">Kullanım Şartları</Link>'nı okudum ve kabul ediyorum.
+                    </span>
+                  </label>
+                </div>
+
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="w-full bg-[#0F172A] text-white font-bold py-4 rounded-xl hover:bg-[#D4AF37] hover:text-[#0F172A] transition-all shadow-lg flex items-center justify-center gap-2 group mt-4 disabled:opacity-50"
+                  disabled={loading || !acceptTerms || !acceptKvkk}
+                  className="w-full bg-[#0F172A] text-white font-bold py-4 rounded-xl hover:bg-[#D4AF37] hover:text-[#0F172A] transition-all shadow-lg flex items-center justify-center gap-2 group mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <>
