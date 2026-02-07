@@ -8,6 +8,7 @@ export default function FAQPage() {
     { soru: 'Ödeme yöntemleri nelerdir?', cevap: 'Kredi kartı ve banka havalesi ile ödeme yapabilirsiniz.' },
     { soru: 'Dersi iptal edebilir miyim?', cevap: 'Ders başlangıcına 24 saat kala ücretsiz iptal edebilirsiniz.' },
     { soru: 'Öğretmenler nasıl seçiliyor?', cevap: 'Tüm öğretmenlerimiz titiz bir mülakat ve değerlendirme sürecinden geçmektedir.' },
+    { soru: 'Platform içeriği korumalı mı?', cevap: 'Evet. Tüm içeriklerimiz ulusal ve uluslararası telif hakkı yasaları ile korunmaktadır. İzinsiz kopyalama, DMCA ve 5846 sayılı Fikir ve Sanat Eserleri Kanunu kapsamında yasal işlem gerektirebilir.' },
   ]
 
   return (
