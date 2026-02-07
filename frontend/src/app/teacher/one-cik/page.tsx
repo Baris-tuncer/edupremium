@@ -261,7 +261,10 @@ export default function OneCikPage() {
             </div>
             <div className="flex justify-between items-center pt-2 border-t border-slate-100">
               <span className="text-slate-500">Tutar</span>
-              <span className="font-bold text-[#0F172A] text-lg">{currentPlan.price.toLocaleString('tr-TR')} ₺</span>
+              <div className="text-right">
+                <span className="font-bold text-[#0F172A] text-lg">{Math.round(currentPlan.price * 1.20).toLocaleString('tr-TR')} ₺</span>
+                <span className="block text-[10px] text-slate-400">(KDV Dahil)</span>
+              </div>
             </div>
             <div className="flex flex-col gap-1">
               <span className="text-slate-500 text-sm">Açıklama</span>
@@ -414,6 +417,7 @@ export default function OneCikPage() {
                 <p className="text-2xl font-bold text-[#D4AF37] mt-1">
                   {plan.price.toLocaleString('tr-TR')} ₺
                 </p>
+                <p className="text-[10px] text-slate-400">(+KDV)</p>
                 <p className="text-xs text-slate-500 mt-1">
                   Günlük {plan.perDay} ₺
                 </p>
@@ -523,7 +527,10 @@ export default function OneCikPage() {
             </div>
             <div className="flex justify-between items-center pt-2 border-t border-slate-200">
               <span className="text-slate-500">Tutar ({currentPlan.label})</span>
-              <span className="font-bold text-[#0F172A]">{currentPlan.price.toLocaleString('tr-TR')} ₺</span>
+              <div className="text-right">
+                <span className="font-bold text-[#0F172A]">{Math.round(currentPlan.price * 1.20).toLocaleString('tr-TR')} ₺</span>
+                <span className="block text-[10px] text-slate-400">(KDV Dahil)</span>
+              </div>
             </div>
           </div>
         )}
@@ -542,7 +549,7 @@ export default function OneCikPage() {
           className="w-full bg-[#0F172A] text-white py-3.5 rounded-xl font-semibold hover:bg-[#D4AF37] hover:text-[#0F172A] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
           {submitting ? 'İşleniyor...' : paymentMethod === 'paratika'
-            ? `Ödemeye Geç (${currentPlan.price.toLocaleString('tr-TR')} ₺ - ${currentPlan.label})`
+            ? `Ödemeye Geç (${Math.round(currentPlan.price * 1.20).toLocaleString('tr-TR')} ₺ KDV Dahil)`
             : `Başvuruyu Gönder (${currentPlan.label})`}
         </button>
       </div>

@@ -56,7 +56,9 @@ export async function POST(request: NextRequest) {
 
     // Plan doğrulaması - geçersiz plan gönderilirse varsayılan kullan
     const plan = PRICING_PLANS[planKey] || PRICING_PLANS['30'];
-    const amount = plan.price;
+    const baseAmount = plan.price;
+    const kdvRate = 0.20;
+    const amount = Math.round(baseAmount * (1 + kdvRate)); // KDV dahil tutar
     const planDays = plan.days;
 
     // Öğretmen bilgilerini al
