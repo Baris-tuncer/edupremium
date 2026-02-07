@@ -53,6 +53,18 @@ const nextConfig = {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',
           },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
+              "img-src 'self' data: blob: storage.googleapis.com res.cloudinary.com images.unsplash.com",
+              "font-src 'self' fonts.gstatic.com",
+              "connect-src 'self' *.supabase.co wss://*.supabase.co *.paratika.com.tr",
+              "frame-ancestors 'none'"
+            ].join('; ')
+          },
         ],
       },
     ];

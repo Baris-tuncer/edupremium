@@ -44,17 +44,21 @@ function formatTime(dateString: string): string {
 }
 
 export async function GET(request: NextRequest) {
-  // Client'ları runtime'da oluştur
-  const { supabase, resend } = getClients();
+  // CRON_SECRET yoksa production'da erişimi tamamen engelle
+  if (!process.env.CRON_SECRET) {
+    console.error('CRON_SECRET is not configured');
+    return NextResponse.json({ error: 'Not configured' }, { status: 503 });
+  }
 
   // Vercel Cron güvenlik kontrolü
   const authHeader = request.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    // Development'ta veya secret yoksa devam et
-    if (process.env.CRON_SECRET) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    console.error('Unauthorized cron access attempt');
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  // Client'ları runtime'da oluştur
+  const { supabase, resend } = getClients();
 
   try {
     const now = new Date();

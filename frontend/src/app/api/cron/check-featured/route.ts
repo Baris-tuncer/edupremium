@@ -5,20 +5,24 @@ import { createClient } from '@supabase/supabase-js';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  // CRON_SECRET yoksa production'da erişimi tamamen engelle
+  if (!process.env.CRON_SECRET) {
+    console.error('CRON_SECRET is not configured');
+    return NextResponse.json({ error: 'Not configured' }, { status: 503 });
+  }
+
+  // Vercel Cron güvenlik kontrolü
+  const authHeader = request.headers.get('authorization');
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    console.error('Unauthorized cron access attempt');
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   // Supabase client'ı route çağrıldığında oluştur (build time'da değil)
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
-  // Vercel Cron güvenlik kontrolü
-  const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    // Secret tanımlıysa ve eşleşmiyorsa reddet
-    if (process.env.CRON_SECRET) {
-      console.error('Unauthorized cron access attempt');
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-  }
 
   try {
     const now = new Date().toISOString();
