@@ -8,6 +8,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { createDailyRoom } from '@/lib/daily';
 import { verifyParatikaCallback } from '@/lib/paratika';
+import { getStudentPackageConfirmationEmail, getTeacherPackageSaleEmail } from '@/lib/email-templates';
 
 function getSupabase() {
   return createClient(
@@ -260,54 +261,46 @@ async function sendPackageEmails(
       return;
     }
 
-    // Ders tarihlerini formatla
+    // Ders tarihlerini formatla (array olarak)
     const lessonDates = lessons
+      .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
       .map(l => new Date(l.scheduled_at).toLocaleDateString('tr-TR', {
-        weekday: 'short',
+        weekday: 'long',
         day: 'numeric',
-        month: 'short',
+        month: 'long',
         hour: '2-digit',
         minute: '2-digit',
-      }))
-      .join(', ');
+      }));
 
-    // Öğrenciye e-posta
+    // Öğrenciye premium e-posta
     await resend.emails.send({
       from: 'EduPremium <noreply@visserr.com>',
       to: student.email,
-      subject: `✅ Paket Satın Alındı - ${packagePayment.total_lessons} Ders`,
-      html: `
-        <h2>Paket Satın Alma Onayı</h2>
-        <p>Merhaba ${student.full_name},</p>
-        <p><strong>${packagePayment.campaign_name}</strong> paketiniz başarıyla oluşturuldu.</p>
-        <ul>
-          <li>Öğretmen: ${teacher.full_name}</li>
-          <li>Toplam Ders: ${packagePayment.total_lessons}</li>
-          <li>Ödenen Tutar: ${packagePayment.total_amount.toLocaleString('tr-TR')} TL</li>
-        </ul>
-        <p><strong>Planlanan Dersler:</strong></p>
-        <p>${lessonDates}</p>
-        <p><a href="https://www.visserr.com/student/my-packages">Paketlerinizi görüntüleyin</a></p>
-      `,
+      subject: `✅ Paketiniz Hazır - ${packagePayment.campaign_name}`,
+      html: getStudentPackageConfirmationEmail({
+        studentName: student.full_name,
+        teacherName: teacher.full_name,
+        campaignName: packagePayment.campaign_name,
+        totalLessons: packagePayment.total_lessons,
+        totalAmount: packagePayment.total_amount,
+        lessonDates: lessonDates,
+        orderId: packagePayment.order_id,
+      }),
     });
 
-    // Öğretmene e-posta
+    // Öğretmene premium e-posta
     await resend.emails.send({
       from: 'EduPremium <noreply@visserr.com>',
       to: teacher.email,
       subject: `🎉 Yeni Paket Satışı - ${packagePayment.total_lessons} Ders`,
-      html: `
-        <h2>Yeni Paket Satışı!</h2>
-        <p>Tebrikler ${teacher.full_name}!</p>
-        <p><strong>${student.full_name}</strong>, <strong>${packagePayment.campaign_name}</strong> paketinizi satın aldı.</p>
-        <ul>
-          <li>Toplam Ders: ${packagePayment.total_lessons}</li>
-          <li>Kazancınız: ${packagePayment.teacher_total_earnings.toLocaleString('tr-TR')} TL</li>
-        </ul>
-        <p><strong>Planlanan Dersler:</strong></p>
-        <p>${lessonDates}</p>
-        <p><a href="https://www.visserr.com/teacher/lessons">Derslerinizi görüntüleyin</a></p>
-      `,
+      html: getTeacherPackageSaleEmail({
+        teacherName: teacher.full_name,
+        studentName: student.full_name,
+        campaignName: packagePayment.campaign_name,
+        totalLessons: packagePayment.total_lessons,
+        earnings: packagePayment.teacher_total_earnings,
+        lessonDates: lessonDates,
+      }),
     });
 
     console.log('Package emails sent successfully');

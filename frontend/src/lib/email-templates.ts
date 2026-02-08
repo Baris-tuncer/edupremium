@@ -482,3 +482,280 @@ export function getInvitationCodeEmail(data: {
 </html>
   `;
 }
+
+// ============================================
+// PAKET E-POSTALARI
+// ============================================
+
+export function getStudentPackageConfirmationEmail(data: {
+  studentName: string;
+  teacherName: string;
+  campaignName: string;
+  totalLessons: number;
+  totalAmount: number;
+  lessonDates: string[];
+  orderId: string;
+}) {
+  const lessonRows = data.lessonDates.map((date, i) => `
+    <tr>
+      <td style="padding: 12px 16px; ${i < data.lessonDates.length - 1 ? 'border-bottom: 1px solid #e2e8f0;' : ''}">
+        <table width="100%" cellspacing="0" cellpadding="0">
+          <tr>
+            <td style="width: 32px; vertical-align: top;">
+              <div style="width: 24px; height: 24px; background: linear-gradient(135deg, #d4af37 0%, #b8960c 100%); border-radius: 6px; text-align: center; line-height: 24px; color: #0d1b2a; font-size: 12px; font-weight: 700;">${i + 1}</div>
+            </td>
+            <td style="padding-left: 12px; color: #334155; font-size: 14px; font-weight: 500;">${date}</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  `).join('');
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f5f5f5;">
+  <table width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <tr>
+      <td>
+        <!-- Header -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #1e3a5f 0%, #0d1b2a 100%); border-radius: 20px 20px 0 0; padding: 50px 40px;">
+          <tr>
+            <td align="center">
+              <p style="color: #d4af37; margin: 0 0 8px 0; font-size: 12px; letter-spacing: 3px; text-transform: uppercase;">Premium Paket</p>
+              <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 300; letter-spacing: 1px;">EduPremium</h1>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Success Section -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 50px 40px 30px 40px;">
+          <tr>
+            <td align="center">
+              <div style="width: 90px; height: 90px; background: linear-gradient(135deg, #d4af37 0%, #b8960c 100%); border-radius: 50%; display: inline-block; line-height: 90px;">
+                <span style="font-size: 40px;">✓</span>
+              </div>
+              <h2 style="color: #0d1b2a; margin: 28px 0 12px 0; font-size: 26px; font-weight: 600;">Paketiniz Hazır!</h2>
+              <p style="color: #64748b; margin: 0; font-size: 16px; line-height: 1.6;">Merhaba ${data.studentName}, ders paketiniz başarıyla oluşturuldu.</p>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Package Card -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 10px 40px 30px 40px;">
+          <tr>
+            <td>
+              <table width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(212, 175, 55, 0.05) 100%); border: 2px solid #d4af37; border-radius: 16px; padding: 28px;">
+                <tr>
+                  <td align="center">
+                    <div style="display: inline-block; background: linear-gradient(135deg, #d4af37 0%, #b8960c 100%); color: #0d1b2a; font-size: 10px; font-weight: 700; padding: 6px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">Premium Paket</div>
+                    <h3 style="color: #0d1b2a; margin: 12px 0 8px 0; font-size: 22px; font-weight: 700;">${data.campaignName}</h3>
+                    <p style="color: #64748b; margin: 0; font-size: 14px;">${data.teacherName} ile</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Package Details -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 10px 40px 30px 40px;">
+          <tr>
+            <td>
+              <table width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 16px; padding: 24px; border-left: 4px solid #d4af37;">
+                <tr>
+                  <td>
+                    <table width="100%" cellspacing="0" cellpadding="12">
+                      <tr>
+                        <td style="color: #64748b; font-size: 14px; width: 40%; border-bottom: 1px solid #e2e8f0;">Toplam Ders</td>
+                        <td style="color: #0d1b2a; font-size: 14px; font-weight: 700; border-bottom: 1px solid #e2e8f0;">${data.totalLessons} Ders</td>
+                      </tr>
+                      <tr>
+                        <td style="color: #64748b; font-size: 14px;">Ödenen Tutar</td>
+                        <td style="color: #0d1b2a; font-size: 14px; font-weight: 700;">${data.totalAmount.toLocaleString('tr-TR')} TL</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Lesson Schedule -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 10px 40px 30px 40px;">
+          <tr>
+            <td>
+              <h3 style="color: #0d1b2a; margin: 0 0 16px 0; font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;">📅 Planlanan Dersler</h3>
+              <table width="100%" cellspacing="0" cellpadding="0" style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+                ${lessonRows}
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- CTA Button -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 10px 40px 50px 40px;">
+          <tr>
+            <td align="center">
+              <a href="https://www.visserr.com/student/my-packages" style="display: inline-block; background: linear-gradient(135deg, #d4af37 0%, #b8960c 100%); color: #0d1b2a; text-decoration: none; padding: 16px 48px; border-radius: 8px; font-size: 14px; font-weight: 700; letter-spacing: 0.5px;">Paketlerimi Görüntüle</a>
+              <p style="color: #94a3b8; margin: 16px 0 0 0; font-size: 12px;">Sipariş No: ${data.orderId}</p>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Footer -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #0d1b2a 0%, #1e3a5f 100%); border-radius: 0 0 20px 20px; padding: 40px;">
+          <tr>
+            <td align="center">
+              <p style="color: #8b9dc3; margin: 0 0 12px 0; font-size: 13px;">Sorularınız mı var?</p>
+              <a href="mailto:destek@visserr.com" style="color: #d4af37; text-decoration: none; font-size: 14px; font-weight: 500;">destek@visserr.com</a>
+              <p style="color: #4a5568; margin: 24px 0 0 0; font-size: 11px;">© 2026 EduPremium. Tüm hakları saklıdır.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+}
+
+export function getTeacherPackageSaleEmail(data: {
+  teacherName: string;
+  studentName: string;
+  campaignName: string;
+  totalLessons: number;
+  earnings: number;
+  lessonDates: string[];
+}) {
+  const lessonRows = data.lessonDates.map((date, i) => `
+    <tr>
+      <td style="padding: 12px 16px; ${i < data.lessonDates.length - 1 ? 'border-bottom: 1px solid rgba(255,255,255,0.1);' : ''}">
+        <table width="100%" cellspacing="0" cellpadding="0">
+          <tr>
+            <td style="width: 32px; vertical-align: top;">
+              <div style="width: 24px; height: 24px; background: rgba(212, 175, 55, 0.3); border-radius: 6px; text-align: center; line-height: 24px; color: #d4af37; font-size: 12px; font-weight: 700;">${i + 1}</div>
+            </td>
+            <td style="padding-left: 12px; color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 500;">${date}</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  `).join('');
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f5f5f5;">
+  <table width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <tr>
+      <td>
+        <!-- Header -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #1e3a5f 0%, #0d1b2a 100%); border-radius: 20px 20px 0 0; padding: 50px 40px;">
+          <tr>
+            <td align="center">
+              <p style="color: #d4af37; margin: 0 0 8px 0; font-size: 12px; letter-spacing: 3px; text-transform: uppercase;">Öğretmen Paneli</p>
+              <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 300; letter-spacing: 1px;">EduPremium</h1>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Celebration Section -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 50px 40px 30px 40px;">
+          <tr>
+            <td align="center">
+              <div style="width: 90px; height: 90px; background: linear-gradient(135deg, #d4af37 0%, #b8960c 100%); border-radius: 50%; display: inline-block; line-height: 90px;">
+                <span style="font-size: 40px;">🎉</span>
+              </div>
+              <h2 style="color: #0d1b2a; margin: 28px 0 12px 0; font-size: 26px; font-weight: 600;">Yeni Paket Satışı!</h2>
+              <p style="color: #64748b; margin: 0; font-size: 16px; line-height: 1.6;">Tebrikler ${data.teacherName}! Bir öğrenci paketinizi satın aldı.</p>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Sale Card -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 10px 40px 30px 40px;">
+          <tr>
+            <td>
+              <table width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #0d1b2a 0%, #1e3a5f 100%); border-radius: 16px; padding: 32px;">
+                <tr>
+                  <td align="center">
+                    <p style="color: rgba(255,255,255,0.7); margin: 0 0 4px 0; font-size: 14px;">Öğrenci</p>
+                    <h3 style="color: white; margin: 0 0 16px 0; font-size: 20px; font-weight: 600;">${data.studentName}</h3>
+                    <div style="display: inline-block; background: linear-gradient(135deg, #d4af37 0%, #b8960c 100%); color: #0d1b2a; font-size: 10px; font-weight: 700; padding: 6px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Premium Paket</div>
+                    <h4 style="color: #d4af37; margin: 8px 0 20px 0; font-size: 18px; font-weight: 600;">${data.campaignName}</h4>
+                    <div style="background: rgba(212, 175, 55, 0.2); border-radius: 12px; padding: 16px 32px; display: inline-block;">
+                      <p style="color: rgba(255,255,255,0.7); margin: 0 0 4px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Kazancınız</p>
+                      <p style="color: #d4af37; margin: 0; font-size: 36px; font-weight: 700;">${data.earnings.toLocaleString('tr-TR')} <span style="font-size: 18px;">TL</span></p>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Package Info -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 10px 40px 30px 40px;">
+          <tr>
+            <td>
+              <table width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 16px; padding: 24px; border-left: 4px solid #d4af37;">
+                <tr>
+                  <td align="center">
+                    <p style="color: #64748b; margin: 0 0 4px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Toplam Ders</p>
+                    <p style="color: #0d1b2a; margin: 0; font-size: 28px; font-weight: 700;">${data.totalLessons} <span style="font-size: 16px; font-weight: 500;">Ders</span></p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Lesson Schedule -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 10px 40px 30px 40px;">
+          <tr>
+            <td>
+              <h3 style="color: #0d1b2a; margin: 0 0 16px 0; font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;">📅 Planlanan Dersler</h3>
+              <table width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #0d1b2a 0%, #1e3a5f 100%); border-radius: 12px; overflow: hidden;">
+                ${lessonRows}
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- CTA Button -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 10px 40px 50px 40px;">
+          <tr>
+            <td align="center">
+              <a href="https://www.visserr.com/teacher/lessons" style="display: inline-block; background: linear-gradient(135deg, #d4af37 0%, #b8960c 100%); color: #0d1b2a; text-decoration: none; padding: 16px 48px; border-radius: 8px; font-size: 14px; font-weight: 700; letter-spacing: 0.5px;">Derslerimi Görüntüle</a>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Footer -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #0d1b2a 0%, #1e3a5f 100%); border-radius: 0 0 20px 20px; padding: 40px;">
+          <tr>
+            <td align="center">
+              <p style="color: #8b9dc3; margin: 0 0 12px 0; font-size: 13px;">Sorularınız mı var?</p>
+              <a href="mailto:destek@visserr.com" style="color: #d4af37; text-decoration: none; font-size: 14px; font-weight: 500;">destek@visserr.com</a>
+              <p style="color: #4a5568; margin: 24px 0 0 0; font-size: 11px;">© 2026 EduPremium. Tüm hakları saklıdır.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+}

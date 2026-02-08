@@ -23,6 +23,7 @@ export default function StudentDashboardPage() {
   const router = useRouter();
   const [teachers, setTeachers] = useState<any[]>([]);
   const [featuredTeachers, setFeaturedTeachers] = useState<any[]>([]);
+  const [teacherCampaigns, setTeacherCampaigns] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [studentName, setStudentName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -73,6 +74,25 @@ export default function StudentDashboardPage() {
     const featured = allData.filter(t => t.is_featured === true && t.featured_until && t.featured_until >= now);
     setFeaturedTeachers(featured);
     setTeachers(allData);
+
+    // Aktif kampanyaları olan öğretmenleri bul
+    const featuredIds = featured.map(t => t.id);
+    if (featuredIds.length > 0) {
+      const { data: campaigns } = await supabase
+        .from('campaigns')
+        .select('teacher_id')
+        .in('teacher_id', featuredIds)
+        .eq('is_active', true)
+        .gt('ends_at', now);
+
+      if (campaigns) {
+        const campaignCounts: Record<string, number> = {};
+        campaigns.forEach(c => {
+          campaignCounts[c.teacher_id] = (campaignCounts[c.teacher_id] || 0) + 1;
+        });
+        setTeacherCampaigns(campaignCounts);
+      }
+    }
   };
 
   const handleLogout = async () => {
@@ -269,7 +289,12 @@ export default function StudentDashboardPage() {
                         <div key={teacher.id} className="bg-white/80 backdrop-blur-md rounded-3xl p-5 border border-[#D4AF37]/30 shadow-xl shadow-[#D4AF37]/5 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
                           {/* Altın Işık */}
                           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#D4AF37] via-yellow-200 to-[#D4AF37]"></div>
-                          <div className="absolute top-4 right-4 z-10">
+                          <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+                            {teacherCampaigns[teacher.id] && (
+                              <span className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-[9px] font-bold px-2 py-1 rounded-full shadow-sm animate-pulse">
+                                🎁 KAMPANYA
+                              </span>
+                            )}
                             <Star className="w-5 h-5 text-[#D4AF37] fill-current drop-shadow-sm" />
                           </div>
 

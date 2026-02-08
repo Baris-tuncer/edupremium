@@ -73,7 +73,7 @@ const VerifiedBadge = () => (
 // ============================================
 // FEATURED TEACHER CARD
 // ============================================
-const FeaturedCard = ({ teacher, index }: { teacher: FeaturedTeacher; index: number }) => {
+const FeaturedCard = ({ teacher, index, hasCampaign }: { teacher: FeaturedTeacher; index: number; hasCampaign?: boolean }) => {
   const [hovered, setHovered] = useState(false);
   const initials = teacher.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2) || '??';
   const avatarGradients = [
@@ -105,10 +105,18 @@ const FeaturedCard = ({ teacher, index }: { teacher: FeaturedTeacher; index: num
         <div className="bg-white/80 backdrop-blur-xl rounded-[14px] p-5 h-full flex flex-col gap-4 relative overflow-hidden">
           <div className="absolute -top-8 -right-8 w-[100px] h-[100px] rounded-full bg-gold-100/20" />
 
-          {/* Badge */}
-          <div className="flex items-center gap-1.5 bg-gradient-to-r from-amber-50 to-gold-50 border border-gold-200/40 rounded-full px-2.5 py-0.5 w-fit">
-            <DiamondIcon />
-            <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">Editörün Seçimi</span>
+          {/* Badge Row */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5 bg-gradient-to-r from-amber-50 to-gold-50 border border-gold-200/40 rounded-full px-2.5 py-0.5">
+              <DiamondIcon />
+              <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">Editörün Seçimi</span>
+            </div>
+            {hasCampaign && (
+              <div className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-full px-2.5 py-0.5 animate-pulse">
+                <span className="text-[10px]">🎁</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider">Kampanya</span>
+              </div>
+            )}
           </div>
 
           {/* Profile */}
@@ -188,6 +196,7 @@ const FeaturedCard = ({ teacher, index }: { teacher: FeaturedTeacher; index: num
 const FeaturedTeachersSection = () => {
   const [teachers, setTeachers] = useState<FeaturedTeacher[]>([]);
   const [loading, setLoading] = useState(true);
+  const [teacherCampaigns, setTeacherCampaigns] = useState<Record<string, number>>({});
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   const scroll = (direction: 'left' | 'right') => {
@@ -218,6 +227,25 @@ const FeaturedTeachersSection = () => {
 
         const shuffled = (data || []).sort(() => Math.random() - 0.5);
         setTeachers(shuffled);
+
+        // Aktif kampanyaları al
+        const teacherIds = (data || []).map(t => t.id);
+        if (teacherIds.length > 0) {
+          const { data: campaigns } = await supabase
+            .from('campaigns')
+            .select('teacher_id')
+            .in('teacher_id', teacherIds)
+            .eq('is_active', true)
+            .gt('ends_at', now);
+
+          if (campaigns) {
+            const counts: Record<string, number> = {};
+            campaigns.forEach(c => {
+              counts[c.teacher_id] = (counts[c.teacher_id] || 0) + 1;
+            });
+            setTeacherCampaigns(counts);
+          }
+        }
       } catch (err) {
         console.error('Error:', err);
       } finally {
@@ -271,7 +299,7 @@ const FeaturedTeachersSection = () => {
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {teachers.map((teacher, index) => (
-            <FeaturedCard key={teacher.id} teacher={teacher} index={index} />
+            <FeaturedCard key={teacher.id} teacher={teacher} index={index} hasCampaign={!!teacherCampaigns[teacher.id]} />
           ))}
         </div>
       </div>
