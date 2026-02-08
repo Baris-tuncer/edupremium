@@ -216,6 +216,9 @@ export default function StudentDashboardPage() {
               <Link href="/student/lessons" className="text-sm font-medium text-slate-600 hover:text-[#D4AF37] transition-colors hidden md:block">
                 Derslerim
               </Link>
+              <Link href="/student/my-packages" className="text-sm font-medium text-slate-600 hover:text-[#D4AF37] transition-colors hidden md:block">
+                Paketlerim
+              </Link>
               <button className="relative p-2 text-slate-500 hover:text-[#D4AF37] transition-colors">
                 <Bell className="w-5 h-5" />
               </button>

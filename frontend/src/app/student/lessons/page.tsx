@@ -254,6 +254,9 @@ export default function StudentLessonsPage() {
             <Link href="/student/lessons" className="px-4 py-2 text-[#D4AF37] font-bold">
               Derslerim
             </Link>
+            <Link href="/student/my-packages" className="px-4 py-2 text-slate-600 hover:text-[#0F172A] font-medium transition-colors">
+              Paketlerim
+            </Link>
             <button onClick={handleLogout} className="px-4 py-2 text-slate-600 hover:text-[#0F172A] font-medium transition-colors">
               Çıkış Yap
             </button>
