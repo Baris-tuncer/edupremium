@@ -43,6 +43,8 @@ export default function TeacherDetailPage() {
   const [noteError, setNoteError] = useState('');
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [studentProfile, setStudentProfile] = useState<any>(null);
+  const [priceChanged, setPriceChanged] = useState(false);
+  const [newPrice, setNewPrice] = useState<number | null>(null);
 
   // ========================================
   // MERKEZI GÜVENLİK KAPISI - ÖDEME İŞLEMİ
@@ -131,7 +133,37 @@ export default function TeacherDetailPage() {
         return;
       }
 
+      // Gösterilen fiyat
       const displayPrice = teacher?.hourly_rate_display || calculateDisplayPrice(teacher?.base_price || 0, teacher?.commission_rate || 0.25);
+
+      // ========================================
+      // CANLI FİYAT KONTROLÜ
+      // Ödeme öncesi güncel fiyatı kontrol et
+      // ========================================
+      const { data: currentTeacherData, error: priceCheckError } = await supabase
+        .from('teacher_profiles')
+        .select('hourly_rate_display, hourly_rate_net, base_price, commission_rate')
+        .eq('id', teacherId)
+        .single();
+
+      if (priceCheckError) {
+        toast.error('Fiyat kontrolü yapılamadı. Lütfen tekrar deneyin.');
+        setPurchasing(false);
+        return;
+      }
+
+      const currentPrice = currentTeacherData.hourly_rate_display ||
+        calculateDisplayPrice(currentTeacherData.hourly_rate_net || currentTeacherData.base_price || 0, currentTeacherData.commission_rate || 0.25);
+
+      // Fiyat değişti mi? (50 TL tolerans)
+      if (Math.abs(displayPrice - currentPrice) > 50) {
+        setNewPrice(currentPrice);
+        setPriceChanged(true);
+        setPurchasing(false);
+        // Öğretmen bilgisini güncelle
+        setTeacher(prev => prev ? { ...prev, hourly_rate_display: currentPrice } : null);
+        return;
+      }
 
       const response = await fetch('/api/payment/create-session', {
         method: 'POST',
@@ -140,7 +172,7 @@ export default function TeacherDetailPage() {
           'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          amount: displayPrice,
+          amount: currentPrice, // Güncel fiyatı kullan
           teacherId: teacher?.id,
           studentId: currentUser.id,
           studentEmail: currentUser.email,
@@ -154,7 +186,7 @@ export default function TeacherDetailPage() {
 
       const result = await response.json();
       if (!result.success) throw new Error(result.error || 'Ödeme başlatılamadı');
-      
+
       window.location.href = result.paymentUrl;
     } catch (error) {
       console.error('Purchase error:', error);
@@ -260,6 +292,34 @@ export default function TeacherDetailPage() {
               <div className="bg-green-50 border border-green-200 rounded-xl p-3 mb-4"><div className="flex items-start gap-2"><span>🛡️</span><div className="text-sm"><p className="font-medium text-green-800">EduPremium Güvencesi</p><p className="text-green-700">Ödemeniz güvence altındadır.</p></div></div></div>
 
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4"><div className="flex items-start gap-2"><span className="text-red-500">🔴</span><p className="text-xs text-amber-800">Bu ders, tarafların ve platformun hukuki haklarını korumak amacıyla ses ve görüntü olarak kaydedilecektir.</p></div></div>
+
+              {/* Fiyat Değişikliği Bildirimi */}
+              {priceChanged && newPrice && (
+                <div className="bg-blue-50 border-2 border-blue-300 rounded-xl p-4 mb-4 animate-pulse">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl">💰</span>
+                    <div className="flex-1">
+                      <p className="font-bold text-blue-800">Fiyat Güncellendi!</p>
+                      <p className="text-sm text-blue-700 mt-1">
+                        Öğretmen ders ücretini güncelledi. Yeni fiyat:
+                      </p>
+                      <p className="text-2xl font-bold text-blue-900 mt-2">
+                        {formatPrice(newPrice)}
+                        <span className="text-sm font-normal text-blue-600 ml-1">(KDV Dahil)</span>
+                      </p>
+                      <button
+                        onClick={() => {
+                          setPriceChanged(false);
+                          setNewPrice(null);
+                        }}
+                        className="mt-3 text-sm text-blue-600 hover:text-blue-800 underline"
+                      >
+                        Tamam, anladım
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {currentUser ? (
                 <button
