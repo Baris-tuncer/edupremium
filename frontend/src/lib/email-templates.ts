@@ -8,24 +8,6 @@ export function getStudentPaymentConfirmationEmail(data: {
   orderId: string;
   meetingLink?: string | null;
 }) {
-  const meetingSection = data.meetingLink ? `
-        <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 20px 40px;">
-          <tr>
-            <td>
-              <table width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #1e3a5f 0%, #0d1b2a 100%); border-radius: 16px; padding: 28px;">
-                <tr>
-                  <td align="center">
-                    <p style="color: #d4af37; margin: 0 0 16px 0; font-size: 13px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;">🎥 Online Ders Linki</p>
-                    <a href="${data.meetingLink}" style="display: inline-block; background: linear-gradient(135deg, #d4af37 0%, #b8960c 100%); color: #0d1b2a; text-decoration: none; padding: 14px 36px; border-radius: 8px; font-size: 14px; font-weight: 700; letter-spacing: 0.5px;">Derse Katıl</a>
-                    <p style="color: #8b9dc3; margin: 14px 0 0 0; font-size: 12px;">Bu linki ders saatinde kullanabilirsiniz</p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
-  ` : '';
-
   return `
 <!DOCTYPE html>
 <html>
@@ -91,7 +73,6 @@ export function getStudentPaymentConfirmationEmail(data: {
             </td>
           </tr>
         </table>
-        ${meetingSection}
         <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 10px 40px 30px 40px;">
           <tr>
             <td>
@@ -110,6 +91,7 @@ export function getStudentPaymentConfirmationEmail(data: {
         <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 10px 40px 50px 40px;">
           <tr>
             <td align="center">
+              <p style="color: #64748b; margin: 0 0 16px 0; font-size: 14px;">Ders saatinde aşağıdaki butondan derslerinize gidin ve "Derse Katıl" butonuna tıklayın.</p>
               <a href="https://www.visserr.com/student/lessons" style="display: inline-block; background: linear-gradient(135deg, #d4af37 0%, #b8960c 100%); color: #0d1b2a; text-decoration: none; padding: 16px 48px; border-radius: 8px; font-size: 14px; font-weight: 700; letter-spacing: 0.5px;">Derslerime Git</a>
             </td>
           </tr>
@@ -141,24 +123,6 @@ export function getTeacherNewLessonEmail(data: {
   earnings: number;
   meetingLink?: string | null;
 }) {
-  const meetingSection = data.meetingLink ? `
-        <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 20px 40px;">
-          <tr>
-            <td>
-              <table width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #1e3a5f 0%, #0d1b2a 100%); border-radius: 16px; padding: 28px;">
-                <tr>
-                  <td align="center">
-                    <p style="color: #d4af37; margin: 0 0 16px 0; font-size: 13px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;">🎥 Online Ders Linki</p>
-                    <a href="${data.meetingLink}" style="display: inline-block; background: linear-gradient(135deg, #d4af37 0%, #b8960c 100%); color: #0d1b2a; text-decoration: none; padding: 14px 36px; border-radius: 8px; font-size: 14px; font-weight: 700; letter-spacing: 0.5px;">Derse Katıl</a>
-                    <p style="color: #8b9dc3; margin: 14px 0 0 0; font-size: 12px;">Bu linki ders saatinde kullanabilirsiniz</p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
-  ` : '';
-
   return `
 <!DOCTYPE html>
 <html>
@@ -224,7 +188,6 @@ export function getTeacherNewLessonEmail(data: {
             </td>
           </tr>
         </table>
-        ${meetingSection}
         <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 10px 40px 30px 40px;">
           <tr>
             <td>
@@ -243,6 +206,7 @@ export function getTeacherNewLessonEmail(data: {
         <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 10px 40px 50px 40px;">
           <tr>
             <td align="center">
+              <p style="color: #64748b; margin: 0 0 16px 0; font-size: 14px;">Ders saatinde aşağıdaki butondan derslerinize gidin ve "Derse Katıl" butonuna tıklayın.</p>
               <a href="https://www.visserr.com/teacher/lessons" style="display: inline-block; background: linear-gradient(135deg, #d4af37 0%, #b8960c 100%); color: #0d1b2a; text-decoration: none; padding: 16px 48px; border-radius: 8px; font-size: 14px; font-weight: 700; letter-spacing: 0.5px;">Derslerime Git</a>
             </td>
           </tr>
@@ -339,22 +303,21 @@ export function getLessonReminderEmail(data: {
             </td>
           </tr>
         </table>
-        ${data.meetingLink ? `
         <table width="100%" cellspacing="0" cellpadding="0" style="background-color: white; padding: 20px 40px;">
           <tr>
             <td>
               <table width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #1e3a5f 0%, #0d1b2a 100%); border-radius: 16px; padding: 28px;">
                 <tr>
                   <td align="center">
-                    <p style="color: #d4af37; margin: 0 0 16px 0; font-size: 13px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;">🎥 Online Ders Linki</p>
-                    <a href="${data.meetingLink}" style="display: inline-block; background: linear-gradient(135deg, #d4af37 0%, #b8960c 100%); color: #0d1b2a; text-decoration: none; padding: 14px 36px; border-radius: 8px; font-size: 14px; font-weight: 700; letter-spacing: 0.5px;">Derse Katıl</a>
+                    <p style="color: #d4af37; margin: 0 0 16px 0; font-size: 13px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;">🎥 Derse Katılın</p>
+                    <a href="https://www.visserr.com/${isStudent ? 'student' : 'teacher'}/lessons" style="display: inline-block; background: linear-gradient(135deg, #d4af37 0%, #b8960c 100%); color: #0d1b2a; text-decoration: none; padding: 14px 36px; border-radius: 8px; font-size: 14px; font-weight: 700; letter-spacing: 0.5px;">Derslerime Git</a>
+                    <p style="color: #8b9dc3; margin: 14px 0 0 0; font-size: 12px;">Platform üzerinden "Derse Katıl" butonuna tıklayın</p>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
         </table>
-        ` : ''}
         <table width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #0d1b2a 0%, #1e3a5f 100%); border-radius: 0 0 20px 20px; padding: 40px;">
           <tr>
             <td align="center">
