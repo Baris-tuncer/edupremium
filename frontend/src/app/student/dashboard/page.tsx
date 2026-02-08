@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { EDUCATION_LEVELS, LevelKey, parseSubject } from '@/lib/constants';
+import { calculateDisplayPrice } from '@/lib/price-calculator';
 
 // Featured kategori etiketleri (ödeme sistemindeki key'ler)
 const FEATURED_CATEGORY_LABELS: Record<string, string> = {
@@ -301,7 +302,7 @@ export default function StudentDashboardPage() {
 
                           <div className="flex items-center justify-between pt-4 border-t border-slate-100/50">
                             <div className="font-bold text-[#0F172A]">
-                              {teacher.hourly_rate_display || teacher.price_per_hour || '—'} <span className="text-xs font-normal text-slate-500">TL/s</span>
+                              {teacher.hourly_rate_net ? calculateDisplayPrice(teacher.hourly_rate_net) : (teacher.hourly_rate_display || teacher.price_per_hour || '—')} <span className="text-xs font-normal text-slate-500">TL/s</span>
                             </div>
                             <Link
                               href={'/student/teacher/' + teacher.id}
@@ -458,7 +459,7 @@ export default function StudentDashboardPage() {
 
                     <div className="flex items-center justify-end pt-4 border-t border-slate-100/50">
                       <div className="text-sm font-bold text-[#0F172A]">
-                        {teacher.hourly_rate_display || teacher.price_per_hour || '—'} <span className="text-xs font-normal text-slate-500">TL</span>
+                        {teacher.hourly_rate_net ? calculateDisplayPrice(teacher.hourly_rate_net) : (teacher.hourly_rate_display || teacher.price_per_hour || '—')} <span className="text-xs font-normal text-slate-500">TL</span>
                       </div>
                     </div>
                     <Link
