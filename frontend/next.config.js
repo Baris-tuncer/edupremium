@@ -60,7 +60,8 @@ const nextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.tawk.to challenges.cloudflare.com static.cloudflareinsights.com",
               "style-src 'self' 'unsafe-inline' fonts.googleapis.com *.tawk.to",
               "img-src 'self' data: blob: storage.googleapis.com res.cloudinary.com images.unsplash.com *.supabase.co",
-              "font-src 'self' fonts.gstatic.com",
+              "font-src 'self' fonts.gstatic.com *.tawk.to",
+              "media-src 'self' blob: *.supabase.co",
               "connect-src 'self' *.supabase.co wss://*.supabase.co *.paratika.com.tr *.tawk.to wss://*.tawk.to",
               "frame-src 'self' *.tawk.to challenges.cloudflare.com",
               "frame-ancestors 'none'"
