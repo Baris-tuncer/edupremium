@@ -101,23 +101,23 @@ export default function TeacherSidebar({ activeItem, user }: SidebarProps) {
             )}
           </Link>
         ) : (
-          <div
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500/50 cursor-not-allowed relative group"
-            title="Premium Vitrin üyeliği gerektirir"
+          <Link
+            href="/teacher/one-cik"
+            className="relative flex flex-col gap-1 px-4 py-3 rounded-xl transition-all duration-300 overflow-hidden group bg-gradient-to-r from-slate-700/30 to-slate-600/20 border border-slate-500/20 hover:border-[#D4AF37]/30 hover:from-slate-700/40 hover:to-slate-600/30"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
-            </svg>
-            <span className="font-medium">Kampanyalarım</span>
-            <svg className="w-4 h-4 ml-auto text-slate-500/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-            {/* Tooltip */}
-            <div className="absolute left-full ml-2 px-3 py-2 bg-[#0F172A] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-              Premium Vitrin üyeliği gerektirir
-              <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-[#0F172A]" />
+            <div className="flex items-center gap-3">
+              <svg className="w-5 h-5 text-slate-400 group-hover:text-[#D4AF37]/70 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+              </svg>
+              <span className="font-medium text-slate-400 group-hover:text-slate-300 transition-colors">Kampanyalarım</span>
+              <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#D4AF37] text-[#0F172A]">
+                PRO
+              </span>
             </div>
-          </div>
+            <p className="text-[10px] text-slate-500 group-hover:text-slate-400 pl-8 transition-colors">
+              Premium Vitrin ile aktif olur
+            </p>
+          </Link>
         )}
 
         {/* Premium Vitrin - Özel Tasarım */}
