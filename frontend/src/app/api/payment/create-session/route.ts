@@ -71,27 +71,31 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Kabul edilebilir fiyatları belirle:
-    // 1. Veritabanındaki hourly_rate_display (eski sistem)
-    // 2. Yeni algoritmadan hesaplanan fiyat
-    const storedDisplayPrice = teacherData.hourly_rate_display || 0;
+    // YENİ SİSTEM: Her zaman NET fiyattan hesapla
+    // Öğretmenin belirlediği NET tutar + vergiler/komisyon = Veli öder
     const netPrice = teacherData.hourly_rate_net || teacherData.base_price || 0;
-    const calculatedPrice = calculateDisplayPrice(netPrice, teacherData.commission_rate || 0.25);
 
-    // İstemciden gelen fiyat, kabul edilebilir değerlerden birine yakın mı?
-    const matchesStored = storedDisplayPrice > 0 && Math.abs(amount - storedDisplayPrice) <= 50;
-    const matchesCalculated = calculatedPrice > 0 && Math.abs(amount - calculatedPrice) <= 50;
-
-    if (!matchesStored && !matchesCalculated) {
-      console.error(`Price mismatch! Client: ${amount}, Stored: ${storedDisplayPrice}, Calculated: ${calculatedPrice}`);
+    if (netPrice <= 0) {
       return NextResponse.json({
         success: false,
-        error: 'Fiyat doğrulaması başarısız. Lütfen sayfayı yenileyin.',
+        error: 'Öğretmen fiyat bilgisi eksik',
       }, { status: 400 });
     }
 
-    // Geçerli fiyatı belirle (stored varsa onu kullan, yoksa calculated)
-    const serverCalculatedPrice = storedDisplayPrice > 0 ? storedDisplayPrice : calculatedPrice;
+    const calculatedPrice = calculateDisplayPrice(netPrice, teacherData.commission_rate || 0.25);
+
+    // İstemciden gelen fiyat, hesaplanan fiyata yakın mı? (50 TL tolerans - yuvarlama için)
+    if (Math.abs(amount - calculatedPrice) > 50) {
+      console.error(`Price mismatch! Client: ${amount}, Calculated from NET ${netPrice}: ${calculatedPrice}`);
+      return NextResponse.json({
+        success: false,
+        error: 'Fiyat güncellendi. Lütfen sayfayı yenileyin.',
+        newPrice: calculatedPrice,
+      }, { status: 400 });
+    }
+
+    // Her zaman sunucu hesaplı fiyatı kullan
+    const serverCalculatedPrice = calculatedPrice;
 
     const orderId = `EDU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.visserr.com';

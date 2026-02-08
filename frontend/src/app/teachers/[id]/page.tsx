@@ -17,7 +17,8 @@ interface Teacher {
   diploma_url: string | null;
   bio: string | null;
   base_price: number;
-  hourly_rate_display: number | null;
+  hourly_rate_net: number | null;
+  commission_rate: number | null;
   subjects: string[];
   education_levels: string[];
   experience_years: number | null;
@@ -232,8 +233,8 @@ export default function TeacherProfilePage() {
     );
   }
 
-  // Fiyat: hourly_rate_display varsa onu kullan, yoksa hesapla
-  const price = teacher.hourly_rate_display || calculateDisplayPrice(teacher.base_price || 0, 0.25);
+  // Fiyat: Her zaman NET'ten hesapla (yeni sistem)
+  const price = calculateDisplayPrice(teacher.hourly_rate_net || teacher.base_price || 0, teacher.commission_rate || 0.25);
 
   return (
     <>
