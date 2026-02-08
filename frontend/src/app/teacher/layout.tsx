@@ -29,18 +29,22 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
 
       const { data: profile } = await supabase
         .from('teacher_profiles')
-        .select('full_name, avatar_url')
+        .select('full_name, avatar_url, is_featured, featured_until')
         .eq('id', authUser.id)
         .single();
 
       const nameParts = (profile?.full_name || '').split(' ');
       
+      const now = new Date().toISOString();
+      const isPremium = profile?.is_featured && profile?.featured_until && profile.featured_until > now;
+
       setUser({
         ...authUser,
         firstName: nameParts[0] || '',
         lastName: nameParts.slice(1).join(' ') || '',
         fullName: profile?.full_name || '',
         avatarUrl: profile?.avatar_url || null,
+        isPremium,
       });
       setIsLoading(false);
     };
