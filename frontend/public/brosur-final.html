@@ -80,35 +80,39 @@
       opacity: 0.7;
     }
 
-    /* Top Section with Logo */
+    /* Top Section - Header Text Only */
     .top-section {
-      background: rgba(255,255,255,0.08);
-      border-radius: 4mm;
-      padding: 6mm 8mm;
-      display: flex;
-      align-items: center;
-      gap: 5mm;
-      margin-bottom: 20mm;
       position: relative;
       z-index: 1;
+      margin-bottom: 8mm;
     }
 
-    .logo-img {
-      width: 32mm;
-      height: 32mm;
-      object-fit: contain;
-    }
-
-    .top-text h2 {
+    .top-section h2 {
       font-family: 'Playfair Display', serif;
-      font-size: 13pt;
+      font-size: 14pt;
       font-weight: 600;
       line-height: 1.4;
       color: white;
     }
 
-    .top-text h2 span {
+    .top-section h2 span {
       color: #D4AF37;
+    }
+
+    /* Big Logo Section */
+    .logo-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 10mm;
+      position: relative;
+      z-index: 1;
+    }
+
+    .logo-img {
+      width: 70mm;
+      height: auto;
+      object-fit: contain;
     }
 
     /* Main Headline */
@@ -549,12 +553,14 @@
       <div class="gold-shape-1"></div>
       <div class="gold-shape-2"></div>
 
-      <!-- Top Section with Logo -->
+      <!-- Top Section - Header Text -->
       <div class="top-section">
+        <h2>Türkiye'nin <span>En Seçkin</span> Online Özel Ders Platformu</h2>
+      </div>
+
+      <!-- Big Logo -->
+      <div class="logo-section">
         <img src="/logo-navy.png" alt="EduPremium" class="logo-img">
-        <div class="top-text">
-          <h2>Türkiye'nin <span>En Seçkin</span><br>Online Özel<br>Ders Platformu</h2>
-        </div>
       </div>
 
       <!-- Main Headline -->
