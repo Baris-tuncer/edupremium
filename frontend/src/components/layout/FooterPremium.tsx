@@ -49,7 +49,7 @@ const FooterPremium = () => {
               <img
                 src="/logo-192.png"
                 alt="EduPremium Logo"
-                className="w-12 h-12 rounded-xl"
+                className="w-14 h-14 object-contain"
               />
               <div>
                 <h3 className="text-2xl font-bold text-white font-serif tracking-tight">EduPremium</h3>

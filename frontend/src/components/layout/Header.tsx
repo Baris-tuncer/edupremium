@@ -5,11 +5,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const Logo = () => (
-  <Link href="/" className="flex items-center gap-3 group">
+  <Link href="/" className="flex items-center gap-2 group">
     <img
       src="/logo-192.png"
       alt="EduPremium Logo"
-      className="w-10 h-10 rounded-xl shadow-elegant group-hover:shadow-elevated transition-shadow duration-300"
+      className="w-14 h-14 object-contain group-hover:scale-105 transition-transform duration-300"
     />
     <div className="hidden sm:block">
       <span className="font-display text-xl font-semibold text-navy-900">EduPremium</span>
