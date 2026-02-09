@@ -1,6 +1,9 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
-import { ShieldCheck, Clock, GraduationCap, Award } from 'lucide-react';
+import { ShieldCheck, Clock, GraduationCap, Award, Check } from 'lucide-react';
+import { useComparison, ComparisonTeacher } from '@/contexts/ComparisonContext';
 
 interface Teacher {
   id: string;
@@ -23,9 +26,11 @@ interface Teacher {
 
 interface TeacherCardProps {
   teacher: Teacher;
+  enableComparison?: boolean;
 }
 
-const TeacherCard: React.FC<TeacherCardProps> = ({ teacher }) => {
+const TeacherCard: React.FC<TeacherCardProps> = ({ teacher, enableComparison = true }) => {
+  const comparison = useComparison();
   const fullName = `${teacher.name || ''} ${teacher.surname || ''}`.trim() || 'İsimsiz Eğitmen';
 
   // İsim baş harfleri
@@ -46,8 +51,56 @@ const TeacherCard: React.FC<TeacherCardProps> = ({ teacher }) => {
     .filter(Boolean)
     .slice(0, 2) || [];
 
+  // Karşılaştırma için öğretmen verisi
+  const comparisonTeacher: ComparisonTeacher = {
+    id: teacher.id,
+    name: fullName,
+    avatar_url: teacher.image_url,
+    rating: teacher.rating,
+    experience_years: teacher.experience_years,
+    university: teacher.university || null,
+    subjects: teacher.branches?.map(b => b.branch?.name || '').filter(Boolean) || [],
+    title: teacher.title,
+    hourly_rate: teacher.hourly_rate || 0,
+    slug: teacher.slug,
+  };
+
+  const isSelected = comparison?.isSelected(teacher.id) || false;
+  const canAdd = comparison?.canAdd || false;
+
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!comparison) return;
+
+    if (isSelected) {
+      comparison.removeTeacher(teacher.id);
+    } else if (canAdd) {
+      comparison.addTeacher(comparisonTeacher);
+    }
+  };
+
   return (
-    <div className="bg-white/90 backdrop-blur-xl rounded-2xl p-5 border border-slate-200/50 shadow-lg hover:shadow-xl transition-all duration-300 w-full max-w-[320px] flex flex-col">
+    <div className={`relative bg-white/90 backdrop-blur-xl rounded-2xl p-5 border border-slate-200/50 shadow-lg hover:shadow-xl transition-all duration-300 w-full max-w-[320px] flex flex-col ${isSelected ? 'ring-2 ring-[#D4AF37] ring-offset-2' : ''}`}>
+
+      {/* Karşılaştırma Checkbox */}
+      {enableComparison && comparison && (
+        <button
+          onClick={handleCheckboxClick}
+          disabled={!isSelected && !canAdd}
+          className={`absolute top-4 right-4 z-20 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all ${
+            isSelected
+              ? 'bg-[#D4AF37] border-[#D4AF37] text-[#0F172A]'
+              : canAdd
+              ? 'bg-white/90 border-slate-300 hover:border-[#D4AF37] text-transparent hover:text-[#D4AF37]/50'
+              : 'bg-slate-100 border-slate-200 cursor-not-allowed opacity-50'
+          }`}
+          title={isSelected ? 'Karşılaştırmadan Çıkar' : canAdd ? 'Karşılaştırmaya Ekle' : 'Maksimum 3 öğretmen'}
+        >
+          <Check className="w-4 h-4" />
+        </button>
+      )}
 
       {/* Editörün Seçimi Badge */}
       <div className="flex items-center gap-1.5 text-[#D4AF37] mb-4">

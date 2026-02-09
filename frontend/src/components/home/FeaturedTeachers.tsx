@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
-import CategoryShowcase from '@/components/home/CategoryShowcase';
+import FeaturedTeachersClient from '@/components/home/FeaturedTeachersClient';
 import { Award, ArrowRight } from 'lucide-react';
 import { calculateDisplayPrice } from '@/lib/price-calculator';
 
@@ -92,7 +92,7 @@ const FeaturedTeachers = async () => {
           <p className="text-slate-300 text-lg font-light">Seçkin eğitmenlerimizi branşlarına göre inceleyin.</p>
         </div>
 
-        <CategoryShowcase teachers={teachers} />
+        <FeaturedTeachersClient teachers={teachers} />
 
         <div className="text-center mt-24">
           <Link href="/teachers" className="inline-flex items-center gap-3 px-10 py-5 bg-[#D4AF37] text-[#0F172A] hover:bg-white transition-all duration-300 rounded-none text-sm font-bold uppercase tracking-widest shadow-lg">
