@@ -73,13 +73,24 @@ export default function AdminDashboardPage() {
         .order('scheduled_at', { ascending: false });
 
       const totalLessons = lessons?.length || 0;
-      const completedLessons = lessons?.filter(l => l.status === 'COMPLETED').length || 0;
-      const totalRevenue = lessons?.filter(l => l.status === 'COMPLETED')
-        .reduce((sum, l) => sum + (l.price || 0), 0) || 0;
+      const completedLessonsList = lessons?.filter(l => l.status === 'COMPLETED') || [];
+      const completedLessons = completedLessonsList.length;
 
-      // Platform komisyonu (%25)
-      const platformCommission = Math.round(totalRevenue * 0.25);
-      const teacherPayouts = totalRevenue - platformCommission;
+      // Her dersin komisyonunu ayrı ayrı hesapla (odemeler sayfasıyla tutarlı)
+      const commissionRate = 0.25;
+      let totalRevenue = 0;
+      let platformCommission = 0;
+      let teacherPayouts = 0;
+
+      completedLessonsList.forEach(l => {
+        const price = l.price || 0;
+        const lessonCommission = Math.round(price * commissionRate);
+        const teacherEarning = price - lessonCommission;
+
+        totalRevenue += price;
+        platformCommission += lessonCommission;
+        teacherPayouts += teacherEarning;
+      });
 
       // Bu ay ve geçen ay
       const now = new Date();
@@ -124,23 +135,29 @@ export default function AdminDashboardPage() {
           return l.status === 'COMPLETED' && date >= monthDate && date <= monthEnd;
         }) || [];
 
-        const monthRevenue = monthLessons.reduce((sum, l) => sum + (l.price || 0), 0);
+        let monthRevenue = 0;
+        let monthCommission = 0;
+        monthLessons.forEach(l => {
+          const price = l.price || 0;
+          monthRevenue += price;
+          monthCommission += Math.round(price * 0.25);
+        });
 
         monthly.push({
           month: monthName,
           revenue: monthRevenue,
           lessons: monthLessons.length,
-          commission: Math.round(monthRevenue * 0.25)
+          commission: monthCommission
         });
       }
       setMonthlyData(monthly);
 
       // Son tamamlanan dersler
-      const completedLessonsList = lessons?.filter(l => l.status === 'COMPLETED').slice(0, 5) || [];
+      const recentCompletedLessons = lessons?.filter(l => l.status === 'COMPLETED').slice(0, 5) || [];
 
       // Öğretmen ve öğrenci bilgilerini al
-      const teacherIds = [...new Set(completedLessonsList.map(l => l.teacher_id).filter(Boolean))];
-      const studentIds = [...new Set(completedLessonsList.map(l => l.student_id).filter(Boolean))];
+      const teacherIds = [...new Set(recentCompletedLessons.map(l => l.teacher_id).filter(Boolean))];
+      const studentIds = [...new Set(recentCompletedLessons.map(l => l.student_id).filter(Boolean))];
 
       const { data: teachers } = await supabase
         .from('teacher_profiles')
@@ -155,7 +172,7 @@ export default function AdminDashboardPage() {
       const teacherMap = new Map(teachers?.map(t => [t.id, t.full_name]) || []);
       const studentMap = new Map(students?.map(s => [s.id, s.full_name]) || []);
 
-      const recentData = completedLessonsList.map(l => ({
+      const recentData = recentCompletedLessons.map(l => ({
         id: l.id,
         subject: l.subject || 'Ders',
         teacher_name: teacherMap.get(l.teacher_id) || 'Öğretmen',
