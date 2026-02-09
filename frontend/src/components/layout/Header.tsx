@@ -5,12 +5,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const Logo = () => (
-  <Link href="/" className="flex items-center group">
+  <Link href="/" className="flex items-center gap-3 group">
     <img
-      src="/logo-mascot.png"
+      src="/logo-192.png"
       alt="EduPremium Logo"
-      className="h-14 object-contain group-hover:scale-105 transition-transform duration-300"
+      className="w-12 h-12 object-contain group-hover:scale-105 transition-transform duration-300"
     />
+    <div className="hidden sm:block">
+      <span className="font-display text-xl font-semibold text-navy-900">EduPremium</span>
+      <span className="block text-2xs text-slate-500 uppercase tracking-widest">Özel Ders Platformu</span>
+    </div>
   </Link>
 );
 
