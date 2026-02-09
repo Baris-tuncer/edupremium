@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduPremium - Öğrenci/Veli Broşürü</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    @page {
+      size: A3 landscape;
+      margin: 0;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #E8E4DC;
+      min-height: 297mm;
+      width: 420mm;
+      margin: 0 auto;
+      padding: 12mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brochure {
+      width: 100%;
+      height: 273mm;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #FDFBF7;
+      border-radius: 8mm;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+
+    /* LEFT PANEL - Navy */
+    .left-panel {
+      background: linear-gradient(160deg, #0F172A 0%, #1E293B 100%);
+      color: white;
+      padding: 12mm;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .left-panel::before {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -20%;
+      width: 80%;
+      height: 80%;
+      background: linear-gradient(45deg, #D4AF37 0%, transparent 60%);
+      opacity: 0.15;
+      border-radius: 50%;
+    }
+
+    .left-panel::after {
+      content: '';
+      position: absolute;
+      top: 40%;
+      right: -10%;
+      width: 50%;
+      height: 60%;
+      background: linear-gradient(-45deg, #D4AF37 0%, transparent 50%);
+      opacity: 0.1;
+      transform: rotate(20deg);
+    }
+
+    /* Top Section with Logo */
+    .top-section {
+      background: rgba(255,255,255,0.05);
+      border-radius: 5mm;
+      padding: 8mm;
+      display: flex;
+      align-items: center;
+      gap: 6mm;
+      margin-bottom: 15mm;
+      position: relative;
+      z-index: 1;
+      border: 1px solid rgba(212, 175, 55, 0.2);
+    }
+
+    .logo-img {
+      width: 28mm;
+      height: 28mm;
+      border-radius: 50%;
+      border: 2px solid #D4AF37;
+    }
+
+    .top-text h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 14pt;
+      font-weight: 600;
+      line-height: 1.3;
+      color: white;
+    }
+
+    .top-text h2 span {
+      color: #D4AF37;
+    }
+
+    /* Main Headline */
+    .main-headline {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .main-headline h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 36pt;
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 8mm;
+    }
+
+    .main-headline h1 span {
+      color: #D4AF37;
+    }
+
+    .main-headline .subtitle {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 13pt;
+      opacity: 0.85;
+      line-height: 1.5;
+    }
+
+    /* Bottom Badges */
+    .bottom-badges {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4mm;
+      padding-top: 8mm;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      position: relative;
+      z-index: 1;
+    }
+
+    .badge-item {
+      text-align: center;
+      padding: 4mm;
+      background: rgba(255,255,255,0.05);
+      border-radius: 3mm;
+    }
+
+    .badge-item .icon {
+      font-size: 18pt;
+      margin-bottom: 2mm;
+      color: #D4AF37;
+    }
+
+    .badge-item p {
+      font-size: 8pt;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      line-height: 1.3;
+    }
+
+    /* RIGHT PANEL - Cream */
+    .right-panel {
+      background: #FDFBF7;
+      padding: 10mm 12mm;
+      display: flex;
+      flex-direction: column;
+      color: #0F172A;
+    }
+
+    /* Section Styling */
+    .section {
+      margin-bottom: 7mm;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+      margin-bottom: 4mm;
+      padding-bottom: 2mm;
+      border-bottom: 2px solid #D4AF37;
+    }
+
+    .section-header .icon {
+      width: 8mm;
+      height: 8mm;
+      background: linear-gradient(135deg, #0F172A, #1E293B);
+      border-radius: 2mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #D4AF37;
+      font-size: 12pt;
+    }
+
+    .section-header h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 13pt;
+      font-weight: 700;
+      color: #0F172A;
+    }
+
+    .section-content {
+      padding-left: 2mm;
+    }
+
+    /* Steps */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 3mm;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+      padding: 2mm;
+      background: white;
+      border-radius: 2mm;
+      border-left: 3px solid #D4AF37;
+    }
+
+    .step-number {
+      width: 6mm;
+      height: 6mm;
+      background: #0F172A;
+      color: #D4AF37;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8pt;
+      font-weight: 700;
+    }
+
+    .step p {
+      font-size: 9pt;
+      font-weight: 500;
+    }
+
+    /* Feature List */
+    .feature-list {
+      list-style: none;
+    }
+
+    .feature-list li {
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+      padding: 2mm 0;
+      font-size: 9pt;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .feature-list li:last-child {
+      border-bottom: none;
+    }
+
+    .feature-list li .icon {
+      color: #D4AF37;
+      font-size: 10pt;
+    }
+
+    /* FAQ */
+    .faq-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2mm;
+    }
+
+    .faq-item {
+      background: white;
+      padding: 3mm;
+      border-radius: 2mm;
+      font-size: 8pt;
+    }
+
+    .faq-item strong {
+      color: #0F172A;
+      display: block;
+      margin-bottom: 1mm;
+    }
+
+    .faq-item span {
+      color: #64748B;
+    }
+
+    /* Contact Section */
+    .contact-section {
+      margin-top: auto;
+      background: linear-gradient(135deg, #0F172A, #1E293B);
+      color: white;
+      padding: 5mm;
+      border-radius: 3mm;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .contact-info {
+      display: flex;
+      gap: 6mm;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+    }
+
+    .contact-item .icon {
+      color: #D4AF37;
+      font-size: 12pt;
+    }
+
+    .contact-item div p {
+      font-size: 7pt;
+      opacity: 0.7;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .contact-item div span {
+      font-size: 9pt;
+      font-weight: 600;
+    }
+
+    .qr-code {
+      width: 18mm;
+      height: 18mm;
+      background: white;
+      border-radius: 2mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 7pt;
+      color: #0F172A;
+      text-align: center;
+      padding: 2mm;
+    }
+
+    /* Footer */
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 4mm;
+      margin-top: 4mm;
+      border-top: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+    }
+
+    .footer-logo img {
+      width: 8mm;
+      height: 8mm;
+      border-radius: 50%;
+    }
+
+    .footer-logo span {
+      font-family: 'Playfair Display', serif;
+      font-size: 10pt;
+      font-weight: 600;
+      color: #0F172A;
+    }
+
+    .footer-copyright {
+      font-size: 7pt;
+      color: #64748B;
+    }
+
+    /* Security Badges */
+    .security-badges {
+      display: flex;
+      gap: 3mm;
+      margin-top: 3mm;
+    }
+
+    .security-badge {
+      display: flex;
+      align-items: center;
+      gap: 1mm;
+      padding: 1.5mm 3mm;
+      background: rgba(15, 23, 42, 0.05);
+      border-radius: 2mm;
+      font-size: 7pt;
+      color: #475569;
+    }
+
+    .security-badge .icon {
+      color: #D4AF37;
+    }
+  </style>
+</head>
+<body>
+  <div class="brochure">
+
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+
+      <!-- Top Section with Logo -->
+      <div class="top-section">
+        <img src="/logo-circle.png" alt="EduPremium" class="logo-img">
+        <div class="top-text">
+          <h2>Türkiye'nin <span>En Seçkin</span><br>Online Özel<br>Ders Platformu</h2>
+        </div>
+      </div>
+
+      <!-- Main Headline -->
+      <div class="main-headline">
+        <h1>Eğitimde<br><span>Premium</span> Dönem<br>Başladı.</h1>
+        <p class="subtitle">Alanında uzman öğretmenlerle,<br>geleceği bugünden inşa edin.</p>
+      </div>
+
+      <!-- Bottom Badges -->
+      <div class="bottom-badges">
+        <div class="badge-item">
+          <div class="icon">👨‍🏫</div>
+          <p>Seçkin Eğitmen<br>Kadrosu</p>
+        </div>
+        <div class="badge-item">
+          <div class="icon">🔒</div>
+          <p>%100 Güvenli<br>Altyapı</p>
+        </div>
+        <div class="badge-item">
+          <div class="icon">🛡️</div>
+          <p>Siber Güvenlik<br>Koruması</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+
+      <!-- 4 Adımda Başarı -->
+      <div class="section">
+        <div class="section-header">
+          <div class="icon">🚀</div>
+          <h3>4 Adımda Başarıya Yolculuk</h3>
+        </div>
+        <div class="section-content">
+          <div class="steps">
+            <div class="step">
+              <div class="step-number">1</div>
+              <p>Keşfet</p>
+            </div>
+            <div class="step">
+              <div class="step-number">2</div>
+              <p>Karşılaştır</p>
+            </div>
+            <div class="step">
+              <div class="step-number">3</div>
+              <p>Rezervasyon Yap</p>
+            </div>
+            <div class="step">
+              <div class="step-number">4</div>
+              <p>Derse Katıl</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kusursuz Ders Deneyimi -->
+      <div class="section">
+        <div class="section-header">
+          <div class="icon">💻</div>
+          <h3>Kusursuz Ders Deneyimi</h3>
+        </div>
+        <div class="section-content">
+          <ul class="feature-list">
+            <li><span class="icon">📹</span> HD video görüşme</li>
+            <li><span class="icon">📝</span> İnteraktif beyaz tahta</li>
+            <li><span class="icon">📎</span> Dosya paylaşımı</li>
+            <li><span class="icon">⚖️</span> 3 öğretmeni yan yana karşılaştır</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Güvenlik -->
+      <div class="section">
+        <div class="section-header">
+          <div class="icon">🔐</div>
+          <h3>Güvenlik Öncelliğimiz</h3>
+        </div>
+        <div class="section-content">
+          <div class="security-badges">
+            <span class="security-badge"><span class="icon">🔒</span> 256-Bit SSL</span>
+            <span class="security-badge"><span class="icon">💳</span> Paratika Güvenli Ödeme</span>
+            <span class="security-badge"><span class="icon">☁️</span> Cloudflare</span>
+            <span class="security-badge"><span class="icon">🛡️</span> 7/24 Siber Güvenlik</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SSS -->
+      <div class="section">
+        <div class="section-header">
+          <div class="icon">❓</div>
+          <h3>Merak Edilenler (S.S.S.)</h3>
+        </div>
+        <div class="section-content">
+          <div class="faq-grid">
+            <div class="faq-item">
+              <strong>Ders ücretleri ne kadar?</strong>
+              <span>Minimum 1.500 TL/saat. Öğretmene göre değişir.</span>
+            </div>
+            <div class="faq-item">
+              <strong>İptal edebilir miyim?</strong>
+              <span>24 saat öncesine kadar ücretsiz iptal.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact -->
+      <div class="contact-section">
+        <div class="contact-info">
+          <div class="contact-item">
+            <span class="icon">🌐</span>
+            <div>
+              <p>Web</p>
+              <span>visserr.com</span>
+            </div>
+          </div>
+          <div class="contact-item">
+            <span class="icon">📧</span>
+            <div>
+              <p>E-posta</p>
+              <span>info@visserr.com</span>
+            </div>
+          </div>
+          <div class="contact-item">
+            <span class="icon">💬</span>
+            <div>
+              <p>WhatsApp</p>
+              <span>Sitede Mevcut</span>
+            </div>
+          </div>
+        </div>
+        <div class="qr-code">
+          <span>QR Kod<br>visserr.com</span>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <div class="footer-logo">
+          <img src="/logo-circle.png" alt="EduPremium">
+          <span>EduPremium</span>
+        </div>
+        <span class="footer-copyright">© 2026 EduPremium. Tüm hakları saklıdır.</span>
+      </div>
+
+    </div>
+
+  </div>
+</body>
+</html>
