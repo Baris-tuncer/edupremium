@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { LogOut } from 'lucide-react';
 import StudentNotificationBell from '../components/NotificationBell';
 
 export default function StudentLessonsPage() {
@@ -242,29 +243,64 @@ export default function StudentLessonsPage() {
         <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2228&auto=format&fit=crop')` }}></div>
         <div className="absolute inset-0 bg-[#FDFBF7]/60 backdrop-blur-[6px]"></div>
       </div>
-      <header className="relative z-10 bg-white/80 backdrop-blur-xl border-b border-white/50">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-[#0F172A] font-serif">EduPremium</h1>
-            <p className="text-sm text-slate-600">Hoş geldin, {studentName}</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link href="/student/dashboard" className="px-4 py-2 text-slate-600 hover:text-[#D4AF37] font-medium transition-colors">
+      <nav className="sticky top-0 z-50 bg-[#0F172A]/95 backdrop-blur-xl border-b border-[#D4AF37]/20 shadow-lg shadow-black/10">
+        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-9 h-9 bg-gradient-to-br from-[#D4AF37] to-[#B8960C] rounded-lg flex items-center justify-center shadow-md group-hover:shadow-[#D4AF37]/30 transition-shadow">
+              <span className="font-serif font-bold text-base text-[#0F172A]">E</span>
+            </div>
+            <span className="font-serif font-semibold text-lg text-white hidden md:block">EduPremium</span>
+          </Link>
+
+          {/* Navigation Links */}
+          <div className="hidden md:flex items-center gap-1 bg-white/5 rounded-full px-1 py-1">
+            <Link
+              href="/student/dashboard"
+              className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-full transition-all"
+            >
               Öğretmenler
             </Link>
-            <Link href="/student/lessons" className="px-4 py-2 text-[#D4AF37] font-bold">
+            <Link
+              href="/student/lessons"
+              className="px-4 py-2 text-sm font-medium text-white bg-white/10 rounded-full transition-all"
+            >
               Derslerim
             </Link>
-            <Link href="/student/my-packages" className="px-4 py-2 text-slate-600 hover:text-[#0F172A] font-medium transition-colors">
+            <Link
+              href="/student/my-packages"
+              className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-full transition-all"
+            >
               Paketlerim
             </Link>
+          </div>
+
+          {/* Right Section */}
+          <div className="flex items-center gap-2">
             <StudentNotificationBell />
-            <button onClick={handleLogout} className="px-4 py-2 text-slate-600 hover:text-[#0F172A] font-medium transition-colors">
-              Çıkış Yap
+
+            {/* User Profile */}
+            <div className="flex items-center gap-3 ml-2 pl-3 border-l border-white/10">
+              <div className="w-8 h-8 bg-gradient-to-br from-[#D4AF37] to-[#B8960C] rounded-full flex items-center justify-center text-[#0F172A] font-semibold text-sm shadow-md">
+                {studentName?.charAt(0) || 'Ö'}
+              </div>
+              <div className="hidden md:block">
+                <p className="text-sm font-medium text-white leading-tight">{studentName}</p>
+                <p className="text-[10px] text-[#D4AF37] font-medium uppercase tracking-wider">Öğrenci</p>
+              </div>
+            </div>
+
+            {/* Logout */}
+            <button
+              onClick={handleLogout}
+              className="ml-1 p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+              title="Çıkış Yap"
+            >
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
         </div>
-      </header>
+      </nav>
 
       <main className="relative z-10 max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">

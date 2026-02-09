@@ -240,7 +240,7 @@ export default function StudentNotificationBell() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={handleOpenNotifications}
-        className="relative p-2 text-slate-500 hover:text-[#D4AF37] transition-colors"
+        className="relative p-2 text-slate-300 hover:text-[#D4AF37] hover:bg-white/10 rounded-lg transition-all"
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (

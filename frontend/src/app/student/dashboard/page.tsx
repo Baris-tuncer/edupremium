@@ -226,37 +226,60 @@ export default function StudentDashboardPage() {
       <div className="relative z-10">
 
         {/* --- HEADER --- */}
-        <nav className="sticky top-0 z-50 bg-white/70 backdrop-blur-lg border-b border-slate-200/50 shadow-sm">
-          <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-[#0F172A] rounded-xl flex items-center justify-center text-[#D4AF37]">
-                <span className="font-serif font-bold text-xl">E</span>
+        <nav className="sticky top-0 z-50 bg-[#0F172A]/95 backdrop-blur-xl border-b border-[#D4AF37]/20 shadow-lg shadow-black/10">
+          <div className="container mx-auto px-6 h-16 flex items-center justify-between">
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="w-9 h-9 bg-gradient-to-br from-[#D4AF37] to-[#B8960C] rounded-lg flex items-center justify-center shadow-md group-hover:shadow-[#D4AF37]/30 transition-shadow">
+                <span className="font-serif font-bold text-base text-[#0F172A]">E</span>
               </div>
-              <span className="font-serif font-bold text-xl text-[#0F172A] hidden md:block">EduPremium</span>
+              <span className="font-serif font-semibold text-lg text-white hidden md:block">EduPremium</span>
             </Link>
-            <div className="flex items-center gap-4">
-              <Link href="/student/lessons" className="text-sm font-medium text-slate-600 hover:text-[#D4AF37] transition-colors hidden md:block">
+
+            {/* Navigation Links */}
+            <div className="hidden md:flex items-center gap-1 bg-white/5 rounded-full px-1 py-1">
+              <Link
+                href="/student/dashboard"
+                className="px-4 py-2 text-sm font-medium text-white bg-white/10 rounded-full transition-all"
+              >
+                Öğretmenler
+              </Link>
+              <Link
+                href="/student/lessons"
+                className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-full transition-all"
+              >
                 Derslerim
               </Link>
-              <Link href="/student/my-packages" className="text-sm font-medium text-slate-600 hover:text-[#D4AF37] transition-colors hidden md:block">
+              <Link
+                href="/student/my-packages"
+                className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-full transition-all"
+              >
                 Paketlerim
               </Link>
+            </div>
+
+            {/* Right Section */}
+            <div className="flex items-center gap-2">
               <StudentNotificationBell />
-              <div className="flex items-center gap-3 pl-4 border-l border-slate-200/50">
-                <div className="text-right hidden md:block">
-                  <p className="text-sm font-bold text-[#0F172A]">{studentName}</p>
-                  <p className="text-[10px] text-slate-500 uppercase tracking-wider">Öğrenci</p>
+
+              {/* User Profile */}
+              <div className="flex items-center gap-3 ml-2 pl-3 border-l border-white/10">
+                <div className="w-8 h-8 bg-gradient-to-br from-[#D4AF37] to-[#B8960C] rounded-full flex items-center justify-center text-[#0F172A] font-semibold text-sm shadow-md">
+                  {studentName?.charAt(0) || 'Ö'}
                 </div>
-                <div className="w-10 h-10 bg-slate-100/50 rounded-full border border-slate-200/50 flex items-center justify-center text-slate-500">
-                  <User className="w-5 h-5" />
+                <div className="hidden md:block">
+                  <p className="text-sm font-medium text-white leading-tight">{studentName}</p>
+                  <p className="text-[10px] text-[#D4AF37] font-medium uppercase tracking-wider">Öğrenci</p>
                 </div>
               </div>
+
+              {/* Logout */}
               <button
                 onClick={handleLogout}
-                className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                className="ml-1 p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
                 title="Çıkış Yap"
               >
-                <LogOut className="w-5 h-5" />
+                <LogOut className="w-4 h-4" />
               </button>
             </div>
           </div>
