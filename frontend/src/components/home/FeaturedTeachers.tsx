@@ -89,7 +89,13 @@ const FeaturedTeachers = async () => {
             <Award className="w-4 h-4" /> Özel Koleksiyon
           </div>
           <h2 className="text-4xl md:text-6xl font-bold text-white font-serif mb-6">Öne Çıkan <span className="text-[#D4AF37]">Eğitmenler</span></h2>
-          <p className="text-slate-300 text-lg font-light">Seçkin eğitmenlerimizi branşlarına göre inceleyin.</p>
+          <p className="text-slate-300 text-lg font-light mb-4">Seçkin eğitmenlerimizi branşlarına göre inceleyin.</p>
+          <p className="text-[#D4AF37]/80 text-sm flex items-center justify-center gap-2">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Kartlardaki kutucuklara tıklayarak en fazla 3 öğretmeni karşılaştırabilirsiniz
+          </p>
         </div>
 
         <FeaturedTeachersClient teachers={teachers} />
