@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduPremium - Öğrenci/Veli Kullanım Kılavuzu</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    @page {
+      size: A3 portrait;
+      margin: 0;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: linear-gradient(135deg, #FDFBF7 0%, #F8F6F0 100%);
+      color: #0F172A;
+      line-height: 1.6;
+      min-height: 420mm;
+      width: 297mm;
+      margin: 0 auto;
+      padding: 15mm;
+    }
+
+    .container {
+      max-width: 100%;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 8mm;
+      border-bottom: 3px solid #D4AF37;
+      margin-bottom: 10mm;
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 5mm;
+    }
+
+    .logo-section img {
+      width: 25mm;
+      height: 25mm;
+      border-radius: 50%;
+    }
+
+    .logo-text h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 32pt;
+      color: #0F172A;
+      font-weight: 700;
+    }
+
+    .logo-text p {
+      font-size: 10pt;
+      color: #D4AF37;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      font-weight: 700;
+    }
+
+    .header-title {
+      text-align: right;
+    }
+
+    .header-title h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 18pt;
+      color: #0F172A;
+    }
+
+    .header-title p {
+      font-size: 10pt;
+      color: #64748B;
+    }
+
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+      color: white;
+      padding: 12mm;
+      border-radius: 5mm;
+      margin-bottom: 10mm;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 60%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(212, 175, 55, 0.1));
+      transform: rotate(15deg);
+    }
+
+    .hero h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 24pt;
+      margin-bottom: 4mm;
+      position: relative;
+    }
+
+    .hero h2 span {
+      color: #D4AF37;
+    }
+
+    .hero p {
+      font-size: 11pt;
+      opacity: 0.9;
+      max-width: 80%;
+      position: relative;
+    }
+
+    /* Main Content Grid */
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8mm;
+      margin-bottom: 10mm;
+    }
+
+    .card {
+      background: white;
+      border-radius: 4mm;
+      padding: 6mm;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+      margin-bottom: 4mm;
+      padding-bottom: 3mm;
+      border-bottom: 2px solid #D4AF37;
+    }
+
+    .card-icon {
+      width: 10mm;
+      height: 10mm;
+      background: linear-gradient(135deg, #D4AF37, #B8960C);
+      border-radius: 2mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 14pt;
+    }
+
+    .card-header h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 13pt;
+      color: #0F172A;
+    }
+
+    .card-content {
+      font-size: 9pt;
+      color: #475569;
+    }
+
+    .card-content ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .card-content li {
+      padding: 2mm 0;
+      padding-left: 5mm;
+      position: relative;
+    }
+
+    .card-content li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: #D4AF37;
+      font-weight: bold;
+    }
+
+    .card-content p {
+      margin-bottom: 2mm;
+    }
+
+    /* Feature Highlight */
+    .feature-highlight {
+      background: linear-gradient(135deg, #D4AF37 0%, #B8960C 100%);
+      color: white;
+      padding: 8mm;
+      border-radius: 4mm;
+      margin-bottom: 10mm;
+    }
+
+    .feature-highlight h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 16pt;
+      margin-bottom: 4mm;
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+    }
+
+    .feature-highlight .steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5mm;
+    }
+
+    .step {
+      background: rgba(255,255,255,0.15);
+      padding: 4mm;
+      border-radius: 3mm;
+      text-align: center;
+    }
+
+    .step-number {
+      width: 8mm;
+      height: 8mm;
+      background: white;
+      color: #D4AF37;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 12pt;
+      margin: 0 auto 2mm;
+    }
+
+    .step p {
+      font-size: 9pt;
+      line-height: 1.4;
+    }
+
+    /* Two Column Section */
+    .two-column {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8mm;
+      margin-bottom: 10mm;
+    }
+
+    .column-card {
+      background: white;
+      border-radius: 4mm;
+      padding: 6mm;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      border-left: 4px solid #D4AF37;
+    }
+
+    .column-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 13pt;
+      color: #0F172A;
+      margin-bottom: 4mm;
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+    }
+
+    .column-card h3 span {
+      font-size: 14pt;
+    }
+
+    /* FAQ Section */
+    .faq-section {
+      background: #0F172A;
+      color: white;
+      padding: 8mm;
+      border-radius: 4mm;
+      margin-bottom: 10mm;
+    }
+
+    .faq-section h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 16pt;
+      margin-bottom: 5mm;
+      color: #D4AF37;
+    }
+
+    .faq-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 5mm;
+    }
+
+    .faq-item {
+      background: rgba(255,255,255,0.05);
+      padding: 4mm;
+      border-radius: 2mm;
+    }
+
+    .faq-item strong {
+      color: #D4AF37;
+      font-size: 9pt;
+      display: block;
+      margin-bottom: 1mm;
+    }
+
+    .faq-item p {
+      font-size: 9pt;
+      opacity: 0.9;
+    }
+
+    /* Contact Footer */
+    .contact-footer {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5mm;
+      padding: 6mm;
+      background: white;
+      border-radius: 4mm;
+      border: 2px solid #D4AF37;
+    }
+
+    .contact-item {
+      text-align: center;
+    }
+
+    .contact-item .icon {
+      font-size: 16pt;
+      margin-bottom: 2mm;
+    }
+
+    .contact-item h4 {
+      font-size: 9pt;
+      color: #64748B;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1mm;
+    }
+
+    .contact-item p {
+      font-size: 10pt;
+      font-weight: 600;
+      color: #0F172A;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 8mm;
+      padding-top: 5mm;
+      border-top: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .footer p {
+      font-size: 8pt;
+      color: #64748B;
+    }
+
+    .footer .brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 10pt;
+      color: #0F172A;
+      font-weight: 600;
+    }
+
+    /* Badges */
+    .badges {
+      display: flex;
+      justify-content: center;
+      gap: 4mm;
+      margin-top: 3mm;
+    }
+
+    .badge {
+      display: flex;
+      align-items: center;
+      gap: 1mm;
+      padding: 1.5mm 3mm;
+      background: #F1F5F9;
+      border-radius: 2mm;
+      font-size: 7pt;
+      color: #475569;
+    }
+
+    /* Numbered list style */
+    .numbered-list {
+      counter-reset: item;
+      list-style: none;
+    }
+
+    .numbered-list li {
+      counter-increment: item;
+      padding-left: 7mm;
+      position: relative;
+      margin-bottom: 2mm;
+    }
+
+    .numbered-list li::before {
+      content: counter(item);
+      position: absolute;
+      left: 0;
+      width: 4mm;
+      height: 4mm;
+      background: #D4AF37;
+      color: white;
+      border-radius: 50%;
+      font-size: 7pt;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.05));
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 2mm;
+      padding: 3mm;
+      margin-top: 3mm;
+      font-size: 8pt;
+      color: #0F172A;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="logo-section">
+        <img src="/logo-circle.png" alt="EduPremium Logo">
+        <div class="logo-text">
+          <h1>EduPremium</h1>
+          <p>Premium Özel Ders Platformu</p>
+        </div>
+      </div>
+      <div class="header-title">
+        <h2>Öğrenci & Veli Kılavuzu</h2>
+        <p>Platformumuzu etkili kullanmanız için her şey bu broşürde</p>
+      </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+      <h2>Geleceği <span>Mükemmellikle</span> İnşa Edin</h2>
+      <p>Türkiye'nin en seçkin eğitmen kadrosuyla, kişiselleştirilmiş ve premium bir öğrenme deneyimi sunuyoruz. Sıradan derslerin ötesine geçin, potansiyelinizi zirveye taşıyın.</p>
+    </section>
+
+    <!-- Main Content Grid -->
+    <div class="content-grid">
+
+      <!-- Card 1: Hesap Oluşturma -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">👤</div>
+          <h3>Hesap Oluşturma</h3>
+        </div>
+        <div class="card-content">
+          <ul class="numbered-list">
+            <li>Ana sayfada <strong>"Kayıt Ol"</strong> butonuna tıklayın</li>
+            <li>Öğrenci veya Veli olarak kayıt türünü seçin</li>
+            <li>Ad, soyad, e-posta ve telefon bilgilerinizi girin</li>
+            <li>Güçlü bir şifre oluşturun</li>
+            <li>E-postanıza gelen doğrulama linkine tıklayın</li>
+          </ul>
+          <div class="highlight-box">
+            💡 <strong>İpucu:</strong> Doğrulama e-postası gelmezse spam klasörünü kontrol edin.
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Öğretmen Bulma -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🔍</div>
+          <h3>Öğretmen Bulma</h3>
+        </div>
+        <div class="card-content">
+          <p><strong>Filtreleme Seçenekleri:</strong></p>
+          <ul>
+            <li><strong>Ders:</strong> Matematik, Fizik, İngilizce vb.</li>
+            <li><strong>Seviye:</strong> İlkokul, Ortaokul, Lise, Üniversite</li>
+            <li><strong>Fiyat:</strong> Bütçenize uygun aralık</li>
+            <li><strong>Puan:</strong> Öğrenci değerlendirmelerine göre</li>
+          </ul>
+          <div class="highlight-box">
+            ⭐ <strong>Editörün Seçimi:</strong> Ana sayfadaki öne çıkan öğretmenlerimiz özenle seçilmiştir.
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Öğretmen Profili -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">📋</div>
+          <h3>Öğretmen Profili</h3>
+        </div>
+        <div class="card-content">
+          <p>Her öğretmen profilinde şunları görebilirsiniz:</p>
+          <ul>
+            <li><strong>Hakkında:</strong> Öğretmenin tanıtımı</li>
+            <li><strong>Eğitim:</strong> Üniversite ve bölüm bilgisi</li>
+            <li><strong>Deneyim:</strong> Öğretmenlik tecrübesi</li>
+            <li><strong>Dersler:</strong> Verdiği ders ve konular</li>
+            <li><strong>Ücret:</strong> Saatlik ders ücreti</li>
+            <li><strong>Müsaitlik:</strong> Uygun gün ve saatler</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Feature Highlight: Karşılaştırma -->
+    <section class="feature-highlight">
+      <h3>⚖️ YENİ! Öğretmen Karşılaştırma Özelliği</h3>
+      <p style="margin-bottom: 5mm; opacity: 0.9; font-size: 10pt;">Karar vermekte zorlanıyor musunuz? 3 öğretmeni yan yana karşılaştırarak en doğru seçimi yapın!</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <p>Öğretmen kartlarının sağ üst köşesindeki <strong>checkbox'ı</strong> işaretleyin</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <p>En fazla <strong>3 öğretmen</strong> seçebilirsiniz</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <p>Ekranın altındaki <strong>"Karşılaştır"</strong> butonuna tıklayın</p>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <p>Ücret, deneyim, puan ve dersleri <strong>yan yana görün</strong></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Two Column Section -->
+    <div class="two-column">
+
+      <!-- Ders Rezervasyonu -->
+      <div class="column-card">
+        <h3><span>📅</span> Ders Rezervasyonu</h3>
+        <div class="card-content">
+          <ul class="numbered-list">
+            <li>Beğendiğiniz öğretmenin profiline gidin</li>
+            <li><strong>"Randevu Al"</strong> butonuna tıklayın</li>
+            <li>Takvimden uygun tarih ve saati seçin</li>
+            <li>Ders konusunu ve varsa notlarınızı ekleyin</li>
+            <li>Güvenli ödeme sayfasında işlemi tamamlayın</li>
+            <li>Onay e-postanızı ve SMS'inizi bekleyin</li>
+          </ul>
+          <div class="highlight-box">
+            ⏰ <strong>İptal:</strong> Ders başlangıcından 24 saat öncesine kadar ücretsiz iptal edebilirsiniz.
+          </div>
+        </div>
+      </div>
+
+      <!-- Öğrenci Paneli -->
+      <div class="column-card">
+        <h3><span>🖥️</span> Öğrenci Paneli</h3>
+        <div class="card-content">
+          <p><strong>Panelinizde erişebileceğiniz bölümler:</strong></p>
+          <ul>
+            <li><strong>Ana Sayfa:</strong> Yaklaşan ve bugünkü dersler</li>
+            <li><strong>Derslerim:</strong> Bekleyen, tamamlanan, iptal edilen</li>
+            <li><strong>Ödemelerim:</strong> Ödeme geçmişi ve faturalar</li>
+            <li><strong>Profilim:</strong> Bilgi güncelleme ve şifre değiştirme</li>
+          </ul>
+          <div class="highlight-box">
+            🎥 <strong>Derse Katılma:</strong> Ders saatinden 5 dakika önce "Derse Katıl" butonu aktif olur.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Ders Odası Özellikleri -->
+    <div class="two-column">
+      <div class="column-card">
+        <h3><span>💻</span> Online Ders Odası</h3>
+        <div class="card-content">
+          <p><strong>Ders odasında kullanabileceğiniz özellikler:</strong></p>
+          <ul>
+            <li>📹 <strong>Video Görüşme:</strong> Yüz yüze iletişim</li>
+            <li>🎤 <strong>Sesli İletişim:</strong> Net ses kalitesi</li>
+            <li>💬 <strong>Yazılı Sohbet:</strong> Anlık mesajlaşma</li>
+            <li>📝 <strong>Beyaz Tahta:</strong> İnteraktif çizim ve yazma</li>
+            <li>📎 <strong>Dosya Paylaşımı:</strong> Döküman gönderme</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="column-card">
+        <h3><span>🆘</span> Destek Kanalları</h3>
+        <div class="card-content">
+          <p><strong>Size yardımcı olmak için buradayız:</strong></p>
+          <ul>
+            <li>💚 <strong>WhatsApp:</strong> Sayfanın sağ altındaki yeşil ikon</li>
+            <li>💬 <strong>Canlı Sohbet:</strong> Anlık destek için sohbet ikonu</li>
+            <li>📧 <strong>E-posta:</strong> info@visserr.com</li>
+            <li>📞 <strong>Telefon:</strong> +90 (212) 345 67 89</li>
+          </ul>
+          <div class="highlight-box">
+            🕐 <strong>Çalışma Saatleri:</strong> Hafta içi 09:00 - 22:00, Hafta sonu 10:00 - 18:00
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+      <h3>❓ Sıkça Sorulan Sorular</h3>
+      <div class="faq-grid">
+        <div class="faq-item">
+          <strong>Ders ücretleri ne kadar?</strong>
+          <p>Öğretmene göre değişir. Minimum ücret 1.500 TL/saat'tir. Her öğretmenin profil sayfasında güncel ücreti görüntüleyebilirsiniz.</p>
+        </div>
+        <div class="faq-item">
+          <strong>Dersi iptal edebilir miyim?</strong>
+          <p>Evet, ders başlangıcından 24 saat öncesine kadar ücretsiz iptal edebilirsiniz. Daha geç iptallerde ücret iadesi yapılmaz.</p>
+        </div>
+        <div class="faq-item">
+          <strong>Ödeme güvenli mi?</strong>
+          <p>Kesinlikle. 256-bit SSL şifreleme, iyzico güvenli ödeme altyapısı ve Cloudflare koruması kullanıyoruz.</p>
+        </div>
+        <div class="faq-item">
+          <strong>Hangi dersler veriliyor?</strong>
+          <p>Matematik, Fizik, Kimya, Biyoloji, Türkçe, Edebiyat, İngilizce, Almanca ve daha birçok derste hizmet veriyoruz.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Footer -->
+    <div class="contact-footer">
+      <div class="contact-item">
+        <div class="icon">🌐</div>
+        <h4>Web Sitesi</h4>
+        <p>visserr.com</p>
+      </div>
+      <div class="contact-item">
+        <div class="icon">📧</div>
+        <h4>E-posta</h4>
+        <p>info@visserr.com</p>
+      </div>
+      <div class="contact-item">
+        <div class="icon">📞</div>
+        <h4>Telefon</h4>
+        <p>+90 (212) 345 67 89</p>
+      </div>
+      <div class="contact-item">
+        <div class="icon">📍</div>
+        <h4>Adres</h4>
+        <p>Maslak, Sarıyer/İstanbul</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p class="brand">EduPremium - Türkiye'nin Premium Özel Ders Platformu</p>
+      <p>© 2026 EduPremium. Tüm hakları saklıdır. İçerikler 5846 sayılı FSEK ile korunmaktadır.</p>
+      <div class="badges">
+        <span class="badge">🔒 256-Bit SSL</span>
+        <span class="badge">✓ iyzico Güvenli Ödeme</span>
+        <span class="badge">☁️ Cloudflare Korumalı</span>
+        <span class="badge">📱 Mobil Uyumlu</span>
+      </div>
+    </footer>
+
+  </div>
+</body>
+</html>
