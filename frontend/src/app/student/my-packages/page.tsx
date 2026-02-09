@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
 import { Bell, User, LogOut, Package, Calendar, Clock, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import RescheduleModal from '@/components/RescheduleModal';
 
 interface PackagePayment {
   id: string;
@@ -47,6 +48,11 @@ export default function MyPackagesPage() {
   const [loading, setLoading] = useState(true);
   const [studentName, setStudentName] = useState('');
   const [expandedPackage, setExpandedPackage] = useState<string | null>(null);
+  const [rescheduleData, setRescheduleData] = useState<{
+    lesson: Lesson;
+    teacherId: string;
+    teacherName: string;
+  } | null>(null);
 
   useEffect(() => {
     loadData();
@@ -438,8 +444,11 @@ export default function MyPackagesPage() {
                                       <button
                                         className="text-slate-500 hover:text-[#D4AF37] text-xs font-medium transition-colors"
                                         onClick={() => {
-                                          // TODO: Reschedule modal
-                                          toast('Tarih değiştirme özelliği yakında aktif olacak');
+                                          setRescheduleData({
+                                            lesson,
+                                            teacherId: pkg.teacher_id,
+                                            teacherName: pkg.teacher?.full_name || 'Öğretmen',
+                                          });
                                         }}
                                       >
                                         Tarih Değiştir
@@ -497,6 +506,19 @@ export default function MyPackagesPage() {
           )}
         </div>
       </div>
+
+      {/* Reschedule Modal */}
+      {rescheduleData && (
+        <RescheduleModal
+          lesson={rescheduleData.lesson}
+          teacherId={rescheduleData.teacherId}
+          teacherName={rescheduleData.teacherName}
+          onClose={() => setRescheduleData(null)}
+          onSuccess={() => {
+            loadData(); // Refresh data
+          }}
+        />
+      )}
     </div>
   );
 }
