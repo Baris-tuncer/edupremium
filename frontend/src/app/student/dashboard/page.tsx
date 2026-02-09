@@ -17,7 +17,8 @@ const FEATURED_CATEGORY_LABELS: Record<string, string> = {
   'tyt-ayt': 'TYT-AYT Hazırlık',
   'yabanci-dil': 'Yabancı Dil',
 };
-import { Search, Star, Bell, User, Calendar, Clock, ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
+import { Search, Star, User, Calendar, Clock, ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
+import StudentNotificationBell from '../components/NotificationBell';
 
 export default function StudentDashboardPage() {
   const router = useRouter();
@@ -240,9 +241,7 @@ export default function StudentDashboardPage() {
               <Link href="/student/my-packages" className="text-sm font-medium text-slate-600 hover:text-[#D4AF37] transition-colors hidden md:block">
                 Paketlerim
               </Link>
-              <button className="relative p-2 text-slate-500 hover:text-[#D4AF37] transition-colors">
-                <Bell className="w-5 h-5" />
-              </button>
+              <StudentNotificationBell />
               <div className="flex items-center gap-3 pl-4 border-l border-slate-200/50">
                 <div className="text-right hidden md:block">
                   <p className="text-sm font-bold text-[#0F172A]">{studentName}</p>

@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import StudentNotificationBell from '../components/NotificationBell';
 
 export default function StudentLessonsPage() {
   const router = useRouter();
@@ -257,6 +258,7 @@ export default function StudentLessonsPage() {
             <Link href="/student/my-packages" className="px-4 py-2 text-slate-600 hover:text-[#0F172A] font-medium transition-colors">
               Paketlerim
             </Link>
+            <StudentNotificationBell />
             <button onClick={handleLogout} className="px-4 py-2 text-slate-600 hover:text-[#0F172A] font-medium transition-colors">
               Çıkış Yap
             </button>
