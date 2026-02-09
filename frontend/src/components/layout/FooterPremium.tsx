@@ -45,10 +45,12 @@ const FooterPremium = () => {
 
           {/* 1. SÜTUN: MARKA & HAKKINDA */}
           <div>
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 bg-[#D4AF37] rounded-lg flex items-center justify-center text-[#020617]">
-                <span className="font-serif font-bold text-2xl">E</span>
-              </div>
+            <div className="flex items-center gap-3 mb-6">
+              <img
+                src="/logo-192.png"
+                alt="EduPremium Logo"
+                className="w-12 h-12 rounded-xl"
+              />
               <div>
                 <h3 className="text-2xl font-bold text-white font-serif tracking-tight">EduPremium</h3>
                 <p className="text-[10px] text-[#D4AF37] tracking-[0.2em] uppercase font-bold">Özel Ders Platformu</p>
