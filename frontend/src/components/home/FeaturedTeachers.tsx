@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
 import CategoryShowcase from '@/components/home/CategoryShowcase';
 import { Award, ArrowRight } from 'lucide-react';
+import { calculateDisplayPrice } from '@/lib/price-calculator';
 
 async function getFeaturedTeachers() {
   const supabase = createClient();
@@ -29,9 +30,12 @@ async function getFeaturedTeachers() {
     else if (p.featured_category) finalSubjects = [p.featured_category];
     else finalSubjects = ['Genel'];
 
-    // 2. FİYATI BUL - Veliye gösterilecek fiyat (hourly_rate_display)
-    // Önce hourly_rate_display, yoksa eski alanlardan hesaplama
-    const finalPrice = p.hourly_rate_display || p.hourly_rate || p.base_price || p.price || p.rate || 0;
+    // 2. FİYATI BUL - Veliye gösterilecek fiyat (calculateDisplayPrice ile hesapla)
+    // Teachers sayfasıyla tutarlı olması için hourly_rate_net + commission_rate kullan
+    const finalPrice = calculateDisplayPrice(
+      p.hourly_rate_net || p.base_price || 0,
+      p.commission_rate || 0.25
+    );
 
     // 3. ÜNİVERSİTEYİ BUL
     const finalUniversity = p.university || p.school || p.university_name || null;
