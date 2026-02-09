@@ -47,9 +47,9 @@ const FooterPremium = () => {
           <div>
             <div className="flex items-center gap-3 mb-6">
               <img
-                src="/logo-192.png"
+                src="/logo-circle.png"
                 alt="EduPremium Logo"
-                className="w-14 h-14 object-contain"
+                className="w-16 h-16 object-contain"
               />
               <div>
                 <h3 className="text-2xl font-bold text-white font-serif tracking-tight">EduPremium</h3>

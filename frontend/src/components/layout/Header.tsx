@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 const Logo = () => (
   <Link href="/" className="flex items-center gap-3 group">
     <img
-      src="/logo-192.png"
+      src="/logo-mascot-v2.png"
       alt="EduPremium Logo"
       className="w-12 h-12 object-contain group-hover:scale-105 transition-transform duration-300"
     />
