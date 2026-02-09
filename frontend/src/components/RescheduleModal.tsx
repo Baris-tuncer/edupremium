@@ -16,6 +16,7 @@ interface RescheduleModalProps {
   teacherName: string;
   onClose: () => void;
   onSuccess: () => void;
+  role?: 'student' | 'teacher';
 }
 
 interface Availability {
@@ -30,6 +31,7 @@ export default function RescheduleModal({
   teacherName,
   onClose,
   onSuccess,
+  role = 'student',
 }: RescheduleModalProps) {
   const [step, setStep] = useState<'select' | 'reason'>('select');
   const [availabilities, setAvailabilities] = useState<Availability[]>([]);
@@ -106,7 +108,7 @@ export default function RescheduleModal({
           newScheduledAt: selectedSlot.start_time,
           reasonCategory,
           reasonText: reasonText || null,
-          initiatedBy: 'student',
+          initiatedBy: role,
         }),
       });
 
@@ -331,7 +333,7 @@ export default function RescheduleModal({
                   Değişiklik Sebebi <span className="text-red-500">*</span>
                 </label>
                 <div className="space-y-2">
-                  {CHANGE_REASONS.student.map((reason) => (
+                  {CHANGE_REASONS[role].map((reason) => (
                     <label
                       key={reason.value}
                       className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-colors ${

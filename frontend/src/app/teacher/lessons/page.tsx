@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
+import RescheduleModal from '@/components/RescheduleModal';
+import { PACKAGE_CONSTANTS } from '@/lib/package-calculator';
 
 export default function TeacherLessonsPage() {
   const [lessons, setLessons] = useState<any[]>([]);
@@ -10,6 +12,12 @@ export default function TeacherLessonsPage() {
   const [filter, setFilter] = useState('upcoming');
   const [completingId, setCompletingId] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [teacherId, setTeacherId] = useState<string>('');
+
+  // Tarih değiştirme modalı
+  const [rescheduleData, setRescheduleData] = useState<{
+    lesson: any;
+  } | null>(null);
 
   // Kayıt onay modalı
   const [showConsentModal, setShowConsentModal] = useState(false);
@@ -30,9 +38,10 @@ export default function TeacherLessonsPage() {
         toast.error('Oturum bulunamadı');
         return;
       }
+      setTeacherId(user.id);
       const { data, error } = await supabase
         .from('lessons')
-        .select('*')
+        .select('*, student:student_profiles(full_name)')
         .eq('teacher_id', user.id)
         .order('scheduled_at', { ascending: true });
       if (error) {
@@ -96,6 +105,16 @@ export default function TeacherLessonsPage() {
     const fifteenMinsBefore = new Date(lessonStart.getTime() - 15 * 60 * 1000);
     const fifteenMinsAfter = new Date(lessonStart.getTime() + 15 * 60 * 1000);
     return currentTime >= fifteenMinsBefore && currentTime <= fifteenMinsAfter;
+  };
+
+  const canReschedule = (lesson: any) => {
+    // Sadece paket dersleri değiştirilebilir
+    if (!lesson.is_package_lesson) return false;
+    // Tamamlanmış veya iptal edilmiş dersler değiştirilemez
+    if (lesson.status === 'COMPLETED' || lesson.status === 'CANCELLED') return false;
+    // 24 saat kuralı
+    const hoursUntilLesson = (new Date(lesson.scheduled_at).getTime() - Date.now()) / (1000 * 60 * 60);
+    return hoursUntilLesson >= PACKAGE_CONSTANTS.RESCHEDULE_DEADLINE_HOURS;
   };
 
   // Derse katıl butonuna tıklandığında önce onay modalı göster
@@ -208,7 +227,10 @@ export default function TeacherLessonsPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-[#0F172A]">{lesson.subject || 'Ders'}</h3>
-                    <p className="text-sm text-slate-600">{lesson.duration_minutes} dakika • {lesson.price} ₺</p>
+                    <p className="text-sm text-slate-600">
+                      {lesson.student?.full_name || 'Öğrenci'} • {lesson.duration_minutes} dakika
+                      {lesson.is_package_lesson && <span className="ml-2 text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">Paket</span>}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -221,6 +243,14 @@ export default function TeacherLessonsPage() {
                     </p>
                   </div>
                   {getStatusBadge(lesson.status, lesson.scheduled_at)}
+                  {canReschedule(lesson) && (
+                    <button
+                      onClick={() => setRescheduleData({ lesson })}
+                      className="px-4 py-2 bg-amber-500 text-white text-sm font-medium rounded-lg hover:bg-amber-600 transition-colors"
+                    >
+                      📅 Tarih Değiştir
+                    </button>
+                  )}
                   {canJoinMeeting(lesson) && (
                     <button
                       onClick={() => handleJoinClick(lesson.id)}
@@ -320,6 +350,25 @@ export default function TeacherLessonsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Tarih Değiştirme Modalı */}
+      {rescheduleData && (
+        <RescheduleModal
+          lesson={{
+            id: rescheduleData.lesson.id,
+            scheduled_at: rescheduleData.lesson.scheduled_at,
+            reschedule_count: rescheduleData.lesson.reschedule_count || 0,
+          }}
+          teacherId={teacherId}
+          teacherName="Ben"
+          role="teacher"
+          onClose={() => setRescheduleData(null)}
+          onSuccess={() => {
+            fetchLessons();
+            setRescheduleData(null);
+          }}
+        />
       )}
     </div>
   );
