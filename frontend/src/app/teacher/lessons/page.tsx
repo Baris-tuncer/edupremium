@@ -41,13 +41,29 @@ export default function TeacherLessonsPage() {
       setTeacherId(user.id);
       const { data, error } = await supabase
         .from('lessons')
-        .select('*, student:student_profiles(full_name)')
+        .select('*')
         .eq('teacher_id', user.id)
         .order('scheduled_at', { ascending: true });
+
       if (error) {
+        console.error('Lessons fetch error:', error);
         setLessons([]);
       } else {
-        setLessons(data || []);
+        // Öğrenci isimlerini ayrı sorgula
+        const lessonsWithStudents = await Promise.all(
+          (data || []).map(async (lesson) => {
+            if (lesson.student_id) {
+              const { data: student } = await supabase
+                .from('student_profiles')
+                .select('full_name')
+                .eq('id', lesson.student_id)
+                .single();
+              return { ...lesson, student };
+            }
+            return lesson;
+          })
+        );
+        setLessons(lessonsWithStudents);
       }
     } catch (error) {
       setLessons([]);
