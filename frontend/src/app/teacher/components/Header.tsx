@@ -111,58 +111,55 @@ export default function TeacherHeader({ user }: HeaderProps) {
       }
 
       // 2. Ders değişiklikleri (son 7 gün)
-      const { data: lessonChanges } = await supabase
-        .from('lesson_changes')
-        .select(`
-          id,
-          change_type,
-          initiated_by,
-          reason_category,
-          old_scheduled_at,
-          new_scheduled_at,
-          created_at,
-          lesson:lessons!lesson_id (
-            id,
-            teacher_id,
-            student_id
-          )
-        `)
-        .gte('created_at', sevenDaysAgo.toISOString())
-        .order('created_at', { ascending: false })
-        .limit(10);
+      // Önce bu öğretmenin derslerini al
+      const { data: teacherLessons } = await supabase
+        .from('lessons')
+        .select('id, student_id')
+        .eq('teacher_id', authUser.id);
 
-      if (lessonChanges) {
-        for (const change of lessonChanges) {
-          // Sadece bu öğretmenin derslerini göster
-          if (change.lesson?.teacher_id !== authUser.id) continue;
-          // Sadece öğrenci tarafından yapılan değişiklikleri göster
-          if (change.initiated_by !== 'student') continue;
+      const teacherLessonIds = teacherLessons?.map(l => l.id) || [];
+      const lessonStudentMap = new Map(teacherLessons?.map(l => [l.id, l.student_id]) || []);
 
-          // Öğrenci bilgisini al
-          const { data: student } = await supabase
-            .from('student_profiles')
-            .select('full_name')
-            .eq('id', change.lesson.student_id)
-            .single();
+      if (teacherLessonIds.length > 0) {
+        const { data: lessonChanges } = await supabase
+          .from('lesson_changes')
+          .select('id, lesson_id, change_type, initiated_by, reason_category, old_scheduled_at, new_scheduled_at, created_at')
+          .in('lesson_id', teacherLessonIds)
+          .eq('initiated_by', 'student')
+          .gte('created_at', sevenDaysAgo.toISOString())
+          .order('created_at', { ascending: false })
+          .limit(10);
 
-          const notifId = `change_${change.id}`;
-          const newDate = new Date(change.new_scheduled_at);
+        if (lessonChanges) {
+          for (const change of lessonChanges) {
+            const studentId = lessonStudentMap.get(change.lesson_id);
 
-          allNotifications.push({
-            id: notifId,
-            type: 'reschedule',
-            title: `${student?.full_name || 'Öğrenci'} tarih değiştirdi`,
-            subtitle: `Yeni: ${newDate.toLocaleDateString('tr-TR', {
-              day: 'numeric',
-              month: 'short',
-              hour: '2-digit',
-              minute: '2-digit',
-            })}`,
-            time: change.created_at,
-            icon: '📅',
-            isNew: !readNotifs.includes(notifId),
-            data: change,
-          });
+            // Öğrenci bilgisini al
+            const { data: student } = await supabase
+              .from('student_profiles')
+              .select('full_name')
+              .eq('id', studentId)
+              .single();
+
+            const notifId = `change_${change.id}`;
+            const newDate = new Date(change.new_scheduled_at);
+
+            allNotifications.push({
+              id: notifId,
+              type: 'reschedule',
+              title: `${student?.full_name || 'Öğrenci'} tarih değiştirdi`,
+              subtitle: `Yeni: ${newDate.toLocaleDateString('tr-TR', {
+                day: 'numeric',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}`,
+              time: change.created_at,
+              icon: '📅',
+              isNew: !readNotifs.includes(notifId),
+              data: change,
+            });
+          }
         }
       }
 
