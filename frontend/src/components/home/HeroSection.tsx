@@ -23,16 +23,9 @@ const HeroSection = () => {
       <div className="container mx-auto px-6 md:px-12 relative z-20 h-full flex flex-col justify-center">
         
         <div className="max-w-2xl">
-          {/* Üst Etiket + Maskot */}
-          <div className="flex items-center gap-4 mb-6">
-            <img
-              src="/mascot.png"
-              alt="EduPremium Maskot"
-              className="w-20 h-20 md:w-24 md:h-24 object-contain drop-shadow-lg"
-            />
-            <div className="px-4 py-2 border-l-4 border-[#D4AF37] bg-white/50 backdrop-blur-sm">
-              <span className="text-[#0F172A] font-bold tracking-widest text-xs uppercase">EduPremium Akademi</span>
-            </div>
+          {/* Üst Etiket */}
+          <div className="inline-flex items-center gap-2 mb-6 px-3 py-1 border-l-4 border-[#D4AF37] bg-white/50 backdrop-blur-sm">
+            <span className="text-[#0F172A] font-bold tracking-widest text-xs uppercase">EduPremium Akademi</span>
           </div>
 
           {/* Ana Başlık */}
