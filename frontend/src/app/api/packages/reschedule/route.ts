@@ -274,6 +274,23 @@ async function sendRescheduleNotifications(
           <p><a href="https://www.visserr.com/student/lessons">Derslerinizi görüntüleyin</a></p>
         `,
       });
+
+      // Öğretmene onay maili
+      await resend.emails.send({
+        from: 'EduPremium <noreply@visserr.com>',
+        to: teacher.email,
+        subject: '✅ Ders Tarihi Değişikliği Onaylandı',
+        html: `
+          <h2>Ders Tarihi Değişikliği Onaylandı</h2>
+          <p>Merhaba ${teacher.full_name},</p>
+          <p>${student.full_name} öğrencinizle olan dersinizin tarihini başarıyla değiştirdiniz.</p>
+          <p><strong>Eski tarih:</strong> ${oldDate}</p>
+          <p><strong>Yeni tarih:</strong> ${newDate}</p>
+          <p><strong>Sebep:</strong> ${reasonLabel}${reasonText ? ` - ${reasonText}` : ''}</p>
+          <p>Öğrencinize bildirim e-postası gönderildi.</p>
+          <p><a href="https://www.visserr.com/teacher/lessons">Derslerinizi görüntüleyin</a></p>
+        `,
+      });
     } else {
       // Öğretmene bildir
       await resend.emails.send({
@@ -288,6 +305,23 @@ async function sendRescheduleNotifications(
           <p><strong>Yeni tarih:</strong> ${newDate}</p>
           <p><strong>Sebep:</strong> ${reasonLabel}${reasonText ? ` - ${reasonText}` : ''}</p>
           <p><a href="https://www.visserr.com/teacher/lessons">Derslerinizi görüntüleyin</a></p>
+        `,
+      });
+
+      // Öğrenciye onay maili
+      await resend.emails.send({
+        from: 'EduPremium <noreply@visserr.com>',
+        to: student.email,
+        subject: '✅ Ders Tarihi Değişikliği Onaylandı',
+        html: `
+          <h2>Ders Tarihi Değişikliği Onaylandı</h2>
+          <p>Merhaba ${student.full_name},</p>
+          <p>${teacher.full_name} öğretmeninizle olan dersinizin tarihini başarıyla değiştirdiniz.</p>
+          <p><strong>Eski tarih:</strong> ${oldDate}</p>
+          <p><strong>Yeni tarih:</strong> ${newDate}</p>
+          <p><strong>Sebep:</strong> ${reasonLabel}${reasonText ? ` - ${reasonText}` : ''}</p>
+          <p>Öğretmeninize bildirim e-postası gönderildi.</p>
+          <p><a href="https://www.visserr.com/student/lessons">Derslerinizi görüntüleyin</a></p>
         `,
       });
     }
