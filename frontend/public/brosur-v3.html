@@ -18,6 +18,13 @@
       margin: 0;
     }
 
+    @media print {
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+    }
+
     body {
       font-family: 'DM Sans', sans-serif;
       background: #D4CFC4;
@@ -402,7 +409,7 @@
 
     .footer-copyright {
       font-size: 7pt;
-      color: #94A3B8;
+      color: #334155;
     }
 
     /* ==================== */
@@ -446,7 +453,7 @@
     }
 
     .detail-content.dark {
-      color: #CBD5E1;
+      color: #E2E8F0;
     }
 
     .numbered-list {
@@ -520,7 +527,7 @@
 
     .security-item p {
       font-size: 8pt;
-      color: #94A3B8;
+      color: #CBD5E1;
       line-height: 1.5;
     }
 
