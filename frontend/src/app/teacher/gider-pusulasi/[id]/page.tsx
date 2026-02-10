@@ -150,17 +150,6 @@ export default function GiderPusulasiDetailPage() {
         receiptData.student_name = student?.full_name || 'Öğrenci';
       }
 
-      // Get teacher signature
-      const { data: teacher } = await supabase
-        .from('teacher_profiles')
-        .select('signature_image')
-        .eq('id', receiptData.teacher_id)
-        .single();
-
-      if (teacher?.signature_image) {
-        (receiptData as any).teacher_signature = teacher.signature_image;
-      }
-
       setReceipt(receiptData);
       setFormData({
         tc_number: receiptData.tc_number || '',
@@ -320,9 +309,6 @@ export default function GiderPusulasiDetailPage() {
   const handleDownloadPDF = () => {
     if (!receipt) return;
 
-    // Get teacher signature if available
-    const teacherSignature = (receipt as any).teacher_signature || null;
-
     const printContent = `
       <!DOCTYPE html>
       <html>
@@ -353,8 +339,7 @@ export default function GiderPusulasiDetailPage() {
           .signature-box { text-align: center; }
           .signature-name { font-size: 12px; font-weight: 600; color: #0F172A; margin-bottom: 4px; }
           .signature-title { font-size: 10px; color: #64748B; margin-bottom: 6px; }
-          .signature-image { height: 50px; margin-bottom: 6px; }
-          .signature-image img { max-height: 50px; max-width: 150px; }
+          .signature-image { height: 50px; margin-bottom: 6px; border-bottom: 1px dashed #CBD5E1; }
           .signature-line { border-top: 1px solid #0F172A; padding-top: 6px; }
           .signature-label { font-size: 10px; color: #64748B; font-weight: 600; text-transform: uppercase; }
           .footer { margin-top: 15px; padding: 10px; background: #F8FAFC; border-radius: 6px; text-align: center; }
@@ -447,11 +432,9 @@ export default function GiderPusulasiDetailPage() {
           <div class="signature-box">
             <div class="signature-name">${receipt.full_name}</div>
             <div class="signature-title">Eğitmen</div>
-            <div class="signature-image">
-              ${teacherSignature ? `<img src="${teacherSignature}" alt="İmza" />` : ''}
-            </div>
+            <div class="signature-image"></div>
             <div class="signature-line">
-              <div class="signature-label">Ödemeyi Alan</div>
+              <div class="signature-label">Ödemeyi Alan (İmza)</div>
             </div>
           </div>
         </div>
@@ -712,6 +695,24 @@ export default function GiderPusulasiDetailPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Instructions */}
+      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-6">
+        <h3 className="font-semibold text-amber-900 mb-2 flex items-center gap-2">
+          <AlertCircle className="w-5 h-5" />
+          Gider Pusulası Nasıl Gönderilir?
+        </h3>
+        <ol className="list-decimal list-inside space-y-2 text-amber-800 text-sm">
+          <li>Yukarıdaki <strong>"PDF İndir"</strong> butonuna tıklayarak gider pusulasını indirin</li>
+          <li>Çıktı alın ve <strong>"Ödemeyi Alan (İmza)"</strong> kısmını elle imzalayın</li>
+          <li>İmzalı belgeyi fotoğraflayın veya tarayın</li>
+          <li>WhatsApp veya e-posta ile bize gönderin</li>
+          <li>Aşağıdaki <strong>"Onayla ve Gönder"</strong> butonuna tıklayarak dijital onay verin</li>
+        </ol>
+        <p className="text-amber-700 text-xs mt-3">
+          <strong>Not:</strong> İmzalı belge bize ulaşmadan ödeme yapılmaz. İmzalı belgeyi WhatsApp (sağ alt ikon) veya info@visserr.com adresine gönderebilirsiniz.
+        </p>
       </div>
 
       {/* Action Buttons */}

@@ -44,7 +44,6 @@ interface ExpenseReceipt {
   lesson_date?: string;
   lesson_duration?: number;
   student_name?: string;
-  teacher_signature?: string;
 }
 
 interface Statistics {
@@ -137,7 +136,7 @@ export default function AdminGiderPusulalariPage() {
 
         const { data: teachers } = await supabase
           .from('teacher_profiles')
-          .select('id, email, phone, signature_image')
+          .select('id, email, phone')
           .in('id', teacherIds);
 
         const { data: students } = await supabase
@@ -152,7 +151,6 @@ export default function AdminGiderPusulalariPage() {
           ...r,
           teacher_email: teacherMap.get(r.teacher_id)?.email || '',
           teacher_phone: teacherMap.get(r.teacher_id)?.phone || '',
-          teacher_signature: teacherMap.get(r.teacher_id)?.signature_image || '',
           lesson_subject: r.lessons?.subject || '',
           lesson_date: r.lessons?.scheduled_at || '',
           lesson_duration: r.lessons?.duration_minutes || 60,
@@ -333,8 +331,7 @@ export default function AdminGiderPusulalariPage() {
           .signature-box { text-align: center; }
           .signature-name { font-size: 12px; font-weight: 600; color: #0F172A; margin-bottom: 4px; }
           .signature-title { font-size: 10px; color: #64748B; margin-bottom: 6px; }
-          .signature-image { height: 50px; margin-bottom: 6px; }
-          .signature-image img { max-height: 50px; max-width: 150px; }
+          .signature-image { height: 50px; margin-bottom: 6px; border-bottom: 1px dashed #CBD5E1; }
           .signature-line { border-top: 1px solid #0F172A; padding-top: 6px; }
           .signature-label { font-size: 10px; color: #64748B; font-weight: 600; text-transform: uppercase; }
           .footer { margin-top: 15px; padding: 10px; background: #F8FAFC; border-radius: 6px; text-align: center; }
@@ -427,11 +424,9 @@ export default function AdminGiderPusulalariPage() {
           <div class="signature-box">
             <div class="signature-name">${receipt.full_name}</div>
             <div class="signature-title">Eğitmen</div>
-            <div class="signature-image">
-              ${receipt.teacher_signature ? `<img src="${receipt.teacher_signature}" alt="İmza" />` : ''}
-            </div>
+            <div class="signature-image"></div>
             <div class="signature-line">
-              <div class="signature-label">Ödemeyi Alan</div>
+              <div class="signature-label">Ödemeyi Alan (İmza)</div>
             </div>
           </div>
         </div>
