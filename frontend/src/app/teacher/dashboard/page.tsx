@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { Star, BookOpen, Users, Calendar, TrendingUp, LogOut, Loader2, ChevronRight } from 'lucide-react'
+import { Star, BookOpen, Users, Calendar, TrendingUp, LogOut, Loader2, ChevronRight, ChevronLeft, Clock, Video } from 'lucide-react'
 
 interface Stats {
   monthlyEarnings: number
@@ -284,41 +284,176 @@ export default function TeacherDashboardPage() {
           {/* Alt Kısım - 2 Sütun */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-            {/* Yaklaşan Dersler */}
+            {/* Premium Takvim - Yaklaşan Dersler */}
             <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-6 md:p-8 shadow-2xl shadow-[#0F172A]/5">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-[#0F172A] font-serif">Yaklaşan Dersler</h2>
-                <Link href="/teacher/lessons" className="text-xs text-[#D4AF37] font-bold hover:underline flex items-center gap-1">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-[#D4AF37] to-[#B8960C] rounded-xl flex items-center justify-center shadow-lg shadow-[#D4AF37]/20">
+                    <Calendar className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-[#0F172A] font-serif">Ders Takvimi</h2>
+                    <p className="text-xs text-slate-400">Bu hafta</p>
+                  </div>
+                </div>
+                <Link href="/teacher/lessons" className="text-xs text-[#D4AF37] font-bold hover:underline flex items-center gap-1 bg-[#D4AF37]/5 px-3 py-1.5 rounded-full border border-[#D4AF37]/20">
                   Tümünü Gör <ChevronRight className="w-3 h-3" />
                 </Link>
               </div>
 
-              {upcomingLessons.length === 0 ? (
-                <div className="text-center py-10">
-                  <Calendar className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-                  <p className="text-slate-400 text-sm">Bu hafta planlanmış ders bulunmuyor.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {upcomingLessons.map((lesson) => (
-                    <div key={lesson.id} className="flex items-center gap-4 p-4 bg-[#FDFBF7]/80 backdrop-blur-xl rounded-xl border border-slate-100">
-                      <div className="w-11 h-11 bg-[#0F172A] rounded-xl flex items-center justify-center flex-shrink-0">
-                        <span className="text-sm font-bold text-[#D4AF37]">
-                          {lesson.subject.charAt(0)}
-                        </span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-[#0F172A] text-sm truncate">{lesson.subject}</p>
-                        <p className="text-xs text-slate-400">{lesson.student_name}</p>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-xs font-bold text-[#0F172A]">{formatDate(lesson.scheduled_at)}</p>
-                        <p className="text-xs text-slate-400">{formatTime(lesson.scheduled_at)}</p>
-                      </div>
+              {/* Mini Haftalık Takvim */}
+              {(() => {
+                const today = new Date()
+                const weekDays = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt']
+                const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
+
+                // Haftanın günlerini hesapla (Pazartesi'den başla)
+                const startOfWeek = new Date(today)
+                const dayOfWeek = today.getDay()
+                const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+                startOfWeek.setDate(today.getDate() + diff)
+
+                const weekDates = Array.from({ length: 7 }, (_, i) => {
+                  const date = new Date(startOfWeek)
+                  date.setDate(startOfWeek.getDate() + i)
+                  return date
+                })
+
+                // Her gün için dersleri grupla
+                const lessonsByDay = weekDates.map(date => {
+                  const dayStart = new Date(date)
+                  dayStart.setHours(0, 0, 0, 0)
+                  const dayEnd = new Date(date)
+                  dayEnd.setHours(23, 59, 59, 999)
+
+                  return upcomingLessons.filter(lesson => {
+                    const lessonDate = new Date(lesson.scheduled_at)
+                    return lessonDate >= dayStart && lessonDate <= dayEnd
+                  })
+                })
+
+                return (
+                  <div className="space-y-4">
+                    {/* Hafta Başlığı */}
+                    <div className="flex items-center justify-center gap-2 text-sm text-slate-500">
+                      <span className="font-medium">{startOfWeek.getDate()} - {weekDates[6].getDate()} {monthNames[weekDates[6].getMonth()]}</span>
                     </div>
-                  ))}
-                </div>
-              )}
+
+                    {/* Günler Grid */}
+                    <div className="grid grid-cols-7 gap-1.5">
+                      {weekDates.map((date, idx) => {
+                        const isToday = date.toDateString() === today.toDateString()
+                        const isPast = date < today && !isToday
+                        const dayLessons = lessonsByDay[idx]
+                        const hasLessons = dayLessons.length > 0
+
+                        return (
+                          <div
+                            key={idx}
+                            className={`
+                              relative flex flex-col items-center p-2 rounded-xl transition-all
+                              ${isToday
+                                ? 'bg-gradient-to-br from-[#0F172A] to-[#1e293b] text-white shadow-lg'
+                                : isPast
+                                  ? 'bg-slate-50 text-slate-300'
+                                  : 'bg-[#FDFBF7] hover:bg-slate-50'
+                              }
+                            `}
+                          >
+                            <span className={`text-[10px] font-medium uppercase tracking-wider ${isToday ? 'text-[#D4AF37]' : isPast ? 'text-slate-300' : 'text-slate-400'}`}>
+                              {weekDays[(idx + 1) % 7]}
+                            </span>
+                            <span className={`text-lg font-bold mt-0.5 ${isToday ? 'text-white' : isPast ? 'text-slate-300' : 'text-[#0F172A]'}`}>
+                              {date.getDate()}
+                            </span>
+                            {hasLessons && (
+                              <div className={`mt-1 flex gap-0.5 ${dayLessons.length > 2 ? 'flex-wrap justify-center' : ''}`}>
+                                {dayLessons.slice(0, 3).map((_, i) => (
+                                  <div
+                                    key={i}
+                                    className={`w-1.5 h-1.5 rounded-full ${isToday ? 'bg-[#D4AF37]' : 'bg-[#D4AF37]'}`}
+                                  />
+                                ))}
+                                {dayLessons.length > 3 && (
+                                  <span className={`text-[8px] font-bold ${isToday ? 'text-[#D4AF37]' : 'text-[#D4AF37]'}`}>+{dayLessons.length - 3}</span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    {/* Bugünün ve yaklaşan dersleri */}
+                    <div className="mt-4 pt-4 border-t border-slate-100">
+                      {upcomingLessons.length === 0 ? (
+                        <div className="text-center py-6">
+                          <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <Calendar className="w-6 h-6 text-slate-300" />
+                          </div>
+                          <p className="text-slate-400 text-sm">Bu hafta planlanmış ders yok</p>
+                          <Link href="/teacher/availability" className="text-xs text-[#D4AF37] font-medium mt-2 inline-block hover:underline">
+                            Müsaitlik ayarla →
+                          </Link>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Yaklaşan Dersler</p>
+                          {upcomingLessons.slice(0, 3).map((lesson) => {
+                            const lessonDate = new Date(lesson.scheduled_at)
+                            const isLessonToday = lessonDate.toDateString() === today.toDateString()
+
+                            return (
+                              <div
+                                key={lesson.id}
+                                className={`
+                                  flex items-center gap-3 p-3 rounded-xl transition-all
+                                  ${isLessonToday
+                                    ? 'bg-gradient-to-r from-[#D4AF37]/10 to-[#D4AF37]/5 border border-[#D4AF37]/20'
+                                    : 'bg-[#FDFBF7]/80 border border-slate-100 hover:border-slate-200'
+                                  }
+                                `}
+                              >
+                                <div className={`
+                                  w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0
+                                  ${isLessonToday ? 'bg-[#D4AF37] shadow-lg shadow-[#D4AF37]/30' : 'bg-[#0F172A]'}
+                                `}>
+                                  <Video className={`w-4 h-4 ${isLessonToday ? 'text-white' : 'text-[#D4AF37]'}`} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-bold text-[#0F172A] text-sm truncate">{lesson.subject}</p>
+                                  <p className="text-xs text-slate-400 flex items-center gap-1">
+                                    <span>{lesson.student_name}</span>
+                                    <span>•</span>
+                                    <span>{lesson.duration_minutes} dk</span>
+                                  </p>
+                                </div>
+                                <div className="text-right flex-shrink-0">
+                                  <p className={`text-xs font-bold ${isLessonToday ? 'text-[#D4AF37]' : 'text-[#0F172A]'}`}>
+                                    {isLessonToday ? 'Bugün' : formatDate(lesson.scheduled_at)}
+                                  </p>
+                                  <p className="text-xs text-slate-400 flex items-center gap-1 justify-end">
+                                    <Clock className="w-3 h-3" />
+                                    {formatTime(lesson.scheduled_at)}
+                                  </p>
+                                </div>
+                              </div>
+                            )
+                          })}
+                          {upcomingLessons.length > 3 && (
+                            <Link
+                              href="/teacher/lessons"
+                              className="block text-center text-xs text-[#D4AF37] font-medium py-2 hover:underline"
+                            >
+                              +{upcomingLessons.length - 3} ders daha →
+                            </Link>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })()}
             </div>
 
             {/* Son Değerlendirmeler */}
