@@ -408,8 +408,13 @@ export default function TeacherProfilePage() {
 
         {/* İmza */}
         <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">İmza</h2>
-          <p className="text-sm text-slate-500 mb-4">Gider pusulalarında kullanılmak üzere imzanızı yükleyin. Beyaz arka plan üzerine siyah imza önerilir.</p>
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">İmza (Opsiyonel)</h2>
+          <p className="text-sm text-slate-500 mb-2">Gider pusulalarında kullanılmak üzere imzanızı yükleyin. Beyaz arka plan üzerine siyah imza önerilir.</p>
+          <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg mb-4">
+            <p className="text-sm text-amber-800">
+              <strong>Not:</strong> İmza yüklemek zorunlu değildir. İmza yüklemezseniz, gider pusulasını PDF olarak indirip elle imzalayarak bize iletmeniz gerekecektir.
+            </p>
+          </div>
           {signatureUrl ? (
             <div className="space-y-3">
               <div className="inline-block bg-white border-2 border-slate-200 rounded-lg p-4">
