@@ -56,6 +56,14 @@ enum InvitationStatus {
   REVOKED
 }
 
+enum ExpenseReceiptStatus {
+  DRAFT       // Taslak - öğretmen bilgilerini tamamlamalı
+  SUBMITTED   // Gönderildi - admin onayı bekliyor
+  APPROVED    // Onaylandı - ödeme bekliyor
+  PAID        // Ödendi
+  REJECTED    // Reddedildi - düzeltme gerekli
+}
+
 // Models
 model User {
   id              String     @id @default(uuid())
@@ -131,18 +139,21 @@ model Teacher {
   invitationCodeId String?
   iban             String?
   isNative         Boolean   @default(false)
+  tcNumber         String?
+  address          String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  user           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  invitationCode InvitationCode?       @relation(fields: [invitationCodeId], references: [id])
-  appointments   Appointment[]
-  subjects       TeacherSubject[]
-  branches       TeacherBranch[]
-  examTypes      TeacherExamType[]
-  availability   TeacherAvailability[]
-  wallet         Wallet?
-  feedbacks      Feedback[]
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invitationCode  InvitationCode?       @relation(fields: [invitationCodeId], references: [id])
+  appointments    Appointment[]
+  subjects        TeacherSubject[]
+  branches        TeacherBranch[]
+  examTypes       TeacherExamType[]
+  availability    TeacherAvailability[]
+  wallet          Wallet?
+  feedbacks       Feedback[]
+  expenseReceipts ExpenseReceipt[]
 }
 
 model Branch {
@@ -257,11 +268,12 @@ model Appointment {
   createdAt              DateTime          @default(now())
   updatedAt              DateTime          @updatedAt
 
-  student  Student   @relation(fields: [studentId], references: [id])
-  teacher  Teacher   @relation(fields: [teacherId], references: [id])
-  subject  Subject   @relation(fields: [subjectId], references: [id])
-  payment  Payment?
-  feedback Feedback?
+  student        Student         @relation(fields: [studentId], references: [id])
+  teacher        Teacher         @relation(fields: [teacherId], references: [id])
+  subject        Subject         @relation(fields: [subjectId], references: [id])
+  payment        Payment?
+  feedback       Feedback?
+  expenseReceipt ExpenseReceipt?
 }
 
 model Payment {
@@ -348,4 +360,43 @@ model WalletTransaction {
   createdAt     DateTime @default(now())
 
   wallet Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+}
+
+model ExpenseReceipt {
+  id            String @id @default(uuid())
+  teacherId     String
+  appointmentId String @unique
+
+  // Belge bilgileri
+  receiptNumber String @unique // GP-2024-0001 formatında
+
+  // Kişisel bilgiler (snapshot - değiştirilebilir)
+  fullName String
+  tcNumber String?
+  address  String?
+  iban     String?
+
+  // Tutar bilgileri
+  grossAmount  Decimal @db.Decimal(10, 2) // Brüt tutar
+  stopajRate   Decimal @default(20) @db.Decimal(5, 2) // Stopaj oranı %
+  stopajAmount Decimal @db.Decimal(10, 2) // Stopaj tutarı
+  netAmount    Decimal @db.Decimal(10, 2) // Net tutar (öğretmenin alacağı)
+
+  // Durum
+  status ExpenseReceiptStatus @default(DRAFT)
+
+  // Admin notları
+  adminNotes      String?
+  rejectionReason String?
+
+  // Zaman damgaları
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  submittedAt DateTime?
+  approvedAt  DateTime?
+  paidAt      DateTime?
+
+  // İlişkiler
+  teacher     Teacher     @relation(fields: [teacherId], references: [id])
+  appointment Appointment @relation(fields: [appointmentId], references: [id])
 }
