@@ -465,37 +465,42 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 30px 20px;
+      padding: 20px 16px;
       text-align: center;
     }
 
+    .story-1 .header-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 20px 16px 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      width: 100%;
+    }
+
     .story-1 .logo-story {
-      width: 44px;
-      height: 44px;
+      width: 40px;
+      height: 40px;
       background: linear-gradient(135deg, #D4AF37, #B8960C);
-      border-radius: 12px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 15px;
-      position: relative;
-      z-index: 1;
+      margin: 0 auto 12px;
     }
 
     .story-1 .logo-story svg {
-      width: 22px;
-      height: 22px;
+      width: 20px;
+      height: 20px;
       fill: #0F172A;
     }
 
     .story-1 h2 {
       font-family: 'Playfair Display', serif;
-      font-size: 22px;
+      font-size: 18px;
       color: #0F172A;
       line-height: 1.2;
-      margin-bottom: 12px;
-      position: relative;
-      z-index: 1;
+      margin: 0;
     }
 
     .story-1 h2 span {
@@ -505,33 +510,30 @@
     .story-1 .features-story {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
       width: 100%;
-      margin: 15px 0;
-      position: relative;
-      z-index: 1;
+      margin-bottom: 12px;
     }
 
     .story-1 .feature-story {
       display: flex;
       align-items: center;
-      gap: 10px;
-      background: white;
-      padding: 10px 14px;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 10px 12px;
       border-radius: 10px;
-      border: 1px solid rgba(0,0,0,0.05);
-      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     }
 
     .story-1 .feature-story .icon {
-      font-size: 14px;
+      font-size: 12px;
       color: #D4AF37;
     }
 
     .story-1 .feature-story .text {
       color: #0F172A;
       font-size: 11px;
-      font-weight: 500;
+      font-weight: 600;
       text-align: left;
     }
 
@@ -540,31 +542,33 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
-      position: relative;
-      z-index: 1;
+      gap: 4px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px 20px;
+      border-radius: 20px;
     }
 
     .story-1 .swipe-up .arrow {
-      width: 30px;
-      height: 30px;
+      width: 26px;
+      height: 26px;
       border: 2px solid #D4AF37;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       animation: bounce 1s infinite;
+      background: white;
     }
 
     .story-1 .swipe-up .arrow svg {
-      width: 16px;
-      height: 16px;
+      width: 14px;
+      height: 14px;
       stroke: #D4AF37;
     }
 
     .story-1 .swipe-up p {
-      color: #D4AF37;
-      font-size: 12px;
+      color: #0F172A;
+      font-size: 10px;
       font-weight: 600;
     }
 
@@ -709,13 +713,15 @@
     <div class="story-wrapper">
       <span class="slide-label">Story Format</span>
       <div class="story story-1">
-        <div class="logo-story">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 14l9-5-9-5-9 5 9 5z"/>
-            <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
-          </svg>
+        <div class="header-card">
+          <div class="logo-story">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 14l9-5-9-5-9 5 9 5z"/>
+              <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+            </svg>
+          </div>
+          <h2>Akademik Birikiminizi<br><span>Değere Dönüştürün</span></h2>
         </div>
-        <h2>Akademik Birikiminizi<br><span>Değere Dönüştürün</span></h2>
 
         <div class="features-story">
           <div class="feature-story">
