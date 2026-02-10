@@ -575,10 +575,11 @@ export default function AdminGiderPusulalariPage() {
                     </div>
                     <div>
                       <p className="text-xs text-slate-400">Stopaj (%{selectedReceipt.stopaj_rate})</p>
-                      <p className="text-lg font-bold text-red-400">-{formatCurrency(selectedReceipt.stopaj_amount)}</p>
+                      <p className="text-lg font-bold text-amber-400">{formatCurrency(selectedReceipt.stopaj_amount)}</p>
+                      <p className="text-xs text-amber-300 mt-1">Platform öder</p>
                     </div>
                     <div className="col-span-2">
-                      <p className="text-xs text-slate-400">Net Ödeme Tutarı</p>
+                      <p className="text-xs text-slate-400">Öğretmene Ödenecek Tutar</p>
                       <p className="text-2xl font-bold text-emerald-400">{formatCurrency(selectedReceipt.net_amount)}</p>
                     </div>
                   </div>

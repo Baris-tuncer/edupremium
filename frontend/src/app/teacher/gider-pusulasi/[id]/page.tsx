@@ -18,6 +18,7 @@ import {
   User,
   Calendar,
   BookOpen,
+  Download,
 } from 'lucide-react';
 
 interface ExpenseReceipt {
@@ -305,6 +306,137 @@ export default function GiderPusulasiDetailPage() {
 
   const isEditable = receipt?.status === 'DRAFT' || receipt?.status === 'REJECTED';
 
+  const handleDownloadPDF = () => {
+    if (!receipt) return;
+
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Gider Pusulası - ${receipt.receipt_number}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+          .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #D4AF37; padding-bottom: 20px; }
+          .header h1 { font-size: 24px; color: #0F172A; margin-bottom: 5px; }
+          .header .receipt-no { font-family: monospace; font-size: 18px; color: #D4AF37; }
+          .section { margin-bottom: 25px; }
+          .section-title { font-size: 14px; font-weight: bold; color: #64748B; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+          .info-item { }
+          .info-label { font-size: 12px; color: #94A3B8; margin-bottom: 2px; }
+          .info-value { font-size: 14px; color: #0F172A; font-weight: 500; }
+          .amount-box { background: #0F172A; color: white; padding: 20px; border-radius: 12px; margin-top: 20px; }
+          .amount-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; text-align: center; }
+          .amount-label { font-size: 11px; color: #94A3B8; margin-bottom: 5px; }
+          .amount-value { font-size: 20px; font-weight: bold; }
+          .amount-value.net { color: #4ADE80; font-size: 24px; }
+          .amount-note { font-size: 10px; color: #FCD34D; margin-top: 5px; }
+          .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #E2E8F0; text-align: center; color: #94A3B8; font-size: 12px; }
+          .signature-area { margin-top: 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+          .signature-box { text-align: center; padding-top: 60px; border-top: 1px solid #0F172A; }
+          .signature-label { font-size: 12px; color: #64748B; }
+          @media print { body { padding: 20px; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>GİDER PUSULASI</h1>
+          <div class="receipt-no">${receipt.receipt_number}</div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Kişisel Bilgiler</div>
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Ad Soyad</div>
+              <div class="info-value">${receipt.full_name}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">TC Kimlik No</div>
+              <div class="info-value">${receipt.tc_number || '-'}</div>
+            </div>
+            <div class="info-item" style="grid-column: span 2;">
+              <div class="info-label">Adres</div>
+              <div class="info-value">${receipt.address || '-'}</div>
+            </div>
+            <div class="info-item" style="grid-column: span 2;">
+              <div class="info-label">IBAN</div>
+              <div class="info-value" style="font-family: monospace;">${receipt.iban || '-'}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Ders Bilgileri</div>
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Ders</div>
+              <div class="info-value">${receipt.lessons?.subject || '-'}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Öğrenci</div>
+              <div class="info-value">${receipt.student_name || '-'}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Tarih</div>
+              <div class="info-value">${receipt.lessons?.scheduled_at ? new Date(receipt.lessons.scheduled_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Süre</div>
+              <div class="info-value">${receipt.lessons?.duration_minutes || 60} dakika</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Tutar Bilgileri</div>
+          <div class="amount-box">
+            <div class="amount-grid">
+              <div>
+                <div class="amount-label">Brüt Tutar</div>
+                <div class="amount-value">${formatCurrency(receipt.gross_amount)}</div>
+              </div>
+              <div>
+                <div class="amount-label">Stopaj (%${Number(receipt.stopaj_rate)})</div>
+                <div class="amount-value">${formatCurrency(receipt.stopaj_amount)}</div>
+                <div class="amount-note">Platform öder</div>
+              </div>
+              <div>
+                <div class="amount-label">Ödenecek Tutar</div>
+                <div class="amount-value net">${formatCurrency(receipt.net_amount)}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="signature-area">
+          <div class="signature-box">
+            <div class="signature-label">Ödemeyi Yapan</div>
+          </div>
+          <div class="signature-box">
+            <div class="signature-label">Ödemeyi Alan</div>
+          </div>
+        </div>
+
+        <div class="footer">
+          Bu belge ${new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })} tarihinde oluşturulmuştur.
+        </div>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      setTimeout(() => {
+        printWindow.print();
+      }, 250);
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center min-h-[400px]">
@@ -346,11 +478,20 @@ export default function GiderPusulasiDetailPage() {
               </div>
             </div>
           </div>
-          <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border ${statusConfig[receipt.status].color}`}>
-            <StatusIcon className="w-5 h-5" />
-            <div>
-              <p className="font-semibold">{statusConfig[receipt.status].label}</p>
-              <p className="text-xs opacity-75">{statusConfig[receipt.status].description}</p>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleDownloadPDF}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-medium hover:bg-slate-200 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              PDF İndir
+            </button>
+            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border ${statusConfig[receipt.status].color}`}>
+              <StatusIcon className="w-5 h-5" />
+              <div>
+                <p className="font-semibold">{statusConfig[receipt.status].label}</p>
+                <p className="text-xs opacity-75">{statusConfig[receipt.status].description}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -410,16 +551,14 @@ export default function GiderPusulasiDetailPage() {
             <p className="text-xl font-bold">{formatCurrency(receipt.gross_amount)}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-400 mb-1">Stopaj Oranı</p>
-            <p className="text-xl font-bold">%{Number(receipt.stopaj_rate)}</p>
+            <p className="text-xs text-slate-400 mb-1">Stopaj (%{Number(receipt.stopaj_rate)})</p>
+            <p className="text-xl font-bold text-amber-400">{formatCurrency(receipt.stopaj_amount)}</p>
+            <p className="text-xs text-amber-300 mt-1">Platform öder</p>
           </div>
-          <div>
-            <p className="text-xs text-slate-400 mb-1">Stopaj Tutarı</p>
-            <p className="text-xl font-bold text-red-400">-{formatCurrency(receipt.stopaj_amount)}</p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-400 mb-1">Net Tutar</p>
+          <div className="col-span-2">
+            <p className="text-xs text-slate-400 mb-1">Size Ödenecek Tutar</p>
             <p className="text-2xl font-bold text-emerald-400">{formatCurrency(receipt.net_amount)}</p>
+            <p className="text-xs text-emerald-300 mt-1">Stopaj platform tarafından karşılanır</p>
           </div>
         </div>
       </div>
