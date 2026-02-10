@@ -317,26 +317,32 @@ export default function GiderPusulasiDetailPage() {
         <title>Gider Pusulası - ${receipt.receipt_number}</title>
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
-          .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #D4AF37; padding-bottom: 20px; }
-          .header h1 { font-size: 24px; color: #0F172A; margin-bottom: 5px; }
-          .header .receipt-no { font-family: monospace; font-size: 18px; color: #D4AF37; }
-          .section { margin-bottom: 25px; }
-          .section-title { font-size: 14px; font-weight: bold; color: #64748B; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
-          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-          .info-item { }
-          .info-label { font-size: 12px; color: #94A3B8; margin-bottom: 2px; }
-          .info-value { font-size: 14px; color: #0F172A; font-weight: 500; }
-          .amount-box { background: #0F172A; color: white; padding: 20px; border-radius: 12px; margin-top: 20px; }
+          body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; font-size: 14px; }
+          .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #D4AF37; padding-bottom: 20px; }
+          .header h1 { font-size: 28px; color: #0F172A; margin-bottom: 8px; font-weight: 700; }
+          .header .receipt-no { font-family: monospace; font-size: 20px; color: #D4AF37; font-weight: 600; }
+          .header .date { font-size: 13px; color: #64748B; margin-top: 8px; }
+          .section { margin-bottom: 28px; }
+          .section-title { font-size: 13px; font-weight: 700; color: #0F172A; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 2px solid #E2E8F0; padding-bottom: 8px; }
+          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+          .info-item { background: #F8FAFC; padding: 12px; border-radius: 8px; }
+          .info-label { font-size: 11px; color: #0F172A; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+          .info-value { font-size: 15px; color: #0F172A; font-weight: 500; }
+          .amount-box { background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); color: white; padding: 24px; border-radius: 12px; margin-top: 16px; }
           .amount-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; text-align: center; }
-          .amount-label { font-size: 11px; color: #94A3B8; margin-bottom: 5px; }
-          .amount-value { font-size: 20px; font-weight: bold; }
-          .amount-value.net { color: #4ADE80; font-size: 24px; }
-          .amount-note { font-size: 10px; color: #FCD34D; margin-top: 5px; }
-          .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #E2E8F0; text-align: center; color: #94A3B8; font-size: 12px; }
-          .signature-area { margin-top: 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
-          .signature-box { text-align: center; padding-top: 60px; border-top: 1px solid #0F172A; }
-          .signature-label { font-size: 12px; color: #64748B; }
+          .amount-label { font-size: 11px; color: #94A3B8; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; }
+          .amount-value { font-size: 22px; font-weight: bold; }
+          .amount-value.net { color: #4ADE80; font-size: 26px; }
+          .amount-note { font-size: 11px; color: #FCD34D; margin-top: 6px; font-weight: 500; }
+          .signature-area { margin-top: 50px; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
+          .signature-box { text-align: center; }
+          .signature-name { font-size: 14px; font-weight: 600; color: #0F172A; margin-bottom: 8px; }
+          .signature-title { font-size: 11px; color: #64748B; margin-bottom: 40px; }
+          .signature-line { border-top: 1px solid #0F172A; padding-top: 8px; }
+          .signature-label { font-size: 11px; color: #64748B; font-weight: 600; text-transform: uppercase; }
+          .footer { margin-top: 40px; padding: 20px; background: #F8FAFC; border-radius: 8px; text-align: center; }
+          .footer-note { font-size: 11px; color: #64748B; line-height: 1.6; }
+          .footer-note strong { color: #0F172A; }
           @media print { body { padding: 20px; } }
         </style>
       </head>
@@ -344,10 +350,11 @@ export default function GiderPusulasiDetailPage() {
         <div class="header">
           <h1>GİDER PUSULASI</h1>
           <div class="receipt-no">${receipt.receipt_number}</div>
+          <div class="date">Düzenleme Tarihi: ${new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
         </div>
 
         <div class="section">
-          <div class="section-title">Kişisel Bilgiler</div>
+          <div class="section-title">Ödeme Yapılan Kişi Bilgileri</div>
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Ad Soyad</div>
@@ -362,36 +369,36 @@ export default function GiderPusulasiDetailPage() {
               <div class="info-value">${receipt.address || '-'}</div>
             </div>
             <div class="info-item" style="grid-column: span 2;">
-              <div class="info-label">IBAN</div>
-              <div class="info-value" style="font-family: monospace;">${receipt.iban || '-'}</div>
+              <div class="info-label">IBAN Numarası</div>
+              <div class="info-value" style="font-family: monospace; letter-spacing: 1px;">${receipt.iban || '-'}</div>
             </div>
           </div>
         </div>
 
         <div class="section">
-          <div class="section-title">Ders Bilgileri</div>
+          <div class="section-title">Hizmet Bilgileri</div>
           <div class="info-grid">
             <div class="info-item">
-              <div class="info-label">Ders</div>
+              <div class="info-label">Verilen Hizmet</div>
               <div class="info-value">${receipt.lessons?.subject || '-'}</div>
             </div>
             <div class="info-item">
-              <div class="info-label">Öğrenci</div>
+              <div class="info-label">Hizmet Alan</div>
               <div class="info-value">${receipt.student_name || '-'}</div>
             </div>
             <div class="info-item">
-              <div class="info-label">Tarih</div>
+              <div class="info-label">Hizmet Tarihi</div>
               <div class="info-value">${receipt.lessons?.scheduled_at ? new Date(receipt.lessons.scheduled_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'}</div>
             </div>
             <div class="info-item">
-              <div class="info-label">Süre</div>
+              <div class="info-label">Hizmet Süresi</div>
               <div class="info-value">${receipt.lessons?.duration_minutes || 60} dakika</div>
             </div>
           </div>
         </div>
 
         <div class="section">
-          <div class="section-title">Tutar Bilgileri</div>
+          <div class="section-title">Ödeme Bilgileri</div>
           <div class="amount-box">
             <div class="amount-grid">
               <div>
@@ -401,10 +408,10 @@ export default function GiderPusulasiDetailPage() {
               <div>
                 <div class="amount-label">Stopaj (%${Number(receipt.stopaj_rate)})</div>
                 <div class="amount-value">${formatCurrency(receipt.stopaj_amount)}</div>
-                <div class="amount-note">Platform öder</div>
+                <div class="amount-note">Platform tarafından ödenir</div>
               </div>
               <div>
-                <div class="amount-label">Ödenecek Tutar</div>
+                <div class="amount-label">Net Ödeme Tutarı</div>
                 <div class="amount-value net">${formatCurrency(receipt.net_amount)}</div>
               </div>
             </div>
@@ -413,15 +420,27 @@ export default function GiderPusulasiDetailPage() {
 
         <div class="signature-area">
           <div class="signature-box">
-            <div class="signature-label">Ödemeyi Yapan</div>
+            <div class="signature-name">EduPremium</div>
+            <div class="signature-title">Eğitim Teknolojileri</div>
+            <div class="signature-line">
+              <div class="signature-label">Ödemeyi Yapan</div>
+            </div>
           </div>
           <div class="signature-box">
-            <div class="signature-label">Ödemeyi Alan</div>
+            <div class="signature-name">${receipt.full_name}</div>
+            <div class="signature-title">Eğitmen</div>
+            <div class="signature-line">
+              <div class="signature-label">Ödemeyi Alan</div>
+            </div>
           </div>
         </div>
 
         <div class="footer">
-          Bu belge ${new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })} tarihinde oluşturulmuştur.
+          <div class="footer-note">
+            Bu belge <strong>${receipt.receipt_number}</strong> numarası ile dijital ortamda oluşturulmuştur.<br>
+            Belge, tarafların platform üzerinden verdikleri onay ile geçerlilik kazanmıştır.<br>
+            Oluşturulma: ${new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+          </div>
         </div>
       </body>
       </html>
