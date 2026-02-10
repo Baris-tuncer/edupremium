@@ -216,10 +216,13 @@
       display: flex;
       flex-direction: column;
       color: #0F172B;
+      overflow: hidden;
+      max-width: 100%;
     }
 
     .section {
       margin-bottom: 5mm;
+      overflow: hidden;
     }
 
     .section-header {
@@ -261,7 +264,14 @@
       gap: 2mm;
       padding: 2mm 0;
       border-bottom: 1px solid rgba(0,0,0,0.06);
-      font-size: 9pt;
+      font-size: 8pt;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .steps-list li span {
+      flex: 1;
+      min-width: 0;
     }
 
     .steps-list li:last-child {
@@ -319,6 +329,8 @@
 
     .faq-item span {
       color: #64748B;
+      display: block;
+      word-wrap: break-word;
     }
 
     /* Contact Section */
@@ -626,19 +638,19 @@
         <ul class="steps-list">
           <li>
             <div class="step-icon"><svg viewBox="0 0 24 24"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
-            <span><strong>1. Kayıt Ol</strong> — Öğretmen olarak kaydınızı oluşturun</span>
+            <span><strong>1. Kayıt Ol</strong> — Kaydınızı oluşturun</span>
           </li>
           <li>
             <div class="step-icon"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
-            <span><strong>2. Profil Oluştur</strong> — Uzmanlık alanlarınızı ve ücretinizi belirleyin</span>
+            <span><strong>2. Profil</strong> — Alanlarınızı ve ücretinizi belirleyin</span>
           </li>
           <li>
             <div class="step-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
-            <span><strong>3. Onay Bekle</strong> — Profiliniz incelendikten sonra onaylanır</span>
+            <span><strong>3. Onay</strong> — Profiliniz incelenir ve onaylanır</span>
           </li>
           <li>
             <div class="step-icon"><svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></div>
-            <span><strong>4. Ders Ver</strong> — Öğrencilerden gelen talepleri kabul edin</span>
+            <span><strong>4. Ders Ver</strong> — Talepleri kabul edin</span>
           </li>
         </ul>
       </div>
@@ -652,9 +664,9 @@
           <h3>Sponsorlu Vitrin Avantajları</h3>
         </div>
         <ul class="feature-list">
-          <li><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Ana sayfada öne çıkan konumda görünme</li>
-          <li><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Arama sonuçlarında üst sıralarda yer alma</li>
-          <li><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Daha fazla öğrenciye ulaşma fırsatı</li>
+          <li><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Ana sayfada öne çıkın</li>
+          <li><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Arama sonuçlarında üst sırada</li>
+          <li><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Daha fazla öğrenciye ulaşın</li>
         </ul>
       </div>
 
@@ -668,15 +680,15 @@
         </div>
         <div class="faq-item">
           <strong>Ne kadar kazanırım?</strong><br>
-          <span>Net saat ücretinizi siz belirlersiniz, yazdığınız ücretin tamamı size kalır.</span>
+          <span>Ücretinizi siz belirlersiniz, tamamı size kalır.</span>
         </div>
         <div class="faq-item">
           <strong>Vergi ödemem gerekir mi?</strong><br>
-          <span>Hayır, vergilerinizi platform öder. Sadece gider pusulası doldurmanız yeterli.</span>
+          <span>Hayır, vergilerinizi platform öder.</span>
         </div>
         <div class="faq-item">
           <strong>Kazançlarımı nasıl alırım?</strong><br>
-          <span>Aylık toplam bakiyeniz her ay sonunda IBAN'ınıza yatırılır.</span>
+          <span>Her ay IBAN'ınıza yatırılır.</span>
         </div>
       </div>
 
