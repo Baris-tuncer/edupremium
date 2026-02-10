@@ -83,8 +83,8 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: rgba(253, 251, 247, 0.85);
-      backdrop-filter: blur(4px);
+      background: linear-gradient(135deg, rgba(253, 251, 247, 0.92) 0%, rgba(253, 251, 247, 0.88) 100%);
+      backdrop-filter: blur(2px);
       z-index: 1;
     }
 
@@ -99,8 +99,15 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 40px;
+      padding: 30px;
       text-align: center;
+    }
+
+    .slide-1 .content-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 24px;
+      padding: 35px 30px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
     }
 
     .slide-1 .badge {
@@ -108,23 +115,20 @@
       color: #0F172A;
       padding: 8px 20px;
       border-radius: 30px;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 2px;
-      margin-bottom: 30px;
-      position: relative;
-      z-index: 1;
+      margin-bottom: 20px;
+      display: inline-block;
     }
 
     .slide-1 h2 {
       font-family: 'Playfair Display', serif;
-      font-size: 36px;
+      font-size: 30px;
       color: #0F172A;
       line-height: 1.2;
-      margin-bottom: 20px;
-      position: relative;
-      z-index: 1;
+      margin-bottom: 15px;
     }
 
     .slide-1 h2 span {
@@ -132,15 +136,10 @@
     }
 
     .slide-1 p {
-      color: #475569;
-      font-size: 16px;
-      line-height: 1.6;
-      position: relative;
-      z-index: 1;
-    }
-
-    .slide-1 p {
-      max-width: 320px;
+      color: #64748b;
+      font-size: 14px;
+      line-height: 1.5;
+      max-width: 280px;
       margin: 0 auto;
     }
 
@@ -291,57 +290,58 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 40px;
+      padding: 30px;
       text-align: center;
+    }
+
+    .slide-4 .content-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 24px;
+      padding: 30px 25px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      width: 100%;
     }
 
     .slide-4 .earnings-badge {
       background: linear-gradient(135deg, #D4AF37, #B8960C);
       color: #0F172A;
-      padding: 10px 24px;
+      padding: 8px 18px;
       border-radius: 30px;
-      font-size: 12px;
+      font-size: 10px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin-bottom: 25px;
-      position: relative;
-      z-index: 1;
+      margin-bottom: 20px;
+      display: inline-block;
     }
 
     .slide-4 .big-number {
       font-family: 'Playfair Display', serif;
-      font-size: 90px;
+      font-size: 72px;
       font-weight: 700;
       color: #0F172A;
       line-height: 1;
-      margin-bottom: 10px;
-      position: relative;
-      z-index: 1;
+      margin-bottom: 8px;
     }
 
     .slide-4 .earnings-text {
       color: #D4AF37;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 700;
-      margin-bottom: 30px;
-      position: relative;
-      z-index: 1;
+      margin-bottom: 20px;
     }
 
     .slide-4 .earnings-detail {
-      background: white;
-      padding: 16px 28px;
-      border-radius: 16px;
-      position: relative;
-      z-index: 1;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      background: #f8fafc;
+      padding: 14px 20px;
+      border-radius: 14px;
     }
 
     .slide-4 .earnings-detail p {
-      color: #475569;
-      font-size: 14px;
+      color: #64748b;
+      font-size: 12px;
       font-weight: 500;
+      line-height: 1.5;
     }
 
     .slide-4 .earnings-detail strong {
@@ -451,8 +451,8 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: rgba(253, 251, 247, 0.85);
-      backdrop-filter: blur(4px);
+      background: linear-gradient(180deg, rgba(253, 251, 247, 0.92) 0%, rgba(253, 251, 247, 0.88) 100%);
+      backdrop-filter: blur(2px);
       z-index: 1;
     }
 
@@ -598,9 +598,11 @@
     <div class="slide-wrapper">
       <span class="slide-label">Slide 1 - Hook</span>
       <div class="slide slide-1">
-        <div class="badge">Eğitimcilere Özel</div>
-        <h2>Akademik Birikiminizi<br><span>Değere</span> Dönüştürün</h2>
-        <p>Online eğitimde yüksek standartlar,<br>profesyonel kazanımlarla buluşuyor</p>
+        <div class="content-card">
+          <div class="badge">Eğitimcilere Özel</div>
+          <h2>Akademik Birikiminizi<br><span>Değere</span> Dönüştürün</h2>
+          <p>Online eğitimde yüksek standartlar,<br>profesyonel kazanımlarla buluşuyor</p>
+        </div>
       </div>
     </div>
 
@@ -665,11 +667,13 @@
     <div class="slide-wrapper">
       <span class="slide-label">Slide 4 - Kazanç</span>
       <div class="slide slide-4">
-        <div class="earnings-badge">Şeffaf ve Adil Finansal Model</div>
-        <div class="big-number">%100</div>
-        <p class="earnings-text">Net Hakediş</p>
-        <div class="earnings-detail">
-          <p>Komisyon modelini ortadan kaldırdık.<br>Uzmanlığınızın karşılığını, belirlediğiniz<br>standartlarda ve <strong>kesintisiz</strong> alın.</p>
+        <div class="content-card">
+          <div class="earnings-badge">Şeffaf Finansal Model</div>
+          <div class="big-number">%100</div>
+          <p class="earnings-text">Net Hakediş</p>
+          <div class="earnings-detail">
+            <p>Komisyon modelini ortadan kaldırdık.<br>Uzmanlığınızın karşılığını <strong>kesintisiz</strong> alın.</p>
+          </div>
         </div>
       </div>
     </div>
