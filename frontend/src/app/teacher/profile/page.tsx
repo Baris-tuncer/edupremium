@@ -32,6 +32,7 @@ export default function TeacherProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [diplomaUrl, setDiplomaUrl] = useState('');
+  const [signatureUrl, setSignatureUrl] = useState('');
   const [completedLessons, setCompletedLessons] = useState(0);
   const [commissionRate, setCommissionRate] = useState(0.25);
   const [experienceYears, setExperienceYears] = useState<number | ''>('');
@@ -67,6 +68,7 @@ export default function TeacherProfilePage() {
         setAvatarUrl(data.avatar_url || '');
         setVideoUrl(data.video_url || '');
         setDiplomaUrl(data.diploma_url || '');
+        setSignatureUrl(data.signature_image || '');
         setCompletedLessons(data.completed_lessons_count || 0);
         setCommissionRate(data.commission_rate || 0.25);
         setExperienceYears(data.experience_years || '');
@@ -211,6 +213,43 @@ export default function TeacherProfilePage() {
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleSignatureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('İmza 2MB dan kucuk olmali');
+      return;
+    }
+
+    // Convert to base64 for storage
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64 = event.target?.result as string;
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { error } = await supabase
+          .from('teacher_profiles')
+          .update({ signature_image: base64 })
+          .eq('id', user.id);
+
+        if (error) {
+          toast.error('İmza kaydetme hatası: ' + error.message);
+          return;
+        }
+
+        setSignatureUrl(base64);
+        toast.success('İmza yuklendi');
+      } catch (error) {
+        toast.error('İmza yukleme sirasinda hata olustu');
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const toggleSubject = (level: string, subject: string) => {
@@ -363,6 +402,43 @@ export default function TeacherProfilePage() {
             <label className="cursor-pointer block p-8 border-2 border-dashed border-slate-300 rounded-lg text-center hover:border-[#D4AF37]">
               <span className="text-slate-500">{uploading ? 'Yükleniyor...' : 'Diploma Yükle (Max 10MB)'}</span>
               <input type="file" accept="image/*,.pdf" className="hidden" onChange={handleDiplomaUpload} disabled={uploading} />
+            </label>
+          )}
+        </div>
+
+        {/* İmza */}
+        <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl shadow-[#0F172A]/5 p-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">İmza</h2>
+          <p className="text-sm text-slate-500 mb-4">Gider pusulalarında kullanılmak üzere imzanızı yükleyin. Beyaz arka plan üzerine siyah imza önerilir.</p>
+          {signatureUrl ? (
+            <div className="space-y-3">
+              <div className="inline-block bg-white border-2 border-slate-200 rounded-lg p-4">
+                <img src={signatureUrl} alt="İmza" className="max-h-20 max-w-[200px]" />
+              </div>
+              <div className="flex gap-3">
+                <label className="cursor-pointer inline-block px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200">
+                  {uploading ? 'Yükleniyor...' : 'Değiştir'}
+                  <input type="file" accept="image/*" className="hidden" onChange={handleSignatureUpload} disabled={uploading} />
+                </label>
+                <button
+                  onClick={async () => {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (user) {
+                      await supabase.from('teacher_profiles').update({ signature_image: null }).eq('id', user.id);
+                      setSignatureUrl('');
+                      toast.success('İmza silindi');
+                    }
+                  }}
+                  className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100"
+                >
+                  Sil
+                </button>
+              </div>
+            </div>
+          ) : (
+            <label className="cursor-pointer block p-8 border-2 border-dashed border-slate-300 rounded-lg text-center hover:border-[#D4AF37]">
+              <span className="text-slate-500">{uploading ? 'Yükleniyor...' : 'İmza Yükle (PNG önerilir, Max 2MB)'}</span>
+              <input type="file" accept="image/*" className="hidden" onChange={handleSignatureUpload} disabled={uploading} />
             </label>
           )}
         </div>

@@ -150,6 +150,17 @@ export default function GiderPusulasiDetailPage() {
         receiptData.student_name = student?.full_name || 'Öğrenci';
       }
 
+      // Get teacher signature
+      const { data: teacher } = await supabase
+        .from('teacher_profiles')
+        .select('signature_image')
+        .eq('id', receiptData.teacher_id)
+        .single();
+
+      if (teacher?.signature_image) {
+        (receiptData as any).teacher_signature = teacher.signature_image;
+      }
+
       setReceipt(receiptData);
       setFormData({
         tc_number: receiptData.tc_number || '',
@@ -309,6 +320,9 @@ export default function GiderPusulasiDetailPage() {
   const handleDownloadPDF = () => {
     if (!receipt) return;
 
+    // Get teacher signature if available
+    const teacherSignature = (receipt as any).teacher_signature || null;
+
     const printContent = `
       <!DOCTYPE html>
       <html>
@@ -317,33 +331,36 @@ export default function GiderPusulasiDetailPage() {
         <title>Gider Pusulası - ${receipt.receipt_number}</title>
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; font-size: 14px; }
-          .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #D4AF37; padding-bottom: 20px; }
-          .header h1 { font-size: 28px; color: #0F172A; margin-bottom: 8px; font-weight: 700; }
-          .header .receipt-no { font-family: monospace; font-size: 20px; color: #D4AF37; font-weight: 600; }
-          .header .date { font-size: 13px; color: #64748B; margin-top: 8px; }
-          .section { margin-bottom: 28px; }
-          .section-title { font-size: 13px; font-weight: 700; color: #0F172A; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 2px solid #E2E8F0; padding-bottom: 8px; }
-          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-          .info-item { background: #F8FAFC; padding: 12px; border-radius: 8px; }
-          .info-label { font-size: 11px; color: #0F172A; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-          .info-value { font-size: 15px; color: #0F172A; font-weight: 500; }
-          .amount-box { background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); color: white; padding: 24px; border-radius: 12px; margin-top: 16px; }
-          .amount-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; text-align: center; }
-          .amount-label { font-size: 11px; color: #94A3B8; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; }
-          .amount-value { font-size: 22px; font-weight: bold; }
-          .amount-value.net { color: #4ADE80; font-size: 26px; }
-          .amount-note { font-size: 11px; color: #FCD34D; margin-top: 6px; font-weight: 500; }
-          .signature-area { margin-top: 50px; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
+          @page { size: A4; margin: 10mm; }
+          body { font-family: 'Segoe UI', Arial, sans-serif; padding: 15px 25px; max-width: 800px; margin: 0 auto; font-size: 12px; }
+          .header { text-align: center; margin-bottom: 15px; border-bottom: 2px solid #D4AF37; padding-bottom: 10px; }
+          .header h1 { font-size: 22px; color: #0F172A; margin-bottom: 4px; font-weight: 700; }
+          .header .receipt-no { font-family: monospace; font-size: 16px; color: #D4AF37; font-weight: 600; }
+          .header .date { font-size: 11px; color: #64748B; margin-top: 4px; }
+          .section { margin-bottom: 12px; }
+          .section-title { font-size: 11px; font-weight: 700; color: #0F172A; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #E2E8F0; padding-bottom: 4px; }
+          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+          .info-item { background: #F8FAFC; padding: 8px 10px; border-radius: 6px; }
+          .info-label { font-size: 9px; color: #0F172A; margin-bottom: 2px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+          .info-value { font-size: 12px; color: #0F172A; font-weight: 500; }
+          .amount-box { background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); color: white; padding: 14px; border-radius: 8px; margin-top: 8px; }
+          .amount-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; text-align: center; }
+          .amount-label { font-size: 9px; color: #94A3B8; margin-bottom: 4px; font-weight: 600; text-transform: uppercase; }
+          .amount-value { font-size: 16px; font-weight: bold; }
+          .amount-value.net { color: #4ADE80; font-size: 18px; }
+          .amount-note { font-size: 9px; color: #FCD34D; margin-top: 3px; font-weight: 500; }
+          .signature-area { margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
           .signature-box { text-align: center; }
-          .signature-name { font-size: 14px; font-weight: 600; color: #0F172A; margin-bottom: 8px; }
-          .signature-title { font-size: 11px; color: #64748B; margin-bottom: 40px; }
-          .signature-line { border-top: 1px solid #0F172A; padding-top: 8px; }
-          .signature-label { font-size: 11px; color: #64748B; font-weight: 600; text-transform: uppercase; }
-          .footer { margin-top: 40px; padding: 20px; background: #F8FAFC; border-radius: 8px; text-align: center; }
-          .footer-note { font-size: 11px; color: #64748B; line-height: 1.6; }
+          .signature-name { font-size: 12px; font-weight: 600; color: #0F172A; margin-bottom: 4px; }
+          .signature-title { font-size: 10px; color: #64748B; margin-bottom: 6px; }
+          .signature-image { height: 50px; margin-bottom: 6px; }
+          .signature-image img { max-height: 50px; max-width: 150px; }
+          .signature-line { border-top: 1px solid #0F172A; padding-top: 6px; }
+          .signature-label { font-size: 10px; color: #64748B; font-weight: 600; text-transform: uppercase; }
+          .footer { margin-top: 15px; padding: 10px; background: #F8FAFC; border-radius: 6px; text-align: center; }
+          .footer-note { font-size: 9px; color: #64748B; line-height: 1.5; }
           .footer-note strong { color: #0F172A; }
-          @media print { body { padding: 20px; } }
+          @media print { body { padding: 10px; } }
         </style>
       </head>
       <body>
@@ -422,6 +439,7 @@ export default function GiderPusulasiDetailPage() {
           <div class="signature-box">
             <div class="signature-name">EduPremium</div>
             <div class="signature-title">Eğitim Teknolojileri</div>
+            <div class="signature-image"></div>
             <div class="signature-line">
               <div class="signature-label">Ödemeyi Yapan</div>
             </div>
@@ -429,6 +447,9 @@ export default function GiderPusulasiDetailPage() {
           <div class="signature-box">
             <div class="signature-name">${receipt.full_name}</div>
             <div class="signature-title">Eğitmen</div>
+            <div class="signature-image">
+              ${teacherSignature ? `<img src="${teacherSignature}" alt="İmza" />` : ''}
+            </div>
             <div class="signature-line">
               <div class="signature-label">Ödemeyi Alan</div>
             </div>
