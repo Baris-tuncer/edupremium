@@ -82,15 +82,10 @@ export default function TeacherDashboardPage() {
       const weekEnd = new Date()
       weekEnd.setDate(weekEnd.getDate() + 7)
 
-      const { data: upcoming } = await supabase
+      // Yaklaşan dersleri join olmadan çek
+      const { data: upcomingRaw } = await supabase
         .from('lessons')
-        .select(`
-          id,
-          subject,
-          scheduled_at,
-          duration_minutes,
-          student:student_profiles(full_name)
-        `)
+        .select('id, subject, scheduled_at, duration_minutes, student_id')
         .eq('teacher_id', user.id)
         .in('status', ['PENDING', 'CONFIRMED'])
         .gte('scheduled_at', now.toISOString())
@@ -98,34 +93,60 @@ export default function TeacherDashboardPage() {
         .order('scheduled_at', { ascending: true })
         .limit(5)
 
-      setUpcomingLessons(upcoming?.map(l => ({
-        id: l.id,
-        subject: l.subject,
-        scheduled_at: l.scheduled_at,
-        duration_minutes: l.duration_minutes || 60,
-        student_name: (l.student as any)?.full_name || 'Öğrenci'
-      })) || [])
+      // Öğrenci isimlerini ayrı sorgula
+      const upcomingWithStudents = await Promise.all(
+        (upcomingRaw || []).map(async (lesson) => {
+          let studentName = 'Öğrenci'
+          if (lesson.student_id) {
+            const { data: student } = await supabase
+              .from('student_profiles')
+              .select('full_name')
+              .eq('id', lesson.student_id)
+              .single()
+            if (student?.full_name) studentName = student.full_name
+          }
+          return {
+            id: lesson.id,
+            subject: lesson.subject,
+            scheduled_at: lesson.scheduled_at,
+            duration_minutes: lesson.duration_minutes || 60,
+            student_name: studentName
+          }
+        })
+      )
 
-      const { data: recentReviewsData } = await supabase
+      setUpcomingLessons(upcomingWithStudents)
+
+      // Reviews'ları da ayrı sorgula
+      const { data: reviewsRaw } = await supabase
         .from('reviews')
-        .select(`
-          id,
-          rating,
-          comment,
-          created_at,
-          student:student_profiles(full_name)
-        `)
+        .select('id, rating, comment, created_at, student_id')
         .eq('teacher_id', user.id)
         .order('created_at', { ascending: false })
         .limit(3)
 
-      setRecentReviews(recentReviewsData?.map(r => ({
-        id: r.id,
-        rating: r.rating,
-        comment: r.comment,
-        created_at: r.created_at,
-        student_name: (r.student as any)?.full_name || 'Öğrenci'
-      })) || [])
+      const reviewsWithStudents = await Promise.all(
+        (reviewsRaw || []).map(async (review) => {
+          let studentName = 'Öğrenci'
+          if (review.student_id) {
+            const { data: student } = await supabase
+              .from('student_profiles')
+              .select('full_name')
+              .eq('id', review.student_id)
+              .single()
+            if (student?.full_name) studentName = student.full_name
+          }
+          return {
+            id: review.id,
+            rating: review.rating,
+            comment: review.comment,
+            created_at: review.created_at,
+            student_name: studentName
+          }
+        })
+      )
+
+      setRecentReviews(reviewsWithStudents)
 
     } catch (error) {
       console.error('Dashboard load error:', error)
