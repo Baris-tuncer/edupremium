@@ -14,7 +14,7 @@
     }
 
     @page {
-      size: A3 landscape;
+      size: A4 landscape;
       margin: 0;
     }
 
@@ -23,18 +23,28 @@
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
+      body {
+        padding: 0;
+        background: white;
+      }
+      .page {
+        box-shadow: none;
+        margin: 0;
+        border-radius: 0;
+        page-break-inside: avoid;
+      }
     }
 
     body {
       font-family: 'DM Sans', sans-serif;
       background: #D4CFC4;
       margin: 0;
-      padding: 15mm;
+      padding: 10mm;
     }
 
     .page {
-      width: 396mm;
-      height: 267mm;
+      width: 297mm;
+      height: 210mm;
       margin: 0 auto 15mm;
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -55,7 +65,7 @@
     .left-panel {
       background: #FFFFFF;
       color: #0F172B;
-      padding: 15mm;
+      padding: 10mm;
       display: flex;
       flex-direction: column;
       position: relative;
@@ -117,7 +127,7 @@
     }
 
     .logo-img {
-      width: 115mm;
+      width: 80mm;
       height: auto;
       object-fit: contain;
     }
@@ -135,10 +145,10 @@
 
     .main-headline h1 {
       font-family: 'Playfair Display', serif;
-      font-size: 38pt;
+      font-size: 28pt;
       font-weight: 700;
       line-height: 1.1;
-      margin-bottom: 6mm;
+      margin-bottom: 4mm;
       color: #0F172B;
     }
 
@@ -202,14 +212,14 @@
     /* ==================== */
     .right-panel {
       background: #FFFFFF;
-      padding: 12mm 15mm;
+      padding: 8mm 10mm;
       display: flex;
       flex-direction: column;
       color: #0F172B;
     }
 
     .section {
-      margin-bottom: 8mm;
+      margin-bottom: 5mm;
     }
 
     .section-header {
@@ -235,7 +245,7 @@
 
     .section-header h3 {
       font-family: 'Playfair Display', serif;
-      font-size: 14pt;
+      font-size: 12pt;
       font-weight: 700;
       color: #0F172B;
     }
@@ -248,10 +258,10 @@
     .steps-list li {
       display: flex;
       align-items: center;
-      gap: 3mm;
-      padding: 3mm 0;
+      gap: 2mm;
+      padding: 2mm 0;
       border-bottom: 1px solid rgba(0,0,0,0.06);
-      font-size: 10pt;
+      font-size: 9pt;
     }
 
     .steps-list li:last-child {
@@ -284,9 +294,9 @@
     .feature-list li {
       display: flex;
       align-items: center;
-      gap: 3mm;
-      padding: 2.5mm 0;
-      font-size: 10pt;
+      gap: 2mm;
+      padding: 1.5mm 0;
+      font-size: 9pt;
       color: #334155;
     }
 
@@ -299,8 +309,8 @@
 
     /* FAQ */
     .faq-item {
-      margin-bottom: 3mm;
-      font-size: 9pt;
+      margin-bottom: 2mm;
+      font-size: 8pt;
     }
 
     .faq-item strong {
@@ -366,17 +376,17 @@
     }
 
     .qr-box {
-      width: 38mm;
-      height: 38mm;
-      border: 3px solid #0F172B;
-      border-radius: 3mm;
+      width: 28mm;
+      height: 28mm;
+      border: 2px solid #0F172B;
+      border-radius: 2mm;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 7pt;
       color: #64748B;
       text-align: center;
-      padding: 2mm;
+      padding: 1mm;
       background: white;
     }
 
@@ -419,26 +429,26 @@
     /* ==================== */
     .page-2-left {
       background: #FFFFFF;
-      padding: 12mm 15mm;
+      padding: 8mm 10mm;
       color: #0F172B;
     }
 
     .page-2-right {
       background: #FFFFFF;
-      padding: 12mm 15mm;
+      padding: 8mm 10mm;
       color: #0F172B;
     }
 
     .detail-section {
-      margin-bottom: 10mm;
+      margin-bottom: 6mm;
     }
 
     .detail-section h3 {
       font-family: 'Playfair Display', serif;
-      font-size: 13pt;
+      font-size: 11pt;
       font-weight: 700;
-      margin-bottom: 4mm;
-      padding-bottom: 2mm;
+      margin-bottom: 3mm;
+      padding-bottom: 1mm;
       border-bottom: 2px solid #D4AF37;
       color: #0F172B;
     }
@@ -449,8 +459,8 @@
     }
 
     .detail-content {
-      font-size: 9pt;
-      line-height: 1.6;
+      font-size: 8pt;
+      line-height: 1.5;
       color: #475569;
     }
 
@@ -465,7 +475,7 @@
 
     .numbered-list li {
       counter-increment: item;
-      padding: 3mm 0 3mm 8mm;
+      padding: 2mm 0 2mm 6mm;
       position: relative;
       border-bottom: 1px solid rgba(0,0,0,0.05);
     }
@@ -491,9 +501,9 @@
     .info-box {
       background: rgba(212, 175, 55, 0.08);
       border-left: 3px solid #D4AF37;
-      padding: 4mm;
-      margin-top: 4mm;
-      font-size: 8pt;
+      padding: 3mm;
+      margin-top: 3mm;
+      font-size: 7pt;
     }
 
     .info-box.dark {
@@ -511,27 +521,27 @@
     .security-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 4mm;
-      margin-top: 4mm;
+      gap: 3mm;
+      margin-top: 3mm;
     }
 
     .security-item {
       background: rgba(212, 175, 55, 0.08);
-      padding: 4mm;
+      padding: 3mm;
       border-radius: 2mm;
       border: 1px solid rgba(212, 175, 55, 0.2);
     }
 
     .security-item h4 {
-      font-size: 9pt;
+      font-size: 8pt;
       color: #0F172B;
-      margin-bottom: 2mm;
+      margin-bottom: 1mm;
     }
 
     .security-item p {
-      font-size: 8pt;
+      font-size: 7pt;
       color: #475569;
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
     .panel-list {
@@ -539,8 +549,8 @@
     }
 
     .panel-list li {
-      padding: 2.5mm 0;
-      font-size: 9pt;
+      padding: 1.5mm 0;
+      font-size: 8pt;
       display: flex;
       align-items: flex-start;
       gap: 2mm;
@@ -766,10 +776,23 @@
             <li>Panelden talebi inceleyin (öğrenci notu, ders konusu)</li>
             <li>Talebi onaylayın veya alternatif saat önerin</li>
             <li>Onay sonrası öğrenci ödemeyi tamamlar</li>
-            <li>Ders saatinde "Derse Başla" butonuna tıklayın</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h3>Gider Pusulası</h3>
+        <div class="detail-content">
+          <p>Her ders tamamlandığında sistem otomatik olarak gider pusulası oluşturur.</p>
+          <ol class="numbered-list" style="margin-top: 2mm;">
+            <li>Dersinizi tamamlayın → "Dersi Tamamla" butonuna tıklayın</li>
+            <li>Gider Pusulası menüsüne gidin → Otomatik oluşturulan pusulayı görün</li>
+            <li>TC, Adres ve IBAN bilgilerinizi kontrol edin</li>
+            <li>"Gönder" butonuna tıklayın → Admin onayı bekleyin</li>
+            <li>Onay sonrası ödemeniz IBAN'ınıza yapılır</li>
           </ol>
           <div class="info-box">
-            <strong>Önemli:</strong> Onayladığınız dersleri iptal etmek puanınızı olumsuz etkiler.
+            <strong>İmza:</strong> Profil sayfanızdan dijital imzanızı yükleyebilirsiniz (opsiyonel). Yüklemezseniz PDF'i indirip elle imzalayabilirsiniz.
           </div>
         </div>
       </div>
