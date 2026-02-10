@@ -125,37 +125,9 @@
       z-index: 1;
     }
 
-    .slide-1 .icon-row {
-      display: flex;
-      gap: 30px;
-      margin-top: 30px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .slide-1 .icon-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .slide-1 .icon-circle {
-      width: 50px;
-      height: 50px;
-      background: rgba(212,175,55,0.1);
-      border: 1px solid rgba(212,175,55,0.3);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-    }
-
-    .slide-1 .icon-text {
-      color: #64748b;
-      font-size: 11px;
-      font-weight: 500;
+    .slide-1 p {
+      max-width: 320px;
+      margin: 0 auto;
     }
 
     /* ========== SLIDE 2 - Problem ========== */
@@ -194,38 +166,39 @@
 
     .slide-2 h2 {
       font-family: 'Playfair Display', serif;
-      font-size: 24px;
+      font-size: 22px;
       color: #0F172A;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       line-height: 1.3;
     }
 
     .slide-2 .problem-list {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 16px;
       flex: 1;
+      justify-content: center;
     }
 
     .slide-2 .problem-item {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 14px;
+      gap: 14px;
+      padding: 18px;
       background: white;
-      border-radius: 14px;
+      border-radius: 16px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.04);
     }
 
     .slide-2 .problem-icon {
-      width: 40px;
-      height: 40px;
-      background: #fee2e2;
-      border-radius: 10px;
+      width: 44px;
+      height: 44px;
+      background: #fef3c7;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
+      font-size: 20px;
       flex-shrink: 0;
     }
 
@@ -233,6 +206,7 @@
       color: #475569;
       font-size: 13px;
       font-weight: 500;
+      line-height: 1.4;
     }
 
     /* ========== SLIDE 3 - Solution ========== */
@@ -240,35 +214,36 @@
       background: #FDFBF7;
       display: flex;
       flex-direction: column;
-      padding: 30px;
+      padding: 28px;
     }
 
     .slide-3 h2 {
       font-family: 'Playfair Display', serif;
-      font-size: 22px;
+      font-size: 20px;
       color: #0F172A;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
+      line-height: 1.2;
     }
 
     .slide-3 .subtitle {
       color: #D4AF37;
       font-size: 12px;
       font-weight: 600;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
 
     .slide-3 .features {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      gap: 12px;
       flex: 1;
     }
 
     .slide-3 .feature {
       background: white;
       border: 1px solid rgba(0,0,0,0.05);
-      border-radius: 14px;
-      padding: 14px;
+      border-radius: 16px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -276,26 +251,26 @@
     }
 
     .slide-3 .feature-icon {
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
       background: linear-gradient(135deg, #D4AF37, #B8960C);
-      border-radius: 10px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
+      font-size: 18px;
     }
 
     .slide-3 .feature-title {
       color: #0F172A;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .slide-3 .feature-desc {
       color: #64748b;
       font-size: 10px;
-      line-height: 1.3;
+      line-height: 1.4;
     }
 
     /* ========== SLIDE 4 - Earnings ========== */
@@ -394,16 +369,18 @@
 
     .slide-5 h2 {
       font-family: 'Playfair Display', serif;
-      font-size: 28px;
+      font-size: 22px;
       color: #0F172A;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+      line-height: 1.3;
     }
 
     .slide-5 .tagline {
-      color: #D4AF37;
-      font-size: 13px;
-      font-weight: 600;
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 500;
       margin-bottom: 20px;
+      line-height: 1.5;
     }
 
     .slide-5 .qr-box {
@@ -597,23 +574,9 @@
     <div class="slide-wrapper">
       <span class="slide-label">Slide 1 - Hook</span>
       <div class="slide slide-1">
-        <div class="badge">Öğretmenlere Özel</div>
-        <h2>Bilgini <span>Gelire</span><br>Dönüştür</h2>
-        <p>Online ders ver, evinden kazan</p>
-        <div class="icon-row">
-          <div class="icon-item">
-            <div class="icon-circle">🎓</div>
-            <span class="icon-text">Ders Ver</span>
-          </div>
-          <div class="icon-item">
-            <div class="icon-circle">🏠</div>
-            <span class="icon-text">Evinden</span>
-          </div>
-          <div class="icon-item">
-            <div class="icon-circle">💰</div>
-            <span class="icon-text">Kazan</span>
-          </div>
-        </div>
+        <div class="badge">Eğitimcilere Özel</div>
+        <h2>Akademik Birikiminizi<br><span>Değere</span> Dönüştürün</h2>
+        <p>Online eğitimde yüksek standartlar,<br>profesyonel kazanımlarla buluşuyor</p>
       </div>
     </div>
 
@@ -625,23 +588,19 @@
           <div class="logo">EP</div>
           <span class="brand">EduPremium</span>
         </div>
-        <h2>Bu sorunlar tanıdık mı?</h2>
+        <h2>Geleneksel Eğitim Süreçlerindeki Engelleri Aşın</h2>
         <div class="problem-list">
           <div class="problem-item">
-            <div class="problem-icon">😓</div>
-            <span class="problem-text">Özel ders öğrencisi bulmak zor</span>
+            <div class="problem-icon">🎯</div>
+            <span class="problem-text">Nitelikli öğrenci portföyüne erişim zorluğu</span>
           </div>
           <div class="problem-item">
-            <div class="problem-icon">💸</div>
-            <span class="problem-text">Ödeme takibi yapmak yorucu</span>
+            <div class="problem-icon">📊</div>
+            <span class="problem-text">Operasyonel ve finansal takip yükü</span>
           </div>
           <div class="problem-item">
-            <div class="problem-icon">📝</div>
-            <span class="problem-text">Yasal süreçler karmaşık</span>
-          </div>
-          <div class="problem-item">
-            <div class="problem-icon">⏰</div>
-            <span class="problem-text">Program yönetimi zaman alıyor</span>
+            <div class="problem-icon">📋</div>
+            <span class="problem-text">Karmaşık yasal ve vergisel prosedürler</span>
           </div>
         </div>
       </div>
@@ -651,38 +610,28 @@
     <div class="slide-wrapper">
       <span class="slide-label">Slide 3 - Çözüm</span>
       <div class="slide slide-3">
-        <h2>Hepsini Biz Halledelim</h2>
-        <p class="subtitle">EduPremium ile sadece öğretmeye odaklan</p>
+        <h2>Operasyonel Süreçleri Bize Bırakın</h2>
+        <p class="subtitle">Sadece eğitime odaklanın</p>
         <div class="features">
           <div class="feature">
-            <div class="feature-icon">👥</div>
-            <span class="feature-title">Hazır Öğrenci</span>
-            <span class="feature-desc">Öğrenci havuzumuzdan eşleşin</span>
+            <div class="feature-icon">🎯</div>
+            <span class="feature-title">Nitelikli Eşleşme</span>
+            <span class="feature-desc">Branşınıza uygun, hazır öğrenci havuzu</span>
           </div>
           <div class="feature">
-            <div class="feature-icon">📹</div>
-            <span class="feature-title">Video Ders</span>
-            <span class="feature-desc">Entegre görüntülü görüşme</span>
+            <div class="feature-icon">🖥️</div>
+            <span class="feature-title">Entegre Sanal Sınıf</span>
+            <span class="feature-desc">Yüksek çözünürlüklü dijital ders ortamı</span>
           </div>
           <div class="feature">
             <div class="feature-icon">💳</div>
-            <span class="feature-title">Güvenli Ödeme</span>
-            <span class="feature-desc">Otomatik ödeme sistemi</span>
+            <span class="feature-title">Finansal Otomasyon</span>
+            <span class="feature-desc">Güvence altına alınmış ödeme sistemleri</span>
           </div>
           <div class="feature">
-            <div class="feature-icon">📄</div>
-            <span class="feature-title">Gider Pusulası</span>
-            <span class="feature-desc">Yasal belge desteği</span>
-          </div>
-          <div class="feature">
-            <div class="feature-icon">📅</div>
-            <span class="feature-title">Takvim</span>
-            <span class="feature-desc">Kolay program yönetimi</span>
-          </div>
-          <div class="feature">
-            <div class="feature-icon">📊</div>
-            <span class="feature-title">Dashboard</span>
-            <span class="feature-desc">Kazanç ve performans takibi</span>
+            <div class="feature-icon">📋</div>
+            <span class="feature-title">Mevzuat Uyumluluğu</span>
+            <span class="feature-desc">Gider pusulası ve yasal belge desteği</span>
           </div>
         </div>
       </div>
@@ -692,11 +641,11 @@
     <div class="slide-wrapper">
       <span class="slide-label">Slide 4 - Kazanç</span>
       <div class="slide slide-4">
-        <div class="earnings-badge">Komisyon Yok</div>
+        <div class="earnings-badge">Şeffaf ve Adil Finansal Model</div>
         <div class="big-number">%100</div>
-        <p class="earnings-text">Net Kazanç Senin</p>
+        <p class="earnings-text">Net Hakediş</p>
         <div class="earnings-detail">
-          <p>Ders ücretini <strong>sen belirle</strong><br>Tamamı sana ait</p>
+          <p>Komisyon modelini ortadan kaldırdık.<br>Uzmanlığınızın karşılığını, belirlediğiniz<br>standartlarda ve <strong>kesintisiz</strong> alın.</p>
         </div>
       </div>
     </div>
@@ -711,13 +660,12 @@
             <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
           </svg>
         </div>
-        <h2>EduPremium</h2>
-        <p class="tagline">Premium Eğitim Platformu</p>
+        <h2>Seçkin Eğitmen Kadrosuna Katılın</h2>
+        <p class="tagline">Davetiye usulü ile çalışan profesyonel<br>ekosistemimizde yerinizi alın</p>
         <div class="qr-box">
           <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://visserr.com/teacher/register&color=0F172A" alt="QR Code">
         </div>
         <p class="url">visserr.com</p>
-        <p class="cta-text">Hemen ücretsiz kayıt ol →</p>
       </div>
     </div>
 
@@ -739,28 +687,28 @@
             <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
           </svg>
         </div>
-        <h2>Öğretmen misin?<br><span>Online Ders Ver!</span></h2>
+        <h2>Akademik Birikiminizi<br><span>Değere Dönüştürün</span></h2>
 
         <div class="features-story">
           <div class="feature-story">
             <span class="icon">✓</span>
-            <span class="text">Kendi fiyatını belirle</span>
+            <span class="text">Nitelikli öğrenci eşleşmesi</span>
           </div>
           <div class="feature-story">
             <span class="icon">✓</span>
-            <span class="text">Esnek çalışma saatleri</span>
+            <span class="text">Entegre sanal sınıf ortamı</span>
           </div>
           <div class="feature-story">
             <span class="icon">✓</span>
-            <span class="text">Hazır öğrenci havuzu</span>
+            <span class="text">Finansal otomasyon</span>
           </div>
           <div class="feature-story">
             <span class="icon">✓</span>
-            <span class="text">Güvenli ödeme sistemi</span>
+            <span class="text">Mevzuat uyumluluğu</span>
           </div>
           <div class="feature-story">
             <span class="icon">✓</span>
-            <span class="text">%100 net kazanç</span>
+            <span class="text">%100 net hakediş</span>
           </div>
         </div>
 
