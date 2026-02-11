@@ -218,6 +218,7 @@ const FeaturedTeachersSection = () => {
           .from('teacher_profiles')
           .select('*')
           .eq('is_featured', true)
+          .eq('is_approved', true)
           .gte('featured_until', now);
 
         if (error) {

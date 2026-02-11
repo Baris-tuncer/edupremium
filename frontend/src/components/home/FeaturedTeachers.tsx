@@ -14,6 +14,7 @@ async function getFeaturedTeachers() {
     .from('teacher_profiles')
     .select('*')
     .eq('is_verified', true)
+    .eq('is_approved', true)
     .gte('featured_until', now);
 
   if (error) {
