@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -31,9 +31,22 @@ interface GroupClassEnrollment {
   };
 }
 
-export default function MyGroupClassesPage() {
-  const router = useRouter();
+// Component that uses useSearchParams - must be wrapped in Suspense
+function SuccessToast() {
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const success = searchParams.get('success');
+    if (success === 'true') {
+      toast.success('Kayıt basarıyla tamamlandı!');
+    }
+  }, [searchParams]);
+
+  return null;
+}
+
+function MyGroupClassesContent() {
+  const router = useRouter();
   const [activeClasses, setActiveClasses] = useState<GroupClassEnrollment[]>([]);
   const [pastClasses, setPastClasses] = useState<GroupClassEnrollment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,15 +60,8 @@ export default function MyGroupClassesPage() {
   const [joiningMeeting, setJoiningMeeting] = useState(false);
 
   useEffect(() => {
-    // Basarılı odeme kontrolu
-    const success = searchParams.get('success');
-    const orderId = searchParams.get('orderId');
-    if (success === 'true') {
-      toast.success('Kayıt basarıyla tamamlandı!');
-    }
-
     checkAuthAndLoadData();
-  }, [searchParams]);
+  }, []);
 
   const checkAuthAndLoadData = async () => {
     const { data: { user: authUser } } = await supabase.auth.getUser();
@@ -242,6 +248,11 @@ export default function MyGroupClassesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <Toaster position="top-center" />
+
+      {/* Success Toast Handler */}
+      <Suspense fallback={null}>
+        <SuccessToast />
+      </Suspense>
 
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200 sticky top-0 z-40">
@@ -491,4 +502,8 @@ export default function MyGroupClassesPage() {
       )}
     </div>
   );
+}
+
+export default function MyGroupClassesPage() {
+  return <MyGroupClassesContent />;
 }
