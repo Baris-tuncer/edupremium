@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AdminSidebar from '../components/Sidebar';
-import { toast } from 'sonner';
+import toast from 'react-hot-toast';
 
 interface PremiumPlan {
   id: string;
