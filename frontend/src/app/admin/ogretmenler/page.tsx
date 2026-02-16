@@ -303,8 +303,8 @@ export default function AdminTeachersPage() {
                     <p className="font-medium">{selectedTeacher.rating ? `⭐ ${selectedTeacher.rating}` : '-'}</p>
                   </div>
                   <div>
-                    <label className="text-sm text-slate-500">Kayıt Tarihi</label>
-                    <p className="font-medium">{formatDate(selectedTeacher.created_at)}</p>
+                    <label className="text-sm text-slate-500">Son Güncelleme</label>
+                    <p className="font-medium">{formatDate(selectedTeacher.updated_at)}</p>
                   </div>
                 </div>
 
