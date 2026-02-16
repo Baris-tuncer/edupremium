@@ -109,6 +109,26 @@ export async function middleware(req: NextRequest) {
   const supabase = createMiddlewareClient({ req, res })
   const { data: { session } } = await supabase.auth.getSession()
 
+  // Öğretmenler diğer öğretmenlerin profil detayına giremesin
+  // /teachers sayfası OK, ama /teachers/[id] engellenir
+  if (session && path.startsWith('/teachers/') && path !== '/teachers') {
+    // Kullanıcının öğretmen olup olmadığını kontrol et
+    const { data: teacherProfile } = await supabase
+      .from('teacher_profiles')
+      .select('id')
+      .eq('id', session.user.id)
+      .single()
+
+    // Eğer öğretmense ve kendi profili değilse, engelle
+    if (teacherProfile) {
+      const targetId = path.split('/teachers/')[1]?.split('/')[0]
+      // Kendi profiline erişebilir, başkasınınkine erişemez
+      if (targetId && targetId !== teacherProfile.id) {
+        return NextResponse.redirect(new URL('/teachers', req.url))
+      }
+    }
+  }
+
   // Eğer gidilen yol public listesindeyse veya statik dosyaysa -> izin ver
   if (publicPaths.some(p => path === p || path.startsWith(p + '/')) ||
       path.startsWith('/_next') ||
