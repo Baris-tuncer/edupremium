@@ -75,9 +75,9 @@ export async function middleware(req: NextRequest) {
   const clientIP = getClientIP(req)
 
   // Rate limiting kontrolleri
-  // Login endpoints: 5 deneme / dakika
-  if (path.includes('/login') || path.includes('/auth')) {
-    if (!checkRateLimit(`login:${clientIP}`, 5, 60 * 1000)) {
+  // Login API endpoints: 10 deneme / dakika (sadece POST istekleri)
+  if (path.startsWith('/api/auth') && req.method === 'POST') {
+    if (!checkRateLimit(`login:${clientIP}`, 10, 60 * 1000)) {
       return NextResponse.json(
         { error: 'Çok fazla deneme. Lütfen 1 dakika bekleyin.' },
         { status: 429 }
