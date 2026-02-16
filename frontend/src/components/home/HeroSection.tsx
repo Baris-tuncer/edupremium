@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, ChevronDown, CheckCircle2, Users, BookOpen, Award } from 'lucide-react';
+import { ArrowRight, ChevronDown, CheckCircle2, Users, BookOpen } from 'lucide-react';
 
 const HeroSection = () => {
   return (
@@ -73,18 +73,6 @@ const HeroSection = () => {
                   className="w-[320px] h-auto object-contain drop-shadow-2xl"
                 />
 
-                {/* Rozet */}
-                <div className="absolute -bottom-4 -left-4 bg-white/95 backdrop-blur-xl rounded-2xl p-4 shadow-xl border border-[#D4AF37]/20">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-[#D4AF37] to-[#B49120] rounded-xl flex items-center justify-center">
-                      <Award className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-[#0F172A]">Uzman Kadro</p>
-                      <p className="text-xs text-slate-500">Sertifikalı Eğitmenler</p>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
 
