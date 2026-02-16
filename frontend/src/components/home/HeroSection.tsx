@@ -68,9 +68,9 @@ const HeroSection = () => {
               {/* Görsel */}
               <div className="relative">
                 <img
-                  src="/hero-teacher.jpg"
+                  src="/hero-teacher.png"
                   alt="EduPremium Eğitmen"
-                  className="w-[320px] h-[480px] object-cover object-top rounded-[2rem] shadow-2xl shadow-[#0F172A]/20"
+                  className="w-[320px] h-auto object-contain drop-shadow-2xl"
                 />
 
                 {/* Rozet */}
@@ -131,7 +131,7 @@ const HeroSection = () => {
 
               {/* CTA */}
               <Link
-                href="/teacher-register"
+                href="/teacher/register"
                 className="mt-2 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#D4AF37] to-[#B49120] text-[#0F172A] font-bold text-sm rounded-xl hover:shadow-lg hover:shadow-[#D4AF37]/30 transition-all group"
               >
                 Eğitmen Olarak Katılın
