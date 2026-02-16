@@ -44,14 +44,22 @@ export default function AdminLoginPage() {
         return;
       }
 
-      // Admin kontrolü
-      const { data: profile } = await supabase
-        .from('teacher_profiles')
-        .select('is_admin')
-        .eq('id', data.user.id)
-        .single();
+      // Admin kontrolü - user metadata veya teacher_profiles'dan kontrol et
+      const userMeta = data.user.user_metadata;
+      const isAdminFromMeta = userMeta?.role === 'admin' || userMeta?.is_admin === true || userMeta?.is_admin === 'true';
 
-      if (!profile?.is_admin) {
+      // Metadata'da admin değilse, teacher_profiles'dan kontrol et
+      let isAdmin = isAdminFromMeta;
+      if (!isAdmin) {
+        const { data: profile } = await supabase
+          .from('teacher_profiles')
+          .select('is_admin')
+          .eq('id', data.user.id)
+          .single();
+        isAdmin = profile?.is_admin === true;
+      }
+
+      if (!isAdmin) {
         await supabase.auth.signOut();
         setError('Bu hesap admin yetkisine sahip değil');
         setLoading(false);
