@@ -226,7 +226,9 @@ const FeaturedTeachersSection = () => {
           return;
         }
 
-        const shuffled = (data || []).sort(() => Math.random() - 0.5);
+        // Admin hesaplarını filtrele
+        const filtered = (data || []).filter(t => !t.email?.toLowerCase().includes('admin'));
+        const shuffled = filtered.sort(() => Math.random() - 0.5);
         setTeachers(shuffled);
 
         // Aktif kampanyaları al
@@ -347,7 +349,8 @@ function TeachersContent() {
         return;
       }
 
-      let filteredTeachers = data || [];
+      // Admin hesaplarını filtrele
+      let filteredTeachers = (data || []).filter(t => !t.email?.toLowerCase().includes('admin'));
 
       if (selectedLevel && selectedSubject) {
         const searchKey = selectedLevel + ':' + selectedSubject;

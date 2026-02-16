@@ -22,8 +22,11 @@ async function getFeaturedTeachers() {
     return [];
   }
 
+  // Admin hesaplarını filtrele
+  const filteredProfiles = (profiles || []).filter(p => !p.email?.toLowerCase().includes('admin'));
+
   // VERİYİ GARANTİYE ALAN DÖNÜŞÜM (Mapping)
-  const mappedTeachers = (profiles || []).map(p => {
+  const mappedTeachers = filteredProfiles.map(p => {
     // 1. DERSLERİ BUL (subjects, tags veya lesson_types olabilir)
     let finalSubjects = [];
     if (p.subjects && p.subjects.length > 0) finalSubjects = p.subjects;

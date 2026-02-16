@@ -52,7 +52,12 @@ export default function AdminTeachersPage() {
         return;
       }
 
-      setTeachers(data || []);
+      // Admin hesaplarını filtrele (email'de admin geçenler)
+      const filteredData = (data || []).filter(teacher =>
+        !teacher.email?.toLowerCase().includes('admin')
+      );
+
+      setTeachers(filteredData);
     } catch (err: any) {
       setError(err.message);
     } finally {
