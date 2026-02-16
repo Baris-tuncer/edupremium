@@ -12,6 +12,8 @@ interface Student {
   parent_phone: string | null;
   created_at: string;
   total_lessons: number;
+  total_packages: number;
+  total_spent: number;
 }
 
 export default function AdminStudentsPage() {
@@ -33,22 +35,35 @@ export default function AdminStudentsPage() {
 
       if (error) throw error;
 
-      // Her öğrencinin ders sayısını al
-      const studentsWithLessons = await Promise.all(
+      // Her öğrencinin ders sayısı, paket sayısı ve harcamasını al
+      const studentsWithDetails = await Promise.all(
         (profiles || []).map(async (student) => {
-          const { count } = await supabase
+          // Ders sayısı
+          const { count: lessonCount } = await supabase
             .from('lessons')
             .select('*', { count: 'exact', head: true })
             .eq('student_id', student.id);
 
+          // Paket ve ödeme bilgisi
+          const { data: purchases } = await supabase
+            .from('package_purchases')
+            .select('total_price')
+            .eq('student_id', student.id)
+            .eq('status', 'completed');
+
+          const totalPackages = purchases?.length || 0;
+          const totalSpent = purchases?.reduce((sum, p) => sum + (p.total_price || 0), 0) || 0;
+
           return {
             ...student,
-            total_lessons: count || 0
+            total_lessons: lessonCount || 0,
+            total_packages: totalPackages,
+            total_spent: totalSpent
           };
         })
       );
 
-      setStudents(studentsWithLessons);
+      setStudents(studentsWithDetails);
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -71,6 +86,7 @@ export default function AdminStudentsPage() {
     return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
   }).length;
   const totalLessons = students.reduce((sum, s) => sum + s.total_lessons, 0);
+  const totalRevenue = students.reduce((sum, s) => sum + s.total_spent, 0);
 
   if (loading) {
     return (
@@ -104,7 +120,7 @@ export default function AdminStudentsPage() {
       </div>
 
       {/* İstatistikler */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 p-6">
           <span className="text-sm font-medium text-slate-500">Toplam Öğrenci</span>
           <p className="text-3xl font-bold text-slate-900 mt-2">{totalStudents}</p>
@@ -117,6 +133,10 @@ export default function AdminStudentsPage() {
           <span className="text-sm font-medium text-slate-500">Toplam Ders</span>
           <p className="text-3xl font-bold text-blue-600 mt-2">{totalLessons}</p>
         </div>
+        <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-[#0F172A]/5 p-6">
+          <span className="text-sm font-medium text-slate-500">Toplam Gelir</span>
+          <p className="text-3xl font-bold text-[#D4AF37] mt-2">{totalRevenue.toLocaleString('tr-TR')} ₺</p>
+        </div>
       </div>
 
       {/* Tablo */}
@@ -127,14 +147,16 @@ export default function AdminStudentsPage() {
               <th className="text-left py-4 px-6 font-medium text-slate-600">Öğrenci</th>
               <th className="text-left py-4 px-6 font-medium text-slate-600">Telefon</th>
               <th className="text-left py-4 px-6 font-medium text-slate-600">Veli</th>
-              <th className="text-center py-4 px-6 font-medium text-slate-600">Ders Sayısı</th>
-              <th className="text-center py-4 px-6 font-medium text-slate-600">Kayıt Tarihi</th>
+              <th className="text-center py-4 px-6 font-medium text-slate-600">Paket</th>
+              <th className="text-center py-4 px-6 font-medium text-slate-600">Ders</th>
+              <th className="text-center py-4 px-6 font-medium text-slate-600">Harcama</th>
+              <th className="text-center py-4 px-6 font-medium text-slate-600">Kayıt</th>
             </tr>
           </thead>
           <tbody>
             {filteredStudents.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-12 text-center text-slate-500">
+                <td colSpan={7} className="py-12 text-center text-slate-500">
                   {searchTerm ? 'Aramayla eşleşen öğrenci bulunamadı' : 'Henüz öğrenci bulunmuyor'}
                 </td>
               </tr>
@@ -168,9 +190,15 @@ export default function AdminStudentsPage() {
                     )}
                   </td>
                   <td className="py-4 px-6 text-center">
+                    <span className="font-medium text-slate-900">{student.total_packages}</span>
+                  </td>
+                  <td className="py-4 px-6 text-center">
                     <span className="font-medium text-slate-900">{student.total_lessons}</span>
                   </td>
-                  <td className="py-4 px-6 text-center text-slate-600">
+                  <td className="py-4 px-6 text-center">
+                    <span className="font-medium text-green-600">{student.total_spent.toLocaleString('tr-TR')} ₺</span>
+                  </td>
+                  <td className="py-4 px-6 text-center text-slate-600 text-sm">
                     {formatDate(student.created_at)}
                   </td>
                 </tr>

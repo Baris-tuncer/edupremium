@@ -10,11 +10,20 @@ interface Teacher {
   phone: string | null;
   subjects: string[];
   base_price: number;
+  hourly_rate_net: number | null;
   commission_rate: number;
   completed_lessons_count: number;
   is_verified: boolean;
   is_approved: boolean;
+  is_featured: boolean;
+  featured_headline: string | null;
+  featured_until: string | null;
+  experience_years: number | null;
+  university: string | null;
+  rating: number | null;
+  title: string | null;
   updated_at: string;
+  created_at: string;
   avatar_url: string | null;
   bio: string | null;
   video_url: string | null;
@@ -36,8 +45,8 @@ export default function AdminTeachersPage() {
     try {
       const { data, error: fetchError } = await supabase
         .from('teacher_profiles')
-        .select('id, full_name, email, phone, subjects, base_price, commission_rate, completed_lessons_count, is_verified, is_approved, updated_at, avatar_url, bio, video_url, diploma_url')
-        .order('updated_at', { ascending: false });
+        .select('*')
+        .order('created_at', { ascending: false });
 
       if (fetchError) {
         setError(fetchError.message);
@@ -165,10 +174,10 @@ export default function AdminTeachersPage() {
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50">
               <th className="text-left py-4 px-6 font-medium text-slate-600">Öğretmen</th>
-              <th className="text-left py-4 px-6 font-medium text-slate-600">Branslar</th>
-              <th className="text-center py-4 px-6 font-medium text-slate-600">Baz Fiyat</th>
-              <th className="text-center py-4 px-6 font-medium text-slate-600">Komisyon</th>
-              <th className="text-center py-4 px-6 font-medium text-slate-600">Ders</th>
+              <th className="text-left py-4 px-6 font-medium text-slate-600">Ünvan / Üniversite</th>
+              <th className="text-center py-4 px-6 font-medium text-slate-600">Net Ücret</th>
+              <th className="text-center py-4 px-6 font-medium text-slate-600">Deneyim</th>
+              <th className="text-center py-4 px-6 font-medium text-slate-600">Puan</th>
               <th className="text-center py-4 px-6 font-medium text-slate-600">Durum</th>
               <th className="text-center py-4 px-6 font-medium text-slate-600">İşlem</th>
             </tr>
@@ -201,29 +210,21 @@ export default function AdminTeachersPage() {
                     </div>
                   </td>
                   <td className="py-4 px-6">
-                    <div className="flex flex-wrap gap-1">
-                      {teacher.subjects?.slice(0, 2).map((s, i) => (
-                        <span key={i} className="px-2 py-1 bg-[#D4AF37]/5 text-[#D4AF37] text-xs rounded-full">
-                          {s}
-                        </span>
-                      ))}
-                      {(teacher.subjects?.length || 0) > 2 && (
-                        <span className="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded-full">
-                          +{teacher.subjects.length - 2}
-                        </span>
-                      )}
+                    <div>
+                      <p className="text-sm font-medium text-slate-700">{teacher.title || '-'}</p>
+                      <p className="text-xs text-slate-500">{teacher.university || '-'}</p>
                     </div>
                   </td>
                   <td className="py-4 px-6 text-center font-medium">
-                    {formatCurrency(teacher.base_price)}
+                    {formatCurrency(teacher.hourly_rate_net || teacher.base_price)}
                   </td>
                   <td className="py-4 px-6 text-center">
                     <span className="text-sm text-slate-600">
-                      {getCommissionLabel(teacher.commission_rate || 0.25)}
+                      {teacher.experience_years ? `${teacher.experience_years} yıl` : '-'}
                     </span>
                   </td>
                   <td className="py-4 px-6 text-center font-medium">
-                    {teacher.completed_lessons_count || 0}
+                    {teacher.rating ? `⭐ ${teacher.rating}` : '-'}
                   </td>
                   <td className="py-4 px-6 text-center">
                     <div className="flex flex-col items-center gap-1">
@@ -232,8 +233,8 @@ export default function AdminTeachersPage() {
                       ) : (
                         <span className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-full">Onay Bekliyor</span>
                       )}
-                      {teacher.is_verified && (
-                        <span className="px-3 py-1 bg-[#D4AF37]/5 text-[#D4AF37] text-xs font-medium rounded-full">Doğrulanmış</span>
+                      {teacher.is_featured && (
+                        <span className="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-medium rounded-full">⭐ Editör</span>
                       )}
                     </div>
                   </td>
@@ -287,8 +288,24 @@ export default function AdminTeachersPage() {
                     <p className="font-medium">{selectedTeacher.phone || '-'}</p>
                   </div>
                   <div>
-                    <label className="text-sm text-slate-500">Son Güncelleme</label>
-                    <p className="font-medium">{formatDate(selectedTeacher.updated_at)}</p>
+                    <label className="text-sm text-slate-500">Ünvan</label>
+                    <p className="font-medium">{selectedTeacher.title || '-'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-slate-500">Üniversite</label>
+                    <p className="font-medium">{selectedTeacher.university || '-'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-slate-500">Deneyim</label>
+                    <p className="font-medium">{selectedTeacher.experience_years ? `${selectedTeacher.experience_years} yıl` : '-'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-slate-500">Puan</label>
+                    <p className="font-medium">{selectedTeacher.rating ? `⭐ ${selectedTeacher.rating}` : '-'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-slate-500">Kayıt Tarihi</label>
+                    <p className="font-medium">{formatDate(selectedTeacher.created_at)}</p>
                   </div>
                 </div>
 
@@ -305,8 +322,8 @@ export default function AdminTeachersPage() {
                   <h4 className="font-semibold text-slate-900 mb-3">Fiyatlandırma</h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Baz Fiyat:</span>
-                      <span className="font-medium">{formatCurrency(selectedTeacher.base_price)}</span>
+                      <span className="text-slate-500">Net Ücret (Öğretmene):</span>
+                      <span className="font-medium">{formatCurrency(selectedTeacher.hourly_rate_net || selectedTeacher.base_price)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-500">Komisyon Oranı:</span>
@@ -318,6 +335,14 @@ export default function AdminTeachersPage() {
                     </div>
                   </div>
                 </div>
+
+                {selectedTeacher.is_featured && (
+                  <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
+                    <h4 className="font-semibold text-amber-800 mb-2">⭐ Editörün Seçimi</h4>
+                    <p className="text-sm text-amber-700">{selectedTeacher.featured_headline || '-'}</p>
+                    <p className="text-xs text-amber-600 mt-1">Bitiş: {selectedTeacher.featured_until ? formatDate(selectedTeacher.featured_until) : '-'}</p>
+                  </div>
+                )}
               </div>
 
               
