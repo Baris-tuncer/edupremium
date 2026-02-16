@@ -109,24 +109,43 @@ export async function middleware(req: NextRequest) {
   const supabase = createMiddlewareClient({ req, res })
   const { data: { session } } = await supabase.auth.getSession()
 
-  // Öğretmenler diğer öğretmenlerin profil detayına giremesin
-  // /teachers sayfası OK, ama /teachers/[id] engellenir
-  if (session && path.startsWith('/teachers/') && path !== '/teachers') {
-    // Kullanıcının öğretmen olup olmadığını kontrol et
+  // Öğretmen profil detayı (/teachers/[id]) - Sadece öğrenci ve admin erişebilir
+  if (path.startsWith('/teachers/') && path !== '/teachers') {
+    // Oturum yoksa -> öğrenci girişine yönlendir
+    if (!session) {
+      const redirectUrl = new URL('/student/login', req.url)
+      redirectUrl.searchParams.set('redirect', path)
+      return NextResponse.redirect(redirectUrl)
+    }
+
+    // Admin mi kontrol et (admin her yere erişebilir)
+    const { data: adminCheck } = await supabase
+      .from('teacher_profiles')
+      .select('is_admin')
+      .eq('id', session.user.id)
+      .single()
+
+    if (adminCheck?.is_admin) {
+      return res // Admin erişebilir
+    }
+
+    // Öğretmen mi kontrol et
     const { data: teacherProfile } = await supabase
       .from('teacher_profiles')
       .select('id')
       .eq('id', session.user.id)
       .single()
 
-    // Eğer öğretmense ve kendi profili değilse, engelle
+    // Öğretmense -> öğrenci girişine yönlendir
     if (teacherProfile) {
-      const targetId = path.split('/teachers/')[1]?.split('/')[0]
-      // Kendi profiline erişebilir, başkasınınkine erişemez
-      if (targetId && targetId !== teacherProfile.id) {
-        return NextResponse.redirect(new URL('/teachers', req.url))
-      }
+      const redirectUrl = new URL('/student/login', req.url)
+      redirectUrl.searchParams.set('redirect', path)
+      redirectUrl.searchParams.set('message', 'Öğretmen profillerini incelemek için öğrenci olarak giriş yapın')
+      return NextResponse.redirect(redirectUrl)
     }
+
+    // Öğrenci ise devam et (teacher_profiles'da kaydı yok demek öğrencidir)
+    return res
   }
 
   // Eğer gidilen yol public listesindeyse veya statik dosyaysa -> izin ver
