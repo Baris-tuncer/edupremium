@@ -23,7 +23,6 @@ interface Teacher {
   rating: number | null;
   title: string | null;
   updated_at: string;
-  created_at: string;
   avatar_url: string | null;
   bio: string | null;
   video_url: string | null;
@@ -46,7 +45,7 @@ export default function AdminTeachersPage() {
       const { data, error: fetchError } = await supabase
         .from('teacher_profiles')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('updated_at', { ascending: false });
 
       if (fetchError) {
         setError(fetchError.message);
