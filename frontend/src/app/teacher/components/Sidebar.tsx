@@ -63,25 +63,48 @@ export default function TeacherSidebar({ activeItem, user }: SidebarProps) {
       </div>
 
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {menuItems.map((item) => (
-          <Link
-            key={item.id}
-            href={`/teacher/${item.id}`}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-              activeItem === item.id
-                ? 'bg-[#D4AF37]/10 text-[#D4AF37]'
-                : 'text-slate-400 hover:bg-white/5 hover:text-white'
-            }`}
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
-            </svg>
-            <span className="font-medium">{item.label}</span>
-            {activeItem === item.id && (
-              <span className="ml-auto w-1.5 h-1.5 bg-[#D4AF37] rounded-full" />
-            )}
-          </Link>
-        ))}
+        {/* Ana Sayfa */}
+        <Link
+          href="/teacher/dashboard"
+          className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+            activeItem === 'dashboard'
+              ? 'bg-[#D4AF37]/10 text-[#D4AF37]'
+              : 'text-slate-400 hover:bg-white/5 hover:text-white'
+          }`}
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          <span className="font-medium">Ana Sayfa</span>
+          {activeItem === 'dashboard' && (
+            <span className="ml-auto w-1.5 h-1.5 bg-[#D4AF37] rounded-full" />
+          )}
+        </Link>
+
+        {/* Premium Vitrin - Özel Tasarım */}
+        <Link
+          href="/teacher/one-cik"
+          className={`relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 overflow-hidden group ${
+            activeItem === 'one-cik'
+              ? 'bg-gradient-to-r from-[#D4AF37] to-[#F5D572] text-[#0F172A] shadow-lg shadow-[#D4AF37]/30'
+              : 'bg-gradient-to-r from-[#D4AF37]/20 to-[#D4AF37]/10 text-[#D4AF37] hover:from-[#D4AF37]/30 hover:to-[#D4AF37]/20 hover:shadow-md hover:shadow-[#D4AF37]/20'
+          }`}
+        >
+          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+          <svg className="w-5 h-5 relative z-10" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6 2L1 8l11 13L23 8l-5-6H6zm3.5 1h5l2.5 3h-10l2.5-3zM12 19L3.5 9h17L12 19z" />
+          </svg>
+          <div className="flex-1 relative z-10">
+            <span className="font-bold">Premium Vitrin</span>
+          </div>
+          <span className={`relative z-10 text-[9px] font-bold px-1.5 py-0.5 rounded ${
+            activeItem === 'one-cik'
+              ? 'bg-[#0F172A] text-[#D4AF37]'
+              : 'bg-[#D4AF37] text-[#0F172A]'
+          }`}>
+            PRO
+          </span>
+        </Link>
 
         {/* Kampanyalarım - Premium özelliği */}
         {isPremium ? (
@@ -159,38 +182,26 @@ export default function TeacherSidebar({ activeItem, user }: SidebarProps) {
           </Link>
         )}
 
-        {/* Premium Vitrin - Özel Tasarım */}
-        <div className="pt-4 mt-4 border-t border-[#D4AF37]/20">
+        {/* Diğer menü öğeleri */}
+        {menuItems.filter(item => item.id !== 'dashboard').map((item) => (
           <Link
-            href="/teacher/one-cik"
-            className={`relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 overflow-hidden group ${
-              activeItem === 'one-cik'
-                ? 'bg-gradient-to-r from-[#D4AF37] to-[#F5D572] text-[#0F172A] shadow-lg shadow-[#D4AF37]/30'
-                : 'bg-gradient-to-r from-[#D4AF37]/20 to-[#D4AF37]/10 text-[#D4AF37] hover:from-[#D4AF37]/30 hover:to-[#D4AF37]/20 hover:shadow-md hover:shadow-[#D4AF37]/20'
+            key={item.id}
+            href={`/teacher/${item.id}`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+              activeItem === item.id
+                ? 'bg-[#D4AF37]/10 text-[#D4AF37]'
+                : 'text-slate-400 hover:bg-white/5 hover:text-white'
             }`}
           >
-            {/* Shimmer effect */}
-            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-
-            {/* Diamond Icon */}
-            <svg className="w-5 h-5 relative z-10" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M6 2L1 8l11 13L23 8l-5-6H6zm3.5 1h5l2.5 3h-10l2.5-3zM12 19L3.5 9h17L12 19z" />
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
             </svg>
-
-            <div className="flex-1 relative z-10">
-              <span className="font-bold">Premium Vitrin</span>
-            </div>
-
-            {/* PRO Badge */}
-            <span className={`relative z-10 text-[9px] font-bold px-1.5 py-0.5 rounded ${
-              activeItem === 'one-cik'
-                ? 'bg-[#0F172A] text-[#D4AF37]'
-                : 'bg-[#D4AF37] text-[#0F172A]'
-            }`}>
-              PRO
-            </span>
+            <span className="font-medium">{item.label}</span>
+            {activeItem === item.id && (
+              <span className="ml-auto w-1.5 h-1.5 bg-[#D4AF37] rounded-full" />
+            )}
           </Link>
-        </div>
+        ))}
       </nav>
 
       <div className="p-4 border-t border-[#D4AF37]/20">
