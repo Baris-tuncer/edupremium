@@ -65,6 +65,8 @@ export default function StudentDashboardPage() {
     const { data, error } = await supabase
       .from('teacher_profiles')
       .select('*')
+      .eq('is_approved', true)
+      .eq('is_verified', true)
       .not('full_name', 'is', null);
     if (error) {
       console.error('Error:', error);
